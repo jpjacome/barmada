@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Tables in the bar
-        Schema::create('tables', function (Blueprint $table) {
-            $table->id();
-            $table->integer('orders')->default(0);
-            $table->string('status')->default('available');
-            $table->timestamps();
+        Schema::table('products', function (Blueprint $table) {
+            $table->string('icon')->default('bi-box')->after('price');
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tables');
+        Schema::table('products', function (Blueprint $table) {
+            $table->dropColumn('icon');
+        });
     }
-}; 
+};

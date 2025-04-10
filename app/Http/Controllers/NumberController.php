@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\NumberAdded;
 use App\Models\Number;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class NumberController extends Controller
@@ -57,11 +58,11 @@ class NumberController extends Controller
     }
     
     /**
-     * Display the list of numbers with Livewire real-time updates
+     * Display the list of products with Livewire real-time updates
      */
     public function livewire()
     {
-        return view('numbers.livewire');
+        return view('products.livewire');
     }
 
     /**

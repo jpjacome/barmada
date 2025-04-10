@@ -7,6 +7,9 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -14,8 +17,13 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
+        <!-- Stacked Styles -->
+        @stack('styles')
+        
         <!-- Livewire Styles -->
         @livewireStyles
+
+        <link href="{{ asset('css/navigation.css') }}" rel="stylesheet">
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -36,9 +44,12 @@
             </main>
         </div>
         
+        <!-- Stacked Scripts -->
         @stack('scripts')
         
         <!-- Livewire Scripts -->
         @livewireScripts
+        <script src="{{ asset('js/app.js') }}"></script>
+        <script src="{{ asset('js/order-timer.js') }}"></script>
     </body>
 </html>

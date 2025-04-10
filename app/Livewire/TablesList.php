@@ -14,8 +14,6 @@ class TablesList extends Component
     public $refreshInterval = 10; // in seconds
     
     // Form properties
-    public $name = '';
-    public $capacity = 4;
     public $showAddForm = false;
 
     public function mount()
@@ -25,7 +23,7 @@ class TablesList extends Component
 
     public function loadTables()
     {
-        $this->tables = Table::orderBy('name')->get();
+        $this->tables = Table::orderBy('id')->get();
         $this->lastUpdated = now()->format('H:i:s');
         $this->status = 'Tables updated at ' . $this->lastUpdated;
     }
@@ -44,21 +42,28 @@ class TablesList extends Component
 
     public function resetForm()
     {
-        $this->name = '';
-        $this->capacity = 4;
+        // No form fields to reset
     }
 
     public function addTable()
     {
-        $this->validate([
-            'name' => 'required|string|max:50|unique:tables,name',
-            'capacity' => 'required|integer|min:1|max:20',
-        ]);
-
+        // Find the lowest available ID
+        $existingIds = Table::orderBy('id')->pluck('id')->toArray();
+        $newId = 1;
+        
+        // Find the first gap in the sequence
+        foreach ($existingIds as $index => $id) {
+            if ($id != $index + 1) {
+                $newId = $index + 1;
+                break;
+            }
+            $newId = count($existingIds) + 1;
+        }
+        
+        // Create the table with the specific ID
         Table::create([
-            'name' => $this->name,
-            'capacity' => $this->capacity,
-            'is_occupied' => false,
+            'id' => $newId,
+            'orders' => 0,
         ]);
 
         $this->toggleAddForm();
@@ -66,13 +71,13 @@ class TablesList extends Component
         $this->dispatch('refresh-tables');
     }
 
-    public function toggleTableStatus($tableId)
+    public function deleteTable($tableId)
     {
         $table = Table::findOrFail($tableId);
-        $table->is_occupied = !$table->is_occupied;
-        $table->save();
         
-        $this->status = 'Table status updated!';
+        // Delete the table regardless of orders
+        $table->delete();
+        $this->status = 'Table deleted successfully!';
         $this->dispatch('refresh-tables');
     }
 

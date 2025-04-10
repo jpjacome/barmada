@@ -16,9 +16,8 @@ class Table extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'capacity',
-        'is_occupied',
+        'id',
+        'orders',
     ];
 
     /**

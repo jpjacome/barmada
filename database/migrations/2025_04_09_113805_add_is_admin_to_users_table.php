@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Tables in the bar
-        Schema::create('tables', function (Blueprint $table) {
-            $table->id();
-            $table->integer('orders')->default(0);
-            $table->string('status')->default('available');
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('is_admin')->default(false);
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tables');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('is_admin');
+        });
     }
-}; 
+};
