@@ -164,27 +164,24 @@
                                         <div class="orders-product-list">
                                             @php
                                                 $productList = [];
-                                                for ($i = 1; $i <= 9; $i++) {
-                                                    $qty = $order->{"product{$i}_qty"} ?? 0;
-                                                    if ($qty > 0 && isset($products[$i])) {
-                                                        $icon = $products[$i]['icon_value'] ?? 'bi-box';
-                                                        $iconType = $products[$i]['icon_type'] ?? 'bootstrap';
-                                                        
-                                                        if ($iconType === 'bootstrap') {
-                                                            $iconHtml = "<i class='{$icon}'></i>";
-                                                        } else {
-                                                            $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
-                                                        }
-                                                        
-                                                        $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$products[$i]['name']}</span>: {$qty}</span>";
+                                                foreach ($order->items as $item) {
+                                                    $icon = $products[$item->product_id]['icon_value'] ?? 'bi-box';
+                                                    $iconType = $products[$item->product_id]['icon_type'] ?? 'bootstrap';
+                                                    
+                                                    if ($iconType === 'bootstrap') {
+                                                        $iconHtml = "<i class='{$icon}'></i>";
+                                                    } else {
+                                                        $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
                                                     }
+                                                    
+                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$products[$item->product_id]['name']}</span>: {$item->quantity}</span>";
                                                 }
                                             @endphp
                                             
                                             @if(count($productList) > 0)
                                                 {!! implode(', ', $productList) !!}
                                             @else
-                                                <span class="order-no-products">No products</span>
+                                                <span class="text-gray-500">No items</span>
                                             @endif
                                         </div>
                                     </td>

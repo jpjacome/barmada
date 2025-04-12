@@ -5,15 +5,6 @@
     <div class="products-main py-4">
         <div class="products-header">
             <h3 class="products-title">Products</h3>
-            <div class="products-actions">
-                <div class="products-status text-sm text-gray-500 mr-4">{{ $status }}</div>
-                <button 
-                    wire:click="addProduct" 
-                    class="products-add-button"
-                >
-                    <i class="bi bi-plus-circle mr-1"></i> Add Product
-                </button>
-            </div>
         </div>
         
         <div 
@@ -49,27 +40,36 @@
                                         class="product-edit-button"
                                         title="Edit Product"
                                     >
-                                        <i class="bi bi-pencil-square text-lg"></i>
+                                        <i class="bi bi-pencil"></i>
                                     </button>
                                     <button 
-                                        wire:click="confirmDelete({{ $product->id }})" 
+                                        wire:click="deleteProduct({{ $product->id }})" 
                                         class="product-delete-button"
                                         title="Delete Product"
                                     >
-                                        <i class="bi bi-trash text-lg"></i>
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="3" class="product-empty-message">
-                                    No products available. Click "Add Product" to create one.
+                                    No products found. Add your first product to get started.
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+        </div>
+        
+        <div class="products-footer">
+            <button 
+                wire:click="addProduct" 
+                class="products-add-button"
+            >
+                <i class="bi bi-plus-circle mr-1"></i> Add Product
+            </button>
         </div>
     </div>
     

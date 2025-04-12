@@ -70,12 +70,18 @@ class AllOrdersList extends Component
     protected function getOrderProducts($order)
     {
         $products = [];
-        for ($i = 1; $i <= 9; $i++) {
-            $qty = $order["product{$i}_qty"] ?? 0;
-            if ($qty > 0) {
-                $products[$i] = $qty;
+        
+        // Handle both array and model instances
+        if (is_array($order)) {
+            $order = Order::with('items')->find($order['id']);
+        }
+        
+        if ($order && $order->items) {
+            foreach ($order->items as $item) {
+                $products[$item->product_id] = $item->quantity;
             }
         }
+        
         return $products;
     }
 
@@ -167,7 +173,7 @@ class AllOrdersList extends Component
 
     public function openStatusModal($orderId)
     {
-        $order = Order::findOrFail($orderId);
+        $order = Order::with('items.product')->findOrFail($orderId);
         $this->editingOrder = [
             'id' => $order->id,
             'status' => $order->status,
@@ -175,9 +181,18 @@ class AllOrdersList extends Component
             'products' => []
         ];
 
-        // Load product quantities
-        for ($i = 1; $i <= 9; $i++) {
-            $this->editingOrder['products'][$i] = $order->{"product{$i}_qty"} ?? 0;
+        // Group and sum quantities by product
+        $groupedItems = [];
+        foreach ($order->items as $item) {
+            if (!isset($groupedItems[$item->product_id])) {
+                $groupedItems[$item->product_id] = 0;
+            }
+            $groupedItems[$item->product_id] += $item->quantity;
+        }
+
+        // Set the summed quantities in the editingOrder
+        foreach ($groupedItems as $productId => $quantity) {
+            $this->editingOrder['products'][$productId] = $quantity;
         }
 
         $this->showStatusModal = true;
@@ -236,34 +251,37 @@ class AllOrdersList extends Component
 
     public function saveChanges()
     {
-        $order = Order::find($this->editingOrder['id']);
+        $order = Order::with('items')->find($this->editingOrder['id']);
         
         if ($order) {
             // Update table
             $order->table_id = $this->editingOrder['table_id'];
             
-            // Update product quantities
+            // Delete all existing items
+            $order->items()->delete();
+            
+            // Create new items with correct quantities
+            $itemIndex = 0;
             foreach ($this->editingOrder['products'] as $productId => $quantity) {
-                $order->{"product{$productId}_qty"} = $quantity;
+                if ($quantity > 0) {
+                    $product = Product::find($productId);
+                    $order->items()->create([
+                        'product_id' => $productId,
+                        'quantity' => $quantity,
+                        'price' => $product->price,
+                        'is_paid' => false,
+                        'item_index' => $itemIndex++
+                    ]);
+                }
             }
             
             $order->save();
             
-            // Force refresh both lists
-            $this->loadOrders();
-            $this->loadPendingOrders();
-            
             // Close the modal
-            $this->showStatusModal = false;
-            $this->editingOrder = null;
+            $this->closeModal();
             
-            // Dispatch event to update UI
-            $this->dispatch('orderDetailsUpdated', [
-                $order->id => 'updated'
-            ]);
-            
-            // Refresh the entire page
-            $this->redirect(request()->header('Referer'));
+            // Refresh the page
+            $this->redirect(route('all-orders'));
         }
     }
 
@@ -287,8 +305,11 @@ class AllOrdersList extends Component
 
     public function deleteAllOrders()
     {
-        // Delete all orders
-        Order::truncate();
+        // First delete all order items
+        \App\Models\OrderItem::query()->delete();
+        
+        // Then delete all orders
+        Order::query()->delete();
         
         // Force refresh both lists
         $this->loadOrders();
@@ -298,6 +319,55 @@ class AllOrdersList extends Component
         $this->dispatch('orderDetailsUpdated', [
             'all' => 'removed'
         ]);
+    }
+
+    public function exportOrdersToXml()
+    {
+        // Create archive directory if it doesn't exist
+        $archiveDir = storage_path('app/public/archive');
+        if (!file_exists($archiveDir)) {
+            mkdir($archiveDir, 0755, true);
+        }
+        
+        // Generate filename with current date and time
+        $filename = 'orders_' . now()->format('Y-m-d_H-i-s') . '.xml';
+        $filepath = $archiveDir . '/' . $filename;
+        
+        // Fetch all orders with relationships
+        $orders = Order::with(['table', 'items.product'])->get();
+        
+        // Create XML document
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><orders></orders>');
+        
+        foreach ($orders as $order) {
+            $orderXml = $xml->addChild('order');
+            $orderXml->addAttribute('id', $order->id);
+            $orderXml->addChild('status', $order->status);
+            $orderXml->addChild('created_at', $order->created_at);
+            $orderXml->addChild('updated_at', $order->updated_at);
+            
+            // Add table information
+            $tableXml = $orderXml->addChild('table');
+            $tableXml->addAttribute('id', $order->table->id);
+            
+            // Add products
+            $productsXml = $orderXml->addChild('products');
+            foreach ($order->items as $item) {
+                $productXml = $productsXml->addChild('product');
+                $productXml->addAttribute('id', $item->product_id);
+                $productXml->addChild('name', $item->product->name);
+                $productXml->addChild('quantity', $item->quantity);
+                $productXml->addChild('price', $item->price);
+                $productXml->addChild('is_paid', $item->is_paid ? 'true' : 'false');
+            }
+        }
+        
+        // Save XML to file
+        $xml->asXML($filepath);
+        
+        // Show success message with storage location
+        $relativePath = 'storage/archive/' . $filename;
+        session()->flash('message', "Orders exported to XML file: {$filename}. Stored in the archive folder.");
     }
 
     public function closeModal()

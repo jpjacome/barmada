@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Table;
 use Livewire\WithPagination;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\OrderItem;
 
 class OrdersList extends Component
 {
@@ -96,7 +97,7 @@ class OrdersList extends Component
 
     public function editOrder($orderId)
     {
-        $order = Order::with('table')->findOrFail($orderId);
+        $order = Order::with(['table', 'items'])->findOrFail($orderId);
         
         // Initialize editingOrder with current values
         $this->editingOrder = [
@@ -105,10 +106,9 @@ class OrdersList extends Component
             'products' => []
         ];
 
-        // Load existing product quantities
-        for ($i = 1; $i <= 9; $i++) {
-            $qty = $order->{"product{$i}_qty"} ?? 0;
-            $this->editingOrder['products'][$i] = $qty;
+        // Load existing product quantities from order items
+        foreach ($order->items as $item) {
+            $this->editingOrder['products'][$item->product_id] = $item->quantity;
         }
 
         $this->showEditModal = true;
@@ -124,14 +124,29 @@ class OrdersList extends Component
         
         // Update table
         $order->table_id = $this->editingOrder['table_id'];
-        
-        // Update product quantities
-        for ($i = 1; $i <= 9; $i++) {
-            $quantity = $this->editingOrder['products'][$i] ?? 0;
-            $order->{"product{$i}_qty"} = $quantity;
-        }
-        
         $order->save();
+        
+        // Delete all existing order items
+        $order->items()->delete();
+        
+        // Create new order items
+        $itemIndex = 0;
+        foreach ($this->editingOrder['products'] as $productId => $quantity) {
+            if ($quantity > 0) {
+                $product = Product::findOrFail($productId);
+                // Create individual order items for each unit
+                for ($i = 0; $i < $quantity; $i++) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $productId,
+                        'quantity' => 1,
+                        'price' => $product->price,
+                        'is_paid' => false,
+                        'item_index' => $itemIndex++
+                    ]);
+                }
+            }
+        }
         
         // Refresh the orders list
         $this->loadOrders();

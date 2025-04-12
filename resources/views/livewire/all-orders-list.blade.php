@@ -32,20 +32,32 @@
                                 <div class="order-card-products" wire:key="products-{{ $pendingOrder['id'] }}">
                                     @php
                                         $productList = [];
-                                        for ($i = 1; $i <= 9; $i++) {
-                                            $qty = $pendingOrder["product{$i}_qty"] ?? 0;
-                                            if ($qty > 0 && isset($products[$i])) {
-                                                $icon = $products[$i]['icon_value'] ?? 'bi-box';
-                                                $iconType = $products[$i]['icon_type'] ?? 'bootstrap';
-                                                
-                                                if ($iconType === 'bootstrap') {
-                                                    $iconHtml = "<i class='{$icon}'></i>";
-                                                } else {
-                                                    $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
-                                                }
-                                                
-                                                $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$products[$i]['name']}</span>: {$qty}</span>";
+                                        $order = \App\Models\Order::with('items.product')->find($pendingOrder['id']);
+                                        $groupedItems = [];
+                                        
+                                        // Group items by product
+                                        foreach ($order->items as $item) {
+                                            if (!isset($groupedItems[$item->product_id])) {
+                                                $groupedItems[$item->product_id] = [
+                                                    'product' => $item->product,
+                                                    'quantity' => 0
+                                                ];
                                             }
+                                            $groupedItems[$item->product_id]['quantity'] += $item->quantity;
+                                        }
+                                        
+                                        // Create product list with grouped quantities
+                                        foreach ($groupedItems as $item) {
+                                            $icon = $item['product']->icon_value ?? 'bi-box';
+                                            $iconType = $item['product']->icon_type ?? 'bootstrap';
+                                            
+                                            if ($iconType === 'bootstrap') {
+                                                $iconHtml = "<i class='{$icon}'></i>";
+                                            } else {
+                                                $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
+                                            }
+                                            
+                                            $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item['product']->name}</span>: {$item['quantity']}</span>";
                                         }
                                     @endphp
                                     
@@ -149,20 +161,18 @@
                                         <div class="orders-product-list">
                                             @php
                                                 $productList = [];
-                                                for ($i = 1; $i <= 9; $i++) {
-                                                    $qty = $order->{"product{$i}_qty"} ?? 0;
-                                                    if ($qty > 0 && isset($products[$i])) {
-                                                        $icon = $products[$i]['icon_value'] ?? 'bi-box';
-                                                        $iconType = $products[$i]['icon_type'] ?? 'bootstrap';
-                                                        
-                                                        if ($iconType === 'bootstrap') {
-                                                            $iconHtml = "<i class='{$icon}'></i>";
-                                                        } else {
-                                                            $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
-                                                        }
-                                                        
-                                                        $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$products[$i]['name']}</span>: {$qty}</span>";
+                                                $order = \App\Models\Order::with('items.product')->find($order->id);
+                                                foreach ($order->items as $item) {
+                                                    $icon = $item->product->icon_value ?? 'bi-box';
+                                                    $iconType = $item->product->icon_type ?? 'bootstrap';
+                                                    
+                                                    if ($iconType === 'bootstrap') {
+                                                        $iconHtml = "<i class='{$icon}'></i>";
+                                                    } else {
+                                                        $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
                                                     }
+                                                    
+                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item->product->name}</span>: {$item->quantity}</span>";
                                                 }
                                             @endphp
                                             
@@ -210,9 +220,33 @@
     </div>
     
     <div class="orders-footer">
-        <a href="#" wire:click.prevent="deleteAllOrders" class="orders-erase-all" onclick="return confirm('Are you sure you want to delete ALL orders? This action cannot be undone.')">
-            Erase all
-        </a>
+        <div class="orders-footer-actions">
+            <a href="#" wire:click.prevent="deleteAllOrders" class="orders-erase-all" onclick="return confirm('Are you sure you want to delete ALL orders? This action cannot be undone.')">
+                Erase all
+            </a>
+            <button 
+                wire:click="exportOrdersAsXml" 
+                class="orders-export-button-footer" 
+                title="Export Orders as XML"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="orders-action-icon mr-1" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                Save XML
+            </button>
+        </div>
+        
+        <!-- Bottom notification -->
+        @if(session()->has('message'))
+            <div class="orders-notification">
+                <div class="orders-notification-content">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="orders-notification-icon" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{{ session('message') }}</span>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Status Modal -->

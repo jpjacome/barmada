@@ -6,18 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
-        Schema::create('orders', function (Blueprint $table) {
-            $table->id();
-            // Foreign key to tables
-            $table->foreignId('table_id')->constrained('tables');
-            // Order status
-            $table->string('status')->default('pending');
-            // Product columns to store quantities with new names
+        Schema::table('orders', function (Blueprint $table) {
+            $table->dropColumn([
+                'product1_qty',
+                'product2_qty',
+                'product3_qty',
+                'product4_qty',
+                'product5_qty',
+                'product6_qty',
+                'product7_qty',
+                'product8_qty',
+                'product9_qty'
+            ]);
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('orders', function (Blueprint $table) {
             $table->integer('product1_qty')->default(0);
             $table->integer('product2_qty')->default(0);
             $table->integer('product3_qty')->default(0);
@@ -27,15 +35,6 @@ return new class extends Migration
             $table->integer('product7_qty')->default(0);
             $table->integer('product8_qty')->default(0);
             $table->integer('product9_qty')->default(0);
-            $table->timestamps();
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('orders');
     }
 }; 

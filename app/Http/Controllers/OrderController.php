@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -53,7 +54,18 @@ class OrderController extends Controller
         $products = Product::orderBy('name')->get();
         $tables = Table::all();
         
-        return view('orders.create', compact('products', 'tables'));
+        // Get the table ID from the query parameter
+        $selectedTableId = request()->query('table');
+        
+        // Validate the table ID if provided
+        if ($selectedTableId) {
+            $table = Table::find($selectedTableId);
+            if (!$table) {
+                return redirect()->route('orders.create')->with('error', 'Invalid table selected.');
+            }
+        }
+        
+        return view('orders.create', compact('products', 'tables', 'selectedTableId'));
     }
 
     /**
@@ -87,16 +99,40 @@ class OrderController extends Controller
         $order = Order::create([
             'table_id' => $table->id,
             'status' => 'pending',
+            'total_amount' => 0,
+            'amount_paid' => 0,
+            'amount_left' => 0,
         ]);
         
-        // Update product quantities for the order
+        // Calculate total amount and create order items
+        $totalAmount = 0;
+        $itemIndex = 0;
+        
         foreach ($validated['products'] as $productId => $quantity) {
             if ($quantity > 0) {
-                $order->update([
-                    "product{$productId}_qty" => $quantity
-                ]);
+                $product = Product::findOrFail($productId);
+                $price = $product->price;
+                $totalAmount += $quantity * $price;
+                
+                // Create individual order items for each unit
+                for ($i = 0; $i < $quantity; $i++) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $productId,
+                        'quantity' => 1,
+                        'price' => $price,
+                        'is_paid' => false,
+                        'item_index' => $itemIndex++
+                    ]);
+                }
             }
         }
+        
+        // Update order total
+        $order->update([
+            'total_amount' => $totalAmount,
+            'amount_left' => $totalAmount
+        ]);
         
         // Update table order count
         $table->update([

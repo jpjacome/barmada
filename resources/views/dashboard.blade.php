@@ -5,6 +5,8 @@
         </h2>
     </x-slot>
 
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if (session('error'))
@@ -13,82 +15,131 @@
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h2 class="text-2xl font-bold mb-6">Golems Bar Management</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Tables Management Card -->
-                        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:border-blue-500 transition-colors duration-200">
-                            <div class="p-6">
-                                <div class="flex items-center">
-                                    <div class="p-3 rounded-full bg-blue-100 text-blue-500">
-                                        <i class="bi bi-table" style="font-size: 2rem;"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <h3 class="text-lg font-semibold">Tables</h3>
-                                        <p class="text-gray-500">Manage your bar tables</p>
-                                    </div>
+            <div class="dashboard-container">
+                <h1 class="dashboard-title">Golems Bar Management</h1>
+                <p class="dashboard-subtitle">Control your bar operations from one central dashboard</p>
+                
+                <!-- Recent Activity Section -->
+                <div class="recent-activity">
+                    <h3 class="recent-activity-title">
+                        <i class="bi bi-activity recent-activity-icon"></i>
+                        Recent Activity
+                    </h3>
+                    <ul class="activity-list">
+                        @php
+                            $orderActivities = App\Models\Order::latest()->take(3)->get();
+                            $paymentActivities = App\Models\ActivityLog::latest()->take(3)->get();
+                            $allActivities = collect($orderActivities->map(function($order) {
+                                return [
+                                    'type' => 'order',
+                                    'description' => "New order #{$order->id} for Table {$order->table->id}",
+                                    'created_at' => $order->created_at
+                                ];
+                            })->concat($paymentActivities->map(function($activity) {
+                                return [
+                                    'type' => $activity->type,
+                                    'description' => $activity->description,
+                                    'created_at' => $activity->created_at
+                                ];
+                            })))->sortByDesc('created_at')->take(5);
+                        @endphp
+
+                        @foreach($allActivities as $activity)
+                            <li class="activity-item">
+                                <div class="activity-dot activity-dot-{{ $activity['type'] }}"></div>
+                                <div class="activity-content">
+                                    <div class="activity-title">{{ $activity['description'] }}</div>
+                                    <div class="activity-time">{{ $activity['created_at']->diffForHumans() }}</div>
                                 </div>
-                                <div class="mt-6">
-                                    <a href="{{ route('tables.index') }}" class="text-blue-500 hover:text-blue-700 font-semibold">
-                                        Manage Tables →
-                                    </a>
-                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+                
+                <!-- Combined Management Cards -->
+                <div class="dashboard-cards">
+                    <div class="action-card">
+                        <div class="action-card-header">
+                            <div class="action-card-icon-container tables-icon-bg">
+                                <i class="bi bi-table stat-card-icon"></i>
+                            </div>
+                            <div class="action-card-title-container">
+                                <h3 class="action-card-title">Table Management</h3>
+                                <p class="action-card-subtitle">Organize your venue layout</p>
                             </div>
                         </div>
-                        
-                        <!-- Products Card -->
-                        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:border-blue-500 transition-colors duration-200">
-                            <div class="p-6">
-                                <div class="flex items-center">
-                                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-500">
-                                        <i class="bi bi-shop" style="font-size: 2rem;"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <h3 class="text-lg font-semibold">Products</h3>
-                                        <p class="text-gray-500">Manage your product catalog</p>
-                                    </div>
-                                </div>
-                                <div class="mt-6">
-                                    <a href="{{ route('products.index') }}" class="text-blue-500 hover:text-blue-700 font-semibold">
-                                        Manage Products →
-                                    </a>
-                                </div>
-                            </div>
+                        <div class="action-card-body">
+                            <div class="stat-card-value">{{ App\Models\Table::count() }}</div>
+                            <p class="stat-card-description">Active tables in your venue</p>
+                            <p class="action-card-description">
+                                Set up and manage tables in your venue. View table status, add new tables, and monitor orders per table.
+                            </p>
                         </div>
-                        
-                        <!-- Orders Card -->
-                        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:border-blue-500 transition-colors duration-200">
-                            <div class="p-6">
-                                <div class="flex items-center">
-                                    <div class="p-3 rounded-full bg-green-100 text-green-500">
-                                        <i class="bi bi-cart" style="font-size: 2rem;"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <h3 class="text-lg font-semibold">Orders</h3>
-                                        <p class="text-gray-500">Manage customer orders</p>
-                                    </div>
-                                </div>
-                                <div class="mt-6">
-                                    <a href="{{ route('orders.create') }}" class="text-blue-500 hover:text-blue-700 font-semibold">
-                                        Place Order →
-                                    </a>
-                                    <span class="mx-2 text-gray-400">|</span>
-                                    <a href="{{ route('orders.index') }}" class="text-blue-500 hover:text-blue-700 font-semibold">
-                                        View All Orders →
-                                    </a>
-                                </div>
-                            </div>
+                        <div class="action-card-footer">
+                            <a href="{{ route('tables.index') }}" class="btn btn-primary">
+                                <i class="bi bi-table-fill btn-icon"></i> Manage Tables
+                            </a>
                         </div>
                     </div>
                     
-                    <div class="mt-8 p-4 bg-blue-50 rounded-lg">
-                        <h3 class="font-semibold text-blue-800">Development Notes</h3>
-                        <p class="text-blue-600">
-                            This application is currently in development. Table management is available, with menu and order functionality coming soon.
-                        </p>
+                    <div class="action-card">
+                        <div class="action-card-header">
+                            <div class="action-card-icon-container products-icon-bg">
+                                <i class="bi bi-box stat-card-icon"></i>
+                            </div>
+                            <div class="action-card-title-container">
+                                <h3 class="action-card-title">Product Catalog</h3>
+                                <p class="action-card-subtitle">Manage your menu items</p>
+                            </div>
+                        </div>
+                        <div class="action-card-body">
+                            <div class="stat-card-value">{{ App\Models\Product::count() }}</div>
+                            <p class="stat-card-description">Products in your catalog</p>
+                            <p class="action-card-description">
+                                Manage your product catalog with custom icons and organized categories. Update prices and availability.
+                            </p>
+                        </div>
+                        <div class="action-card-footer">
+                            <a href="{{ route('products.index') }}" class="btn btn-primary">
+                                <i class="bi bi-box-fill btn-icon"></i> Manage Products
+                            </a>
+                        </div>
                     </div>
+                    
+                    <div class="action-card">
+                        <div class="action-card-header">
+                            <div class="action-card-icon-container orders-icon-bg">
+                                <i class="bi bi-cart stat-card-icon"></i>
+                            </div>
+                            <div class="action-card-title-container">
+                                <h3 class="action-card-title">Order Management</h3>
+                                <p class="action-card-subtitle">Track and process orders</p>
+                            </div>
+                        </div>
+                        <div class="action-card-body">
+                            <div class="stat-card-value">{{ App\Models\Order::count() }}</div>
+                            <p class="stat-card-description">Total orders processed</p>
+                            <p class="action-card-description">
+                                Create new orders, monitor pending orders in real-time, and keep track of order history. Export orders to XML for backup.
+                            </p>
+                        </div>
+                        <div class="action-card-footer">
+                            <a href="{{ route('orders.create') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle btn-icon"></i> New Order
+                            </a>
+                            <a href="{{ route('orders.index') }}" class="btn btn-outline btn-orders">
+                                <i class="bi bi-list-ul btn-icon"></i> View Orders
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- App Info -->
+                <div class="dashboard-footer">
+                    <h4 class="dashboard-footer-subtitle">Golems Bar Management System</h4>
+                    <p class="dashboard-footer-text">
+                        Version 1.0 | All features are now available including real-time order tracking, product management, and table organization.
+                    </p>
                 </div>
             </div>
         </div>

@@ -6,24 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
-        // Tables in the bar
         Schema::create('tables', function (Blueprint $table) {
             $table->id();
             $table->integer('orders')->default(0);
-            $table->string('status')->default('available');
+            $table->string('reference')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('tables');
     }

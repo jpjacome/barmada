@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>Golems Bar</title>
 
         <!-- Bootstrap Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -24,6 +24,13 @@
         @livewireStyles
 
         <link href="{{ asset('css/navigation.css') }}" rel="stylesheet">
+        
+        <!-- Alpine.js (Added for modals and interactivity) -->
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -44,11 +51,12 @@
             </main>
         </div>
         
-        <!-- Stacked Scripts -->
-        @stack('scripts')
-        
         <!-- Livewire Scripts -->
         @livewireScripts
+        
+        <!-- Stacked Scripts (After Livewire) -->
+        @stack('scripts')
+        
         <script src="{{ asset('js/app.js') }}"></script>
         <script src="{{ asset('js/order-timer.js') }}"></script>
     </body>
