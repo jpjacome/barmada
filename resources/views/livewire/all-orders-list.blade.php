@@ -1,22 +1,15 @@
 <div class="orders-container">
     <link href="{{ asset('css/all-orders.css') }}" rel="stylesheet">
     
-    <div class="orders-main py-4">
-        <div class="orders-header">
-            <h3 class="orders-title">All Orders</h3>
-            <div class="orders-actions">
-                <div class="orders-status" wire:poll.5s="refreshPendingOrders">Last updated: {{ $lastUpdated }}</div>
-            </div>
-        </div>
+    <div class="orders-main">
         
-        <div class="orders-data mt-4">
+        <div class="orders-data">
             <!-- Pending Orders Panel -->
             @if(count($pendingOrders) > 0)
             <div class="orders-panel">
-                <div class="orders-panel-content">
-                    <h3 class="orders-panel-title">Pending Orders</h3>
-                    
-                    <div class="orders-scroll-container" style="overflow-x: auto; white-space: nowrap;">
+                <h3 class="orders-panel-title">Pending Orders</h3>
+                <div class="orders-panel-content" wire:poll.5s="refreshPendingOrders">
+                    <div class="orders-scroll-container">
                         @foreach($pendingOrders as $pendingOrder)
                         <div class="order-card" 
                              data-created-at="{{ $pendingOrder['created_at'] }}"
@@ -29,6 +22,11 @@
                             </div>
                             
                             <div class="order-card-body">
+                                <div class="order-card-time">
+                                    <span class="order-time-label">Created:</span>
+                                    <span class="order-created-time">{{ \Carbon\Carbon::parse($pendingOrder['created_at'])->format('H:i:s') }}</span>
+                                    <span class="chronometer">00:00</span>
+                                </div>
                                 <div class="order-card-products" wire:key="products-{{ $pendingOrder['id'] }}">
                                     @php
                                         $productList = [];
@@ -54,7 +52,7 @@
                                             if ($iconType === 'bootstrap') {
                                                 $iconHtml = "<i class='{$icon}'></i>";
                                             } else {
-                                                $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
+                                                $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='order-product-icon'>";
                                             }
                                             
                                             $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item['product']->name}</span>: {$item['quantity']}</span>";
@@ -66,12 +64,6 @@
                                     @else
                                         <span class="order-no-products">No products</span>
                                     @endif
-                                </div>
-                                
-                                <div class="order-card-time">
-                                    <div class="order-time-label">Created:</div>
-                                    <div class="order-created-time">{{ \Carbon\Carbon::parse($pendingOrder['created_at'])->format('H:i:s') }}</div>
-                                    <div class="chronometer">00:00</div>
                                 </div>
                             </div>
                             
@@ -151,7 +143,7 @@
                                     <td class="orders-table-cell">
                                         <button 
                                             wire:click="toggleStatus({{ $order->id }})" 
-                                            class="order-status-badge order-status-{{ $order->status }} cursor-pointer hover:opacity-80"
+                                            class="order-status-badge order-status-{{ $order->status }}"
                                         >
                                             {{ ucfirst($order->status) }}
                                         </button>
@@ -169,7 +161,7 @@
                                                     if ($iconType === 'bootstrap') {
                                                         $iconHtml = "<i class='{$icon}'></i>";
                                                     } else {
-                                                        $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
+                                                        $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='order-product-icon'>";
                                                     }
                                                     
                                                     $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item->product->name}</span>: {$item->quantity}</span>";
@@ -190,9 +182,7 @@
                                                 class="orders-action-button orders-edit-button" 
                                                 title="Edit Status"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="orders-action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
+                                                <i class="bi bi-pencil"></i>
                                             </button>
                                             <button 
                                                 wire:click="deleteOrder({{ $order->id }})" 
@@ -200,9 +190,7 @@
                                                 title="Delete Order"
                                                 onclick="return confirm('Are you sure you want to delete this order?')"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="orders-action-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
+                                                <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -229,9 +217,7 @@
                 class="orders-export-button-footer" 
                 title="Export Orders as XML"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" class="orders-action-icon mr-1" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                </svg>
+                <i class="bi bi-download"></i>
                 Save XML
             </button>
         </div>
@@ -240,9 +226,7 @@
         @if(session()->has('message'))
             <div class="orders-notification">
                 <div class="orders-notification-content">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="orders-notification-icon" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
+                    <i class="bi bi-check-circle"></i>
                     <span>{{ session('message') }}</span>
                 </div>
             </div>
@@ -256,9 +240,7 @@
                 <div class="orders-modal-header">
                     <h3 class="orders-modal-title">Change Order Status</h3>
                     <button wire:click="closeModal" class="orders-modal-close">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
                 
@@ -268,7 +250,7 @@
                         <div class="orders-status-display">
                             <button 
                                 wire:click="toggleStatusInModal" 
-                                class="order-status-badge order-status-{{ $editingOrder['status'] ?? 'pending' }} cursor-pointer hover:opacity-80"
+                                class="order-status-badge order-status-{{ $editingOrder['status'] ?? 'pending' }}"
                             >
                                 {{ ucfirst($editingOrder['status'] ?? 'pending') }}
                             </button>

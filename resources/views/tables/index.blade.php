@@ -19,11 +19,6 @@
                 </div>
             </div>
             
-            <div class="mt-6 flex space-x-4">
-                <a href="{{ route('dashboard') }}" class="text-blue-500 hover:underline">
-                    Dashboard
-                </a>
-            </div>
         </div>
     </div>
 </x-app-layout> 

@@ -98,6 +98,11 @@ class AllOrdersList extends Component
             if (!$oldOrder) {
                 // New order
                 $changes[$orderId] = 'new';
+                $this->orderDetails[$orderId] = [
+                    'status' => $order['status'],
+                    'table_id' => $order['table_id'],
+                    'products' => $this->getOrderProducts($order)
+                ];
             } else {
                 // Check for changes
                 $oldDetails = $this->orderDetails[$orderId] ?? null;
@@ -154,20 +159,11 @@ class AllOrdersList extends Component
             $order->status = $order->status === 'pending' ? 'delivered' : 'pending';
             $order->save();
             
-            // Force refresh of pending orders
-            $this->pendingOrders = Order::where('status', 'pending')
-                ->with('table')
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->toArray();
+            // Refresh pending orders
+            $this->refreshPendingOrders();
             
             // Update the last updated timestamp
             $this->lastUpdated = now()->format('H:i:s');
-            
-            // Dispatch event with changes
-            $this->dispatch('orderDetailsUpdated', changes: [
-                $orderId => $order->status === 'pending' ? 'updated' : 'removed'
-            ]);
         }
     }
 

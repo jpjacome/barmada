@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     // Settings routes
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/logo', [SettingsController::class, 'updateLogo'])->name('settings.update-logo');
+    Route::post('/settings/toggle-theme', [SettingsController::class, 'toggleTheme'])->name('settings.toggle-theme');
 });
 
 // API proxy for numbers - kept for numbers creation functionality

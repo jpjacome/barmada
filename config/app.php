@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Barmada'),
+    'name' => env('APP_NAME', 'Barmada - Bar Management Dashboard'),
 
     /*
     |--------------------------------------------------------------------------

@@ -1,23 +1,21 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
-
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="dashboard-wrapper">
+        <div class="dashboard-main">
             @if (session('error'))
-                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                    <span class="block sm:inline">{{ session('error') }}</span>
+                <div class="alert alert-danger" role="alert">
+                    <span>{{ session('error') }}</span>
                 </div>
             @endif
 
             <div class="dashboard-container">
-                <h1 class="dashboard-title">Golems Bar Management</h1>
-                <p class="dashboard-subtitle">Control your bar operations from one central dashboard</p>
+                <div class="dashboard-header">
+                    <a href="{{ route('dashboard') }}">
+                        <x-application-logo class="dashboard-logo" alt="Barmada Logo" />
+                    </a>
+                </div>
+                <h1 class="dashboard-title">Bar Management Dashboard</h1>
                 
                 <!-- Recent Activity Section -->
                 <div class="recent-activity">
@@ -136,7 +134,7 @@
                 
                 <!-- App Info -->
                 <div class="dashboard-footer">
-                    <h4 class="dashboard-footer-subtitle">Golems Bar Management System</h4>
+                    <h4 class="dashboard-footer-subtitle">Barmada Bar Management Dashboard</h4>
                     <p class="dashboard-footer-text">
                         Version 1.0 | All features are now available including real-time order tracking, product management, and table organization.
                     </p>

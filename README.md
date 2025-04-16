@@ -1,6 +1,6 @@
-# Barmada - Bar Management System
+# Barmada - Bar Management Dashboard
 
-Barmada is a comprehensive bar management system built with Laravel, designed to streamline bar operations, order management, and table service.
+Barmada is a comprehensive bar management dashboard built with Laravel, designed to streamline bar operations, order management, and table service.
 
 ## Features
 

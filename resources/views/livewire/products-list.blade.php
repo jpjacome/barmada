@@ -1,23 +1,20 @@
 <div class="products-container">
-    <!-- Link to the external CSS file -->
+    <!-- Link to component-specific CSS only, since general CSS is loaded in the layout -->
     <link href="{{ asset('css/products-list.css') }}" rel="stylesheet">
     
-    <div class="products-main py-4">
-        <div class="products-header">
-            <h3 class="products-title">Products</h3>
-        </div>
+    <div class="products-main">
         
         <div 
             wire:poll.{{ $refreshInterval }}s="refreshProducts"
-            class="products-data mt-4"
+            class="products-data"
         >
             <div class="products-table-container">
                 <table class="products-table">
                     <thead class="products-table-header">
                         <tr>
                             <th scope="col" class="products-table-header-cell">Name</th>
-                            <th scope="col" class="products-table-header-cell text-right">Price</th>
-                            <th scope="col" class="products-table-header-cell text-right">Actions</th>
+                            <th scope="col" class="products-table-header-cell products-table-cell-right">Price</th>
+                            <th scope="col" class="products-table-header-cell products-table-cell-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="products-table-body">
@@ -68,7 +65,7 @@
                 wire:click="addProduct" 
                 class="products-add-button"
             >
-                <i class="bi bi-plus-circle mr-1"></i> Add Product
+                <i class="bi bi-plus-circle product-button-icon"></i> Add Product
             </button>
         </div>
     </div>
@@ -197,7 +194,7 @@
                             class="product-file-upload"
                         >
                             <label class="product-file-upload-label">
-                                <span class="sr-only">Choose file</span>
+                                <span class="product-visually-hidden">Choose file</span>
                                 <input 
                                     type="file" 
                                     id="svgFile" 
