@@ -15,46 +15,59 @@
         <!-- Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-        <!-- General Styles -->
+        <!-- Styles -->
         <link href="{{ asset('css/general-' . (session('theme', 'light')) . '.css') }}" rel="stylesheet">
+        <link rel="stylesheet" href="{{ asset('css/app-layout.css') }}">
         
         <!-- Component-specific Styles -->
         <link href="{{ asset('css/navigation.css') }}" rel="stylesheet">
         <link href="{{ asset('css/settings.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
         
-        <!-- Livewire Styles -->
         @livewireStyles
 
         <!-- Alpine.js -->
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        
+        <!-- Scripts -->
+        <script src="{{ asset('js/app.js') }}" defer></script>
     </head>
-    <body class="font-sans antialiased theme-{{ session('theme', 'light') }}">
-        <div class="min-h-screen bg-gray-100">
+    <body class="theme-{{ session('theme', 'light') }}">
+        <div class="app-container">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <header class="page-header">
+                    <div class="page-header-content">
                         {{ $header }}
                     </div>
                 </header>
             @endisset
 
             <!-- Page Content -->
-            <main>
+            <main class="main-content">
                 {{ $slot }}
             </main>
+            
+            <!-- Footer -->
+            <footer class="app-footer">
+                <div class="app-footer-content">
+                    <a href="https://github.com/jpjacome/barmada" target="_blank" rel="noopener noreferrer">
+                        <i class="bi bi-github app-footer-icon"></i>GitHub
+                    </a>
+                    <span class="app-footer-separator">|</span>
+                    <span>created by <a href="http://drpixel.it.nf" target="_blank" rel="noopener noreferrer">Dr. Pixel</a></span>
+                </div>
+            </footer>
         </div>
         
-        <!-- Livewire Scripts -->
         @livewireScripts
         
         <!-- Stacked Scripts -->
         @stack('scripts')
         
         <!-- Application Scripts -->
-        <script src="{{ asset('js/app.js') }}"></script>
         <script src="{{ asset('js/order-timer.js') }}"></script>
     </body>
 </html>

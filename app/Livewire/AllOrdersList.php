@@ -366,6 +366,14 @@ class AllOrdersList extends Component
         session()->flash('message', "Orders exported to XML file: {$filename}. Stored in the archive folder.");
     }
 
+    /**
+     * Alias for exportOrdersToXml to match blade template usage
+     */
+    public function exportOrdersAsXml()
+    {
+        return $this->exportOrdersToXml();
+    }
+
     public function closeModal()
     {
         $this->showStatusModal = false;

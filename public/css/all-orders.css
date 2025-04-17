@@ -1,9 +1,3 @@
-/* Orders Styles - relies on general-dark.css for variables */
-:root {
-    /* Remove these variables as they're in general-dark.css */
-    /* Keeping for backward compatibility only */
-}
-
 /* Base Styles */
 .orders-container {
     max-width: var(--max-width);
@@ -18,10 +12,7 @@
 .orders-main {
     background-color: var(--color-secondary);
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
-    padding: var(--spacing-8);
     color: var(--color-accents);
-    border: var(--border-width) solid var(--color-primary);
     position: relative;
     overflow: hidden;
 }
@@ -106,6 +97,7 @@
     border-bottom: var(--border-width) solid rgba(115, 171, 132, 0.2);
     padding-bottom: var(--spacing-2);
     letter-spacing: -0.01em;
+    margin-left: 1rem;
 }
 
 /* Horizontal scrolling container */
@@ -194,6 +186,7 @@
     position: relative;
     justify-content: space-between;
     padding-bottom: var(--spacing-2);
+    font-size: 1.5em;
 }
 
 .order-card-title {
@@ -204,8 +197,13 @@
 }
 
 .order-card-table {
-    color: var(--color-primary);
-    font-weight: var(--font-weight-medium);
+    color: var(--color-secondary);
+    background: var(--color-primary);
+    padding: .5rem 1rem;
+    line-height: 1em;
+    height: fit-content;
+    border-radius: 5px;
+    font-weight: bold;
 }
 
 .order-card-time {
@@ -225,6 +223,7 @@
     margin: 0 var(--spacing-1);
     color: var(--color-accents);
     transition: var(--transition);
+    font-size: var(--text-lg);
 }
 
 .order-card-body {
@@ -233,8 +232,11 @@
     flex-direction: column;
     gap: var(--spacing-3);
     margin-bottom: var(--spacing-3);
-    background-color: var(--color-danger);
     border-radius: var(--border-radius-md);
+}
+
+.order-card-warning .order-card-body{    
+    background-color: var(--color-danger);
 }
 
 .order-header-actions {
@@ -258,7 +260,7 @@
     padding: var(--spacing-3);
     transition: var(--transition-bounce);
     background-color: rgba(115, 171, 132, 0.1);
-    color: var(--color-success);
+    color: var(--color-accents);
     border: var(--border-width) solid var(--color-success);
     position: relative;
     overflow: hidden;
@@ -348,7 +350,7 @@
 }
 
 .chronometer-warning {
-    color: var(--color-danger);
+    color: var(--color-secondary);
     animation: pulse 1.5s infinite;
 }
 
@@ -463,7 +465,7 @@
 
 .order-product-item i {
     margin: 0 var(--spacing-1);
-    color: var(--color-success);
+    color: var(--color-accents);
 }
 
 .order-product-item img {
@@ -471,14 +473,12 @@
     height: 100%;
     object-fit: contain;
     margin: 0 var(--spacing-1);
-    filter: brightness(0) saturate(100%) invert(84%) sepia(30%) saturate(385%) hue-rotate(94deg) brightness(86%) contrast(88%);
 }
 
 .order-product-icon {
     width: 16px;
     height: 16px;
     margin-right: var(--spacing-1);
-    filter: brightness(0) saturate(100%) invert(84%) sepia(30%) saturate(385%) hue-rotate(94deg) brightness(86%) contrast(88%);
 }
 
 /* Orders Table */
@@ -490,7 +490,7 @@
     margin-top: var(--spacing-8);
     border: var(--border-width) solid var(--color-primary);
     position: relative;
-    overflow: hidden;
+    overflow-x: auto;
 }
 
 .orders-table-container:before {
@@ -513,9 +513,9 @@
 .orders-product-list {
     display: flex;
     gap: var(--spacing-2);
-    max-width: 300px;
     flex-wrap: wrap;
     font-size: var(--text-xs);
+    width: 500px;
 }
 
 .orders-table-head {
@@ -848,6 +848,7 @@
 .orders-product-name {
     font-weight: var(--font-weight-medium);
     color: var(--color-accents);
+    font-size: var(--text-lg);
 }
 
 .orders-product-controls {
@@ -979,6 +980,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.orders-footer-actions{
+    display: flex;
+    gap: 1rem;
 }
 
 .orders-erase-all {

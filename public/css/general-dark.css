@@ -1,7 +1,7 @@
 :root {
     /* Colors */
     --color-primary: #73AB84;    /* Cambridge Blue */
-    --color-secondary: #000000;  /* Black */
+    --color-secondary: #1b1223;  /* Black */
     --color-accents: #FFFFFF;    /* White */
 
     
@@ -330,3 +330,13 @@ tr:last-child td:last-child {
 .slide-up {
     animation: slideUp 0.5s ease-out;
 } 
+
+/* Dashboard */
+
+.dashboard-cards .action-card-footer a{
+    color: var(--color-secondary);
+}
+
+.dashboard-cards .btn{
+    border: var(--border-width) solid var(--color-secondary);
+}

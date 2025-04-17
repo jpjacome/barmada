@@ -8,18 +8,17 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn([
-                'product1_qty',
-                'product2_qty',
-                'product3_qty',
-                'product4_qty',
-                'product5_qty',
-                'product6_qty',
-                'product7_qty',
-                'product8_qty',
-                'product9_qty'
-            ]);
+        $columnsToDrop = [
+            'product1_qty', 'product2_qty', 'product3_qty', 'product4_qty', 'product5_qty',
+            'product6_qty', 'product7_qty', 'product8_qty', 'product9_qty'
+        ];
+
+        Schema::table('orders', function (Blueprint $table) use ($columnsToDrop) {
+            foreach ($columnsToDrop as $column) {
+                if (Schema::hasColumn('orders', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
         });
     }
 

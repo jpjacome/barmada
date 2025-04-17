@@ -70,10 +70,7 @@
         </div>
     </div>
     
-    <div class="products-footer">
-        <div class="products-refresh-info">Auto-refresh every {{ $refreshInterval }} seconds.</div>
-        <div class="products-last-updated">Last updated: {{ $lastUpdated }}</div>
-    </div>
+
 
     <!-- Product Modal -->
     @if($showProductModal)

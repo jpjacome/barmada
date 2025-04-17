@@ -28,6 +28,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Set theme based on user preferences if available
+        $user = Auth::user();
+        if ($user && isset($user->preferences['theme'])) {
+            session(['theme' => $user->preferences['theme']]);
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

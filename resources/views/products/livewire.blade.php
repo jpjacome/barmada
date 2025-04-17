@@ -6,7 +6,7 @@
     </x-slot>
 
     <!-- Link to general CSS first, then component-specific CSS -->
-    <link href="{{ asset('css/general-dark.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/general-' . (session('theme', 'light')) . '.css') }}" rel="stylesheet">
 
     <div class="page-container">
         <div class="page-content">

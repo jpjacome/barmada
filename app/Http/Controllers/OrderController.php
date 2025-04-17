@@ -244,4 +244,62 @@ class OrderController extends Controller
             'message' => 'Order updated successfully!'
         ]);
     }
+    
+    /**
+     * Display order archives page with XML files.
+     */
+    public function archive()
+    {
+        $archiveDir = storage_path('app/public/archive');
+        $files = [];
+        
+        if (file_exists($archiveDir)) {
+            // Get all XML files from the archive directory
+            $xmlFiles = glob($archiveDir . '/*.xml');
+            
+            // Format file information
+            foreach ($xmlFiles as $file) {
+                $filename = basename($file);
+                $size = filesize($file);
+                $lastModified = filemtime($file);
+                
+                // Parse the date from the filename (format: orders_YYYY-MM-DD_HH-ii-ss.xml)
+                preg_match('/orders_(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})\.xml/', $filename, $matches);
+                $date = isset($matches[1]) ? $matches[1] : '';
+                $time = isset($matches[2]) ? str_replace('-', ':', $matches[2]) : '';
+                
+                $files[] = [
+                    'name' => $filename,
+                    'path' => 'storage/archive/' . $filename,
+                    'size' => $this->formatFileSize($size),
+                    'last_modified' => date('Y-m-d H:i:s', $lastModified),
+                    'date' => $date,
+                    'time' => $time
+                ];
+            }
+            
+            // Sort files by last modified time (newest first)
+            usort($files, function($a, $b) {
+                return strtotime($b['last_modified']) - strtotime($a['last_modified']);
+            });
+        }
+        
+        return view('orders.archive', compact('files'));
+    }
+    
+    /**
+     * Format file size in human-readable format.
+     */
+    private function formatFileSize($bytes)
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        
+        $bytes /= pow(1024, $pow);
+        
+        return round($bytes, 2) . ' ' . $units[$pow];
+    }
 } 

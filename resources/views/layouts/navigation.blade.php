@@ -11,6 +11,12 @@
                 </div>
 
                 <!-- Navigation Links -->
+                
+            </div>
+
+            <!-- Settings Dropdown -->
+            <div class="navigation-right">
+                <!-- Navigation Links -->
                 <div class="navigation-links">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
@@ -35,10 +41,7 @@
                         </a>
                     @endif
                 </div>
-            </div>
-
-            <!-- Settings Dropdown -->
-            <div class="navigation-right">
+                
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="dropdown-trigger">
@@ -77,10 +80,10 @@
 
             <!-- Hamburger -->
             <div class="navigation-hamburger">
-                <button @click="open = ! open" class="hamburger-button">
+                <button @click="open = ! open" class="hamburger-button" :aria-expanded="open">
                     <svg class="hamburger-icon" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="hamburger-icon-open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hamburger-icon-close" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path :class="{'hidden': open}" class="hamburger-icon-open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': !open}" class="hamburger-icon-close" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -88,7 +91,15 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="responsive-navigation">
+    <div x-show="open" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-95" 
+         class="responsive-navigation">
         <div class="responsive-navigation-content">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}

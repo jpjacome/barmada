@@ -1,4 +1,24 @@
 /* Navigation Styles */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Ensure hidden class works for Alpine toggling */
+.hidden {
+    display: none !important;
+}
+
+a:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: transparent;
+    transition: var(--transition);
+}
+
 .navigation {
     background-color: var(--color-secondary);
     border-bottom: var(--border-width) solid var(--color-primary);
@@ -101,9 +121,9 @@
     align-items: center;
     padding: var(--spacing-1) var(--spacing-1) var(--spacing-4) var(--spacing-1);
     border-bottom: 2px solid transparent;
-    font-size: var(--text-sm);
+    font-size: var(--text-lg);
     font-weight: var(--font-weight-medium);
-    color: var(--color-accents);
+    color: var(--color-success-dark);
     transition: var(--transition);
     position: relative;
     overflow: hidden;
@@ -194,6 +214,7 @@
     display: none;
     align-items: center;
     margin-left: var(--spacing-6);
+    gap: 2rem;
 }
 
 @media (min-width: 640px) {
@@ -353,44 +374,84 @@
     color: var(--color-warning);
     background-color: rgba(115, 171, 132, 0.08);
     border-color: rgba(115, 171, 132, 0.3);
-    transform: rotate(90deg);
 }
 
-.hamburger-button:focus {
-    outline: none;
-    background-color: rgba(115, 171, 132, 0.1);
+/* Style button when open (no rotation needed) */
+.hamburger-button[aria-expanded="true"] {
     color: var(--color-warning);
-    box-shadow: 0 0 0 3px rgba(121, 199, 197, 0.2);
+    background-color: rgba(115, 171, 132, 0.08);
+    border-color: rgba(115, 171, 132, 0.3);
 }
 
 .hamburger-icon {
     height: var(--spacing-6);
     width: var(--spacing-6);
+    transition: transform 0.2s ease-in-out;
 }
 
-.hamburger-icon-open,
-.hamburger-icon-close {
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 2;
-    transition: var(--transition);
+.hamburger-icon-open, .hamburger-icon-close {
+    transition: opacity 0.2s ease-in-out;
 }
 
 /* Responsive Navigation */
 .responsive-navigation {
+    position: absolute;
+    width: 100%;
+    z-index: 40;
+    background-color: var(--color-secondary);
+    box-shadow: var(--shadow-lg);
+    border-bottom: var(--border-width) solid var(--color-primary);
+    transform-origin: top;
+}
+
+/* Transition classes for Alpine.js */
+.transition {
+    transition-property: all;
+}
+
+.ease-out {
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
+.ease-in {
+    transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+.duration-200 {
+    transition-duration: 200ms;
+}
+
+.duration-150 {
+    transition-duration: 150ms;
+}
+
+.transform {
+    transform: translateZ(0);
+}
+
+.scale-95 {
+    transform: scale(.95);
+}
+
+.scale-100 {
+    transform: scale(1);
+}
+
+.opacity-0 {
+    opacity: 0;
+}
+
+.opacity-100 {
+    opacity: 1;
+}
+
+/* Add a class to help with Alpine.js toggling */
+.responsive-navigation.block {
+    display: block;
+}
+
+.responsive-navigation.hidden {
     display: none;
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 639px) {
-    .responsive-navigation {
-        display: block;
-    }
 }
 
 .responsive-navigation-content {

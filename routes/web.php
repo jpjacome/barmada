@@ -56,6 +56,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Orders routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::patch('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
+    
+    // Orders Archive route
+    Route::get('/orders/archive', [OrderController::class, 'archive'])->name('orders.archive');
 });
 
 // Remove unused Number routes

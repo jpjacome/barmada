@@ -67,15 +67,16 @@
                             </div>
                         </div>
                         <div class="action-card-body">
-                            <div class="stat-card-value">{{ App\Models\Table::count() }}</div>
-                            <p class="stat-card-description">Active tables in your venue</p>
+                            <div class="stat-card-value">{{ App\Models\Table::count() }}
+                                <p class="stat-card-description">Active tables in your venue</p>
+                            </div>
                             <p class="action-card-description">
                                 Set up and manage tables in your venue. View table status, add new tables, and monitor orders per table.
                             </p>
                         </div>
                         <div class="action-card-footer">
                             <a href="{{ route('tables.index') }}" class="btn btn-primary">
-                                <i class="bi bi-table-fill btn-icon"></i> Manage Tables
+                                <i class="bi bi-table btn-icon"></i> Manage Tables
                             </a>
                         </div>
                     </div>
@@ -91,8 +92,9 @@
                             </div>
                         </div>
                         <div class="action-card-body">
-                            <div class="stat-card-value">{{ App\Models\Product::count() }}</div>
-                            <p class="stat-card-description">Products in your catalog</p>
+                            <div class="stat-card-value">{{ App\Models\Product::count() }}
+                                <p class="stat-card-description">Products in your catalog</p>
+                            </div>
                             <p class="action-card-description">
                                 Manage your product catalog with custom icons and organized categories. Update prices and availability.
                             </p>
@@ -115,8 +117,9 @@
                             </div>
                         </div>
                         <div class="action-card-body">
-                            <div class="stat-card-value">{{ App\Models\Order::count() }}</div>
-                            <p class="stat-card-description">Total orders processed</p>
+                            <div class="stat-card-value">{{ App\Models\Order::count() }}
+                                <p class="stat-card-description">Total orders processed</p>
+                            </div>
                             <p class="action-card-description">
                                 Create new orders, monitor pending orders in real-time, and keep track of order history. Export orders to XML for backup.
                             </p>
@@ -128,6 +131,9 @@
                             <a href="{{ route('orders.index') }}" class="btn btn-outline btn-orders">
                                 <i class="bi bi-list-ul btn-icon"></i> View Orders
                             </a>
+                            <a href="{{ route('orders.archive') }}" class="btn btn-outline btn-archive">
+                                <i class="bi bi-archive btn-icon"></i> Archives
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -136,7 +142,7 @@
                 <div class="dashboard-footer">
                     <h4 class="dashboard-footer-subtitle">Barmada Bar Management Dashboard</h4>
                     <p class="dashboard-footer-text">
-                        Version 1.0 | All features are now available including real-time order tracking, product management, and table organization.
+                        Version 1.0
                     </p>
                 </div>
             </div>

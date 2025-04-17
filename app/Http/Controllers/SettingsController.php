@@ -88,7 +88,19 @@ class SettingsController extends Controller
             'session_id' => session()->getId()
         ]);
         
+        // Store in session
         session(['theme' => $newTheme]);
+        
+        // Store in user preferences if authenticated
+        if (auth()->check()) {
+            $user = auth()->user();
+            $user->forceFill(['preferences->theme' => $newTheme])->save();
+            
+            \Log::info('Theme saved to user preferences', [
+                'user_id' => $user->id,
+                'theme' => $newTheme
+            ]);
+        }
         
         return redirect()->back()->with('success', 'Theme updated successfully');
     }
