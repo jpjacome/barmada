@@ -8,28 +8,10 @@
 }
 
 .products-main {
-    background-color: var(--color-secondary);
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
     overflow: hidden;
     transition: var(--transition);
-    border: var(--border-width) solid var(--color-primary);
     position: relative;
-}
-
-.products-main:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, var(--color-primary), var(--color-success));
-    opacity: 0.8;
-}
-
-.products-main:hover {
-    box-shadow: var(--shadow-lg);
 }
 
 /* Table Styles */
@@ -77,7 +59,7 @@
     transition: var(--transition);
     position: relative;
     overflow: hidden;
-    outline: 1px solid rgba(255, 255, 255, 0.08);
+    outline: var(--border-width) solid var(--color-primary);
 }
 
 .product:after {
@@ -125,14 +107,12 @@ td{
 }
 
 .product-icon-image {
-    width: 36px;
-    height: 36px;
+    width: 25px;
+    height: 25px;
     object-fit: contain;
     margin-right: var(--spacing-3);
     border-radius: var(--border-radius);
-    padding: var(--spacing-1);
     transition: var(--transition);
-    filter: invert(84%) sepia(11%) saturate(987%) hue-rotate(73deg) brightness(93%) contrast(83%);
 }
 
 .product:hover .product-icon-image {
@@ -153,7 +133,7 @@ td{
 }
 
 .product-price {
-    text-align: right;
+    text-align: left;
     font-weight: var(--font-weight-bold);
     color: var(--color-success);
     position: relative;
@@ -221,12 +201,10 @@ td{
 /* Footer Styles */
 .products-footer {
     padding: var(--spacing-3);
-    border-top: var(--border-width) solid rgba(115, 171, 132, 0.2);
     display: flex;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    background-color: rgba(115, 171, 132, 0.03);
 }
 
 .products-footer:before {
@@ -795,4 +773,95 @@ td{
         padding: var(--spacing-2) var(--spacing-3);
         font-size: var(--text-sm);
     }
-} 
+}
+
+/* Updated styles for categories-list */
+.categories-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-4);
+    list-style: none;
+    padding: 0;
+}
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-3);
+    background-color: var(--color-secondary);
+    border: var(--border-width) solid var(--color-primary);
+    border-radius: var(--border-radius-md);
+}
+.category-actions {
+    display: flex;
+    gap: var(--spacing-2);
+}
+.category-actions .btn {
+    padding: var(--spacing-2);
+    font-size: var(--text-sm);
+    border-radius: 100%;
+}
+.category-actions .btn-primary {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: none;
+}
+.category-actions .btn-secondary {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: none;
+}
+.category-actions .btn-danger {
+    background-color: transparent;
+    color: var(--color-danger);
+    border: none;
+}
+
+/* Styling for category list icons */
+.category-actions i {
+    display: block;
+    font-size: 20px;
+    transition: var(--transition);
+    height: 25px;
+    width: 25px;
+}
+
+.category-actions i:hover {
+    color: var(--color-warning); /* Change to warning color on hover */
+    transform: scale(1.1); /* Slightly enlarge the icon on hover */
+}
+
+/* Category Management Styles */
+.category-management-container {
+    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-4);
+    border-radius: var(--border-radius-lg);
+}
+
+.category-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+}
+
+.category-form .category-input {
+    width: 300px;
+}
+
+.category-form .category-add-button {
+    width: 100px;
+}
+
+.add-category-form button{
+    margin-top: 10px;
+}
+
+
+.page-content{
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.content-card-body{
+    margin-bottom: 0;
+}

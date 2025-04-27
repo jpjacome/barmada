@@ -4,6 +4,8 @@
     
     <div class="products-main">
         
+        
+
         <div 
             wire:poll.{{ $refreshInterval }}s="refreshProducts"
             class="products-data"
@@ -12,8 +14,24 @@
                 <table class="products-table">
                     <thead class="products-table-header">
                         <tr>
-                            <th scope="col" class="products-table-header-cell">Name</th>
-                            <th scope="col" class="products-table-header-cell products-table-cell-right">Price</th>
+                            <th scope="col" class="products-table-header-cell cursor-pointer" wire:click="sortBy('name')">
+                                Name
+                                @if ($sortField === 'name')
+                                    <i class="bi bi-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
+                            <th scope="col" class="products-table-header-cell cursor-pointer" wire:click="sortBy('category.name')">
+                                Category
+                                @if ($sortField === 'category.name')
+                                    <i class="bi bi-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
+                            <th scope="col" class="products-table-header-cell cursor-pointer" wire:click="sortBy('price')">
+                                Price
+                                @if ($sortField === 'price')
+                                    <i class="bi bi-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                @endif
+                            </th>
                             <th scope="col" class="products-table-header-cell products-table-cell-right">Actions</th>
                         </tr>
                     </thead>
@@ -28,6 +46,9 @@
                                     @endif
                                     <span class="product-name">{{ $product->name }}</span>
                                 </td>
+                                <td class="product-cell product-category">
+                                    {{ $product->category->name ?? 'Uncategorized' }}
+                                </td>
                                 <td class="product-cell product-price">
                                     ${{ number_format($product->price, 2) }}
                                 </td>
@@ -40,7 +61,7 @@
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <button 
-                                        wire:click="deleteProduct({{ $product->id }})" 
+                                        wire:click="confirmDelete({{ $product->id }})" 
                                         class="product-delete-button"
                                         title="Delete Product"
                                     >
@@ -50,7 +71,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="product-empty-message">
+                                <td colspan="4" class="product-empty-message">
                                     No products found. Add your first product to get started.
                                 </td>
                             </tr>
@@ -115,6 +136,26 @@
                             min="0"
                         >
                         @error('price') 
+                            <span class="product-form-error">{{ $message }}</span> 
+                        @enderror
+                    </div>
+
+                    <!-- Category Selection -->
+                    <div class="product-form-group">
+                        <label for="category" class="product-form-label">
+                            Category
+                        </label>
+                        <select 
+                            id="category" 
+                            wire:model="categoryId" 
+                            class="product-form-input"
+                        >
+                            <option value="">Select a category</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('categoryId') 
                             <span class="product-form-error">{{ $message }}</span> 
                         @enderror
                     </div>
@@ -257,4 +298,4 @@
             });
         });
     </script>
-</div> 
+</div>

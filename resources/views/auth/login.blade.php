@@ -5,13 +5,14 @@
         <div class="auth-card">
             <div class="auth-card-header">
                 <div class="auth-logo">
-                    <x-application-logo class="w-20 h-20 fill-current" />
+                    <img src="{{ asset('images/logo-icon-dark.svg') }}" class="w-20 h-20" alt="Barmada Logo">
                 </div>
-                <h2 class="auth-title">{{ __('Log in') }}</h2>
-                <p class="auth-subtitle">{{ __('Welcome back! Please enter your credentials to access your account.') }}</p>
             </div>
 
             <div class="auth-card-body">
+                <h2 class="auth-title">{{ __('Log in') }}</h2>
+                <p class="auth-subtitle">{{ __('Welcome back! Please enter your credentials to access your account.') }}</p>
+            
                 <!-- Session Status -->
                 @if (session('status'))
                     <div class="auth-success-message">

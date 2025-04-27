@@ -5,9 +5,9 @@
             <div class="navigation-left">
                 <!-- Logo -->
                 <div class="navigation-logo">
-                    <a href="{{ route('dashboard') }}">
+                    <span href="{{ route('dashboard') }}">
                         <x-application-logo class="logo-image" alt="Barmada Logo" />
-                    </a>
+                    </span>
                 </div>
 
                 <!-- Navigation Links -->
@@ -42,43 +42,64 @@
                     @endif
                 </div>
                 
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="dropdown-trigger">
-                            <div class="dropdown-trigger-text">{{ Auth::user()->name }}</div>
+                <!-- Theme Toggle Switch -->
+                <div class="theme-toggle">
+                    <form action="{{ route('settings.toggle-theme') }}" method="POST">
+                        @csrf
+                        <label class="theme-switch">
+                            <input type="checkbox" onchange="this.form.submit()" {{ session('theme', 'light') === 'dark' ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </form>
+                </div>
+                
+                @auth
+    {{-- Logged‑in users: profile dropdown --}}
+    <x-dropdown align="right" width="48">
+        <x-slot name="trigger">
+            <button class="dropdown-trigger">
+                <div class="dropdown-trigger-text">{{ Auth::user()->name }}</div>
 
-                            <div class="dropdown-trigger-icon">
-                                <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
+                <div class="dropdown-trigger-icon">
+                    <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </button>
+        </x-slot>
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('settings.index')">
-                            {{ __('Settings') }}
-                        </x-dropdown-link>
+        <x-slot name="content">
+            <x-dropdown-link :href="route('settings.index')">
+                {{ __('Settings') }}
+            </x-dropdown-link>
 
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+            <x-dropdown-link :href="route('profile.edit')">
+                {{ __('Profile') }}
+            </x-dropdown-link>
 
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
+            <!-- Authentication -->
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <x-dropdown-link :href="route('logout')"
+                        onclick="event.preventDefault(); this.closest('form').submit();">
+                    {{ __('Log Out') }}
+                </x-dropdown-link>
+            </form>
+        </x-slot>
+    </x-dropdown>
+@else
+    {{-- Guests: simple Log in button (desktop) --}}
+    <a href="{{ route('login') }}" class="nav-link">
+        {{ __('Log in') }}
+    </a>
+@endauth
 
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
             </div>
 
             <!-- Hamburger -->
+            @auth
             <div class="navigation-hamburger">
                 <button @click="open = ! open" class="hamburger-button" :aria-expanded="open">
                     <svg class="hamburger-icon" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -87,10 +108,12 @@
                     </svg>
                 </button>
             </div>
+            @endauth
         </div>
     </div>
 
     <!-- Responsive Navigation Menu -->
+    @auth
     <div x-show="open" 
          x-cloak
          x-transition:enter="transition ease-out duration-200"
@@ -159,4 +182,5 @@
             </div>
         </div>
     </div>
+    @endauth
 </nav>

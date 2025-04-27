@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Livewire;
+namespace app\Livewire;
 
 use Livewire\Component;
 use App\Models\Product;
+use App\Models\Category;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Rule;
 use Livewire\WithFileUploads;
@@ -13,10 +14,14 @@ class ProductsList extends Component
     use WithFileUploads;
     
     public $products = [];
+    public $categories = [];
     public $lastUpdated;
     public $status = 'Loading products...';
     public $refreshInterval = 10; // in seconds
     
+    public $sortField = 'name';
+    public $sortDirection = 'asc';
+
     // Form properties
     public $showProductModal = false;
     public $editMode = false;
@@ -36,21 +41,45 @@ class ProductsList extends Component
     #[Rule('nullable|file|max:1024|required_if:iconType,svg')]
     public $svgFile;
     
+    #[Rule('nullable|exists:categories,id')]
+    public $categoryId;
+
     public $iconValue = '';
+    public $categoryName = '';
     
     // Protected listeners for Livewire events
-    protected $listeners = ['deleteConfirmed' => 'deleteProduct'];
+    protected $listeners = ['deleteConfirmed' => 'deleteConfirmed'];
 
     public function mount()
     {
+        $this->loadProducts();
+        $this->loadCategories();
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+
         $this->loadProducts();
     }
 
     public function loadProducts()
     {
-        $this->products = Product::orderBy('name')->get();
+        $this->products = Product::with('category')
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->get();
         $this->lastUpdated = now()->format('H:i:s');
         $this->status = 'Products updated at ' . $this->lastUpdated;
+    }
+
+    public function loadCategories()
+    {
+        $this->categories = Category::orderBy('name')->get();
     }
 
     #[On('refresh-products')]
@@ -73,18 +102,17 @@ class ProductsList extends Component
             $this->validate([
                 'name' => 'required|min:3|max:255',
                 'price' => 'required|numeric|min:0.01',
-                'svgFile' => 'required|file|max:1024',
+                'svgFile' => 'nullable|file|max:1024',
             ]);
-            
-            // For SVG files specifically, we'll use our custom isSvg macro
-            if ($this->svgFile->getClientOriginalExtension() === 'svg' && !$this->svgFile->isSvg()) {
-                $this->addError('svgFile', 'The file must be a valid SVG image.');
-                return;
+
+            if ($this->svgFile) {
+                // Store the new SVG file and get its filename
+                $filename = $this->svgFile->store('product-icons', 'public');
+                $iconValue = $filename;
+            } else {
+                // Retain the existing icon value if no new file is uploaded
+                $iconValue = $this->iconValue;
             }
-            
-            // Store the image and get its filename
-            $filename = $this->svgFile->store('product-icons', 'public');
-            $iconValue = $filename;
         }
         
         if ($this->editMode) {
@@ -94,6 +122,7 @@ class ProductsList extends Component
                 'price' => $this->price,
                 'icon_type' => $this->iconType,
                 'icon_value' => $iconValue,
+                'category_id' => $this->categoryId,
             ]);
             $this->status = "Product '{$this->name}' updated successfully!";
         } else {
@@ -102,12 +131,40 @@ class ProductsList extends Component
                 'price' => $this->price,
                 'icon_type' => $this->iconType,
                 'icon_value' => $iconValue,
+                'category_id' => $this->categoryId,
             ]);
             $this->status = "Product '{$this->name}' added successfully!";
         }
         
         $this->closeModal();
         $this->loadProducts();
+    }
+    
+    public function saveCategory()
+    {
+        $this->validate([
+            'categoryName' => 'required|min:3|max:255|unique:categories,name',
+        ]);
+
+        Category::create(['name' => $this->categoryName]);
+        $this->categoryName = '';
+        $this->loadCategories();
+        $this->status = 'Category added successfully!';
+    }
+
+    public function deleteCategory($id)
+    {
+        $category = Category::find($id);
+
+        if (!$category) {
+            $this->status = 'Error: Category not found';
+            return;
+        }
+
+        $categoryName = $category->name;
+        $category->delete();
+        $this->loadCategories();
+        $this->status = "Category '{$categoryName}' deleted successfully!";
     }
     
     // Show modal for adding a new product
@@ -136,6 +193,7 @@ class ProductsList extends Component
             $this->iconValue = $product->icon_value;
         }
         
+        $this->categoryId = $product->category_id;
         $this->showProductModal = true;
     }
     
@@ -152,17 +210,35 @@ class ProductsList extends Component
         ]);
     }
     
-    // Delete a product after confirmation
-    public function deleteProduct()
+    // Delete a product when called directly (from the button)
+    public function deleteProduct($id = null)
     {
-        $product = Product::findOrFail($this->productId);
-        $productName = $product->name;
+        $productId = $id ?? $this->productId;
         
+        if (!$productId) {
+            $this->status = "Error: No product selected for deletion";
+            return;
+        }
+        
+        $product = Product::find($productId);
+        
+        if (!$product) {
+            $this->status = "Error: Product not found";
+            return;
+        }
+        
+        $productName = $product->name;
         $product->delete();
         
         $this->productId = null;
         $this->status = "Product '{$productName}' deleted successfully!";
         $this->loadProducts();
+    }
+    
+    // Delete a product after confirmation
+    public function deleteConfirmed()
+    {
+        $this->deleteProduct();
     }
     
     // Toggle icon type between bootstrap and svg
@@ -188,11 +264,14 @@ class ProductsList extends Component
         $this->bootstrapIcon = 'bi-box';
         $this->svgFile = null;
         $this->iconValue = '';
+        $this->categoryId = null;
         $this->resetValidation();
     }
 
     public function render()
     {
-        return view('livewire.products-list');
+        return view('livewire.products-list', [
+            'products' => Product::with('category')->get(),
+        ]);
     }
-} 
+}

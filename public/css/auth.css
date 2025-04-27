@@ -34,9 +34,10 @@
 }
 
 .auth-card-header {
-    padding: var(--spacing-6);
+    padding: var(--spacing-6) var(--spacing-6) 0;
     border-bottom: var(--border-width) solid rgba(115, 171, 132, 0.2);
     text-align: center;
+    background-color: rgb(0 0 0 / 9%);
 }
 
 .auth-logo {
@@ -51,22 +52,24 @@
 .auth-logo svg {
     width: 100%;
     height: auto;
-    max-height: 40px;
+    max-height: 130px;
     fill: var(--color-primary) !important;
     object-fit: contain;
 }
 .auth-logo img {
     width: 100%;
     height: auto;
-    max-height: 40px;
+    max-height: 130px;
     fill: var(--color-primary) !important;
     object-fit: contain;
 }
 
 .auth-title {
+    text-align: center;
     font-size: var(--text-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-accents);
+    margin-top: 0;
     margin-bottom: var(--spacing-2);
     letter-spacing: -0.01em;
 }
@@ -76,12 +79,12 @@
     color: var(--color-accents);
     opacity: 0.8;
     max-width: 350px;
-    margin: 0 auto;
+    margin: 0 auto 15px;
     line-height: var(--line-height-relaxed);
 }
 
 .auth-card-body {
-    padding: var(--spacing-6);
+    padding: var(--spacing-5) var(--spacing-6);
 }
 
 .auth-form-group {
@@ -228,7 +231,7 @@
     padding: var(--spacing-6);
     border-top: var(--border-width) solid rgba(115, 171, 132, 0.2);
     text-align: center;
-    background-color: rgba(115, 171, 132, 0.05);
+    background-color: rgb(0 0 0 / 9%);
 }
 
 .auth-footer-text {

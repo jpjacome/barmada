@@ -36,6 +36,10 @@
         font-family: 'Crimson Text';
         src: url('/public/fonts/CrimsonText-Regular.ttf');
     }
+    @font-face {
+        font-family: 'Inter-tight';
+        src: url('/public/fonts/Inter-tight-Regular.ttf');
+    }
     --font-family: 'Crimson Text', serif;
     --text-xs: 0.75rem;
     --text-sm: 0.875rem;
@@ -85,7 +89,7 @@
 /* General Page Styles */
 body {
     color: var(--color-accents);
-    font-family: var(--font-family);
+    font-family: 'Inter-tight', sans-serif;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
@@ -120,6 +124,10 @@ a:after {
 
 a:hover:after {
     width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Crimson Text', serif;
 }
 
 /* Common Layout Elements */
@@ -178,6 +186,7 @@ a:hover:after {
 }
 
 .page-title {
+    font-family: 'Crimson Text', serif;
     font-weight: var(--font-weight-bold);
     font-size: var(--text-2xl);
     color: var(--color-accents);
@@ -204,7 +213,7 @@ input, select, textarea {
     color: var(--color-accents);
     padding: var(--spacing-3) var(--spacing-4);
     border-radius: var(--border-radius-md);
-    font-family: var(--font-family);
+    font-family: 'Inter-tight', sans-serif;
     font-size: var(--text-base);
     transition: var(--transition);
     width: 100%;
@@ -229,6 +238,7 @@ button {
     border-radius: var(--border-radius-md);
     cursor: pointer;
     transition: var(--transition-bounce);
+    font-family: 'Inter-tight', sans-serif;
     font-weight: var(--font-weight-medium);
     letter-spacing: 0.02em;
     position: relative;
@@ -273,6 +283,7 @@ table {
 th {
     background-color: rgba(121, 199, 197, 0.1);
     color: var(--color-accents);
+    font-family: 'Inter-tight', sans-serif;
     font-weight: var(--font-weight-semibold);
     text-align: left;
     padding: var(--spacing-4) var(--spacing-4);
@@ -291,6 +302,7 @@ th:last-child {
 }
 
 td {
+    font-family: 'Inter-tight', sans-serif;
     padding: var(--spacing-4) var(--spacing-4);
     border-bottom: var(--border-width) solid rgba(121, 199, 197, 0.2);
     transition: var(--transition);
@@ -329,4 +341,10 @@ tr:last-child td:last-child {
 
 .slide-up {
     animation: slideUp 0.5s ease-out;
-} 
+}
+
+/* Tables Page */
+
+.fully-paid{
+    background-color: #d0ecff!important;
+}

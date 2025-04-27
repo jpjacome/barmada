@@ -104,6 +104,7 @@
     border-color: var(--color-success);
 }
 
+
 .table-card-header {
     display: flex;
     justify-content: space-between;
@@ -191,6 +192,25 @@
 
 .table-card-button i {
     font-size: var(--text-sm);
+}
+
+/* Table Status Styles */
+.table-status {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--border-radius-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-secondary);
+    background-color: var(--color-primary);
+    transition: var(--transition);
+}
+
+.status-open {
+    background-color: var(--color-success);
+}
+
+.status-closed {
+    background-color: var(--color-danger);
 }
 
 /* Reference Styles */
@@ -1171,4 +1191,4 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-} 
+}

@@ -64,10 +64,6 @@
     transition: var(--transition);
 }
 
-.dashboard-header a:hover {
-    transform: translateY(-5px) scale(1.02);
-    filter: drop-shadow(0 15px 20px rgba(0, 0, 0, 0.3)) brightness(1.1);
-}
 
 .dashboard-header a img {
     width: 100%;
@@ -652,4 +648,6 @@
     .dashboard-title {
         font-size: var(--text-2xl);
     }
-} 
+}
+
+/* Removed font-family definitions for h1, h2, etc., as they are now handled in general-dark.css and general-light.css */

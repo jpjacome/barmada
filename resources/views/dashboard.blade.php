@@ -15,7 +15,6 @@
                         <x-application-logo class="dashboard-logo" alt="Barmada Logo" />
                     </a>
                 </div>
-                <h1 class="dashboard-title">Bar Management Dashboard</h1>
                 
                 <!-- Recent Activity Section -->
                 <div class="recent-activity">

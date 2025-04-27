@@ -375,8 +375,20 @@ class TablesList extends Component
         return isset($this->visibleOrderProducts[$orderId]);
     }
 
+    public function isTableFullyPaid($tableId)
+    {
+        $orders = Order::where('table_id', $tableId)->get();
+        $totalLeft = $orders->sum(function ($order) {
+            return $order->items->sum(function ($item) {
+                return $item->is_paid ? 0 : $item->price;
+            });
+        });
+
+        return $totalLeft === 0;
+    }
+
     public function render()
     {
         return view('livewire.tables-list');
     }
-} 
+}

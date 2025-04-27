@@ -1,0 +1,60 @@
+# Implementation Plan for Adding and Deleting Categories on the Products Page
+
+## Step 1: Database Changes
+
+### 1.1 Create a `categories` table
+- Add a migration to create a `categories` table with the following fields:
+  - `id`: Primary key, auto-incrementing.
+  - `name`: String, unique, required.
+  - `created_at`: Timestamp.
+  - `updated_at`: Timestamp.
+
+### 1.2 Add a relationship between `products` and `categories`
+- Update the `products` table to include a `category_id` foreign key.
+- Ensure proper indexing and constraints in the migration.
+
+### Actions Taken:
+- Created a migration for the `categories` table.
+- Implemented the migration to create the `categories` table with fields `id`, `name`, `created_at`, and `updated_at`.
+- Created a migration to add the `category_id` foreign key to the `products` table.
+- Implemented the migration to add the `category_id` column to the `products` table, with a foreign key constraint referencing the `categories` table.
+- Ran the migrations successfully, applying the changes to the database.
+
+- Created the `Category` model in the `App\Models` namespace.
+- Added a `fillable` property for the `name` field in the `Category` model.
+- Defined a `products` relationship method in the `Category` model to associate categories with products.
+- Verified that the `Category.php` file exists in the correct directory with the correct casing.
+- Confirmed that the `Category.php` file has no syntax or linting errors.
+- Added a `category` relationship method in the `Product` model to define the association with the `Category` model.
+- Verified that the `Category` model is being autoloaded correctly using `class_exists` in Tinker.
+- Successfully listed all categories using `\App\Models\Category::all()` in Tinker, confirming the model and database connection are working as expected.
+- Successfully created a new category using `\App\Models\Category::create(['name' => 'Electronics'])` in Tinker, verifying the `create` functionality.
+
+- Successfully tested the `store` method in the `CategoryController` using Tinker. A new category named "Test Category" was created, and a JSON response with the success message and the created category was returned.
+- Successfully tested the `destroy` method in the `CategoryController` using Tinker. The category with ID `2` was deleted, and a JSON response with the success message was returned.
+- Resolved namespace issues by ensuring all references to `App` match the renamed folder structure.
+- Verified that the `ProductsList` Livewire component and the `Category` model are functioning correctly.
+- Successfully tested the category management functionality on the products page.
+
+## Next Step
+- Implement the database changes as described above.
+- Create the necessary migrations for the `categories` table and the `category_id` foreign key in the `products` table.
+
+### Next Steps:
+- Proceed with implementing additional features or enhancements as per the project requirements.
+
+## Instructions
+- Once the migrations are created, run them and verify the database schema.
+- Test the database changes to ensure the `categories` table and the relationship with `products` are correctly set up.
+
+## Pending Steps
+- Backend Logic
+- Frontend Changes
+- Livewire Integration
+- Validation and Error Handling
+- Testing
+- Deployment
+- Future Enhancements
+
+## Notes
+- This file will be updated with every step taken, including detailed descriptions of changes made, bugs encountered, and fixes applied.

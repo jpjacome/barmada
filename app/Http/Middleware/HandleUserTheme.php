@@ -28,4 +28,4 @@ class HandleUserTheme
 
         return $next($request);
     }
-} 
+}

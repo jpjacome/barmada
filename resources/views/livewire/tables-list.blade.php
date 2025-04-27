@@ -12,23 +12,25 @@
                 });
             });
             
-            // Listen for Livewire events
-            document.addEventListener('livewire:initialized', () => {
-                console.log('Livewire initialized');
-            });
-            
-            Livewire.hook('message.sent', (message, component) => {
-                console.log('Livewire message sent:', message.updateQueue);
-            });
-            
-            Livewire.hook('message.processed', (message, component) => {
-                console.log('Livewire message processed');
-                if (document.querySelector('.tables-modal-backdrop')) {
-                    console.log('Modal is present in DOM');
-                } else {
-                    console.log('Modal is NOT present in DOM');
-                }
-            });
+            // Listen for Livewire events - only if Livewire exists
+            if (typeof Livewire !== 'undefined') {
+                document.addEventListener('livewire:initialized', () => {
+                    console.log('Livewire initialized');
+                });
+                
+                Livewire.hook('message.sent', (message, component) => {
+                    console.log('Livewire message sent:', message.updateQueue);
+                });
+                
+                Livewire.hook('message.processed', (message, component) => {
+                    console.log('Livewire message processed');
+                    if (document.querySelector('.tables-modal-backdrop')) {
+                        console.log('Modal is present in DOM');
+                    } else {
+                        console.log('Modal is NOT present in DOM');
+                    }
+                });
+            }
         });
     </script>
     @endpush
@@ -37,9 +39,6 @@
         @import url('{{ asset('css/tables-list.css') }}');
     </style>
     
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-  
     <!-- Tables Grid -->
     <div 
         wire:poll.{{ $refreshInterval }}s="refreshTables"
@@ -47,11 +46,14 @@
     >
         @forelse ($tables as $table)
             <div 
-                class="table-card"
+                class="table-card {{ $this->isTableFullyPaid($table->id) ? 'fully-paid' : '' }}"
                 wire:key="table-{{ $table->id }}"
             >
                 <div class="table-card-header">
                     <h4 class="table-card-title">Table {{ $table->id }}</h4>
+                    <span class="table-status {{ $this->isTableFullyPaid($table->id) ? 'status-closed' : 'status-open' }}">
+                        {{ $this->isTableFullyPaid($table->id) ? 'Closed' : 'Open' }}
+                    </span>
                 </div>
                 
                 <div class="table-card-info" wire:key="info-{{ $table->id }}">
@@ -318,4 +320,4 @@
         </div>
     </div>
     @endif
-</div> 
+</div>

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -124,6 +125,13 @@ Route::get('/api-numbers', function (Request $request) {
 
 Route::get('/all-orders', function () {
     return view('all-orders');
-})->name('all-orders');
+})->middleware('auth')   // ✨ only logged‑in users
+  ->name('all-orders');
+
+// Category Management Routes
+Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+Route::post('/categories/{category}/move-up', [CategoryController::class, 'moveUp'])->name('categories.move-up');
+Route::post('/categories/{category}/move-down', [CategoryController::class, 'moveDown'])->name('categories.move-down');
 
 require __DIR__.'/auth.php';

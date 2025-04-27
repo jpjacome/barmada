@@ -1,0 +1,17 @@
+<IfModule mod_mime.c>
+    # Force JavaScript files to be served with the correct MIME type
+    AddType application/javascript .js
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Set CORS headers for JavaScript files
+    Header set Access-Control-Allow-Origin "*"
+    
+    # Set cache control
+    Header set Cache-Control "max-age=31536000, public"
+</IfModule>
+
+# Allow direct access to all files in this directory
+<IfModule mod_rewrite.c>
+    RewriteEngine Off
+</IfModule> 

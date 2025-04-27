@@ -192,6 +192,7 @@
 .order-card-title {
     margin: var(--spacing-1) 0;
     font-weight: var(--font-weight-semibold);
+    font-size: .7em;
     color: var(--color-accents);
     letter-spacing: -0.01em;
 }

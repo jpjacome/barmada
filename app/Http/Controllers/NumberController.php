@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\NumberAdded;
 use App\Models\Number;
 use App\Models\Product;
+use App\Models\Category; // Import the Category model
 use Illuminate\Http\Request;
 
 class NumberController extends Controller
@@ -62,7 +63,8 @@ class NumberController extends Controller
      */
     public function livewire()
     {
-        return view('products.livewire');
+        $categories = Category::orderBy('sort_order')->get();
+        return view('products.livewire', compact('categories'));
     }
 
     /**

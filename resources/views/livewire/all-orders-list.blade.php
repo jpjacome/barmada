@@ -5,86 +5,88 @@
         
         <div class="orders-data">
             <!-- Pending Orders Panel -->
-            @if(count($pendingOrders) > 0)
             <div class="orders-panel">
                 <h3 class="orders-panel-title">Pending Orders</h3>
                 <div class="orders-panel-content" wire:poll.5s="refreshPendingOrders">
                     <div class="orders-scroll-container">
-                        @foreach($pendingOrders as $pendingOrder)
-                        <div class="order-card" 
-                             data-created-at="{{ $pendingOrder['created_at'] }}"
-                             data-order-id="{{ $pendingOrder['id'] }}"
-                             wire:key="card-{{ $pendingOrder['id'] }}"
-                             wire:ignore>
-                            <div class="order-card-header">
-                                <h4 class="order-card-title">Order #{{ $pendingOrder['id'] }}</h4>
-                                <span class="order-card-table" wire:key="table-{{ $pendingOrder['id'] }}">Table {{ $pendingOrder['table']['id'] }}</span>
-                            </div>
-                            
-                            <div class="order-card-body">
-                                <div class="order-card-time">
-                                    <span class="order-time-label">Created:</span>
-                                    <span class="order-created-time">{{ \Carbon\Carbon::parse($pendingOrder['created_at'])->format('H:i:s') }}</span>
-                                    <span class="chronometer">00:00</span>
-                                </div>
-                                <div class="order-card-products" wire:key="products-{{ $pendingOrder['id'] }}">
-                                    @php
-                                        $productList = [];
-                                        $order = \App\Models\Order::with('items.product')->find($pendingOrder['id']);
-                                        $groupedItems = [];
-                                        
-                                        // Group items by product
-                                        foreach ($order->items as $item) {
-                                            if (!isset($groupedItems[$item->product_id])) {
-                                                $groupedItems[$item->product_id] = [
-                                                    'product' => $item->product,
-                                                    'quantity' => 0
-                                                ];
-                                            }
-                                            $groupedItems[$item->product_id]['quantity'] += $item->quantity;
-                                        }
-                                        
-                                        // Create product list with grouped quantities
-                                        foreach ($groupedItems as $item) {
-                                            $icon = $item['product']->icon_value ?? 'bi-box';
-                                            $iconType = $item['product']->icon_type ?? 'bootstrap';
-                                            
-                                            if ($iconType === 'bootstrap') {
-                                                $iconHtml = "<i class='{$icon}'></i>";
-                                            } else {
-                                                $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='order-product-icon'>";
-                                            }
-                                            
-                                            $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item['product']->name}</span>: {$item['quantity']}</span>";
-                                        }
-                                    @endphp
+                        @if(count($pendingOrders) > 0)
+                            @foreach($pendingOrders as $pendingOrder)
+                                <div class="order-card" 
+                                     data-created-at="{{ $pendingOrder['created_at'] }}"
+                                     data-order-id="{{ $pendingOrder['id'] }}"
+                                     wire:key="card-{{ $pendingOrder['id'] }}"
+                                     wire:ignore>
+                                    <div class="order-card-header">
+                                        <h4 class="order-card-title">Order #{{ $pendingOrder['id'] }}</h4>
+                                        <span class="order-card-table" wire:key="table-{{ $pendingOrder['id'] }}">Table {{ $pendingOrder['table']['id'] }}</span>
+                                    </div>
                                     
-                                    @if(count($productList) > 0)
-                                        {!! implode(', ', $productList) !!}
-                                    @else
-                                        <span class="order-no-products">No products</span>
-                                    @endif
+                                    <div class="order-card-body">
+                                        <div class="order-card-time">
+                                            <span class="order-time-label">Created:</span>
+                                            <span class="order-created-time">{{ \Carbon\Carbon::parse($pendingOrder['created_at'])->format('H:i:s') }}</span>
+                                            <span class="chronometer">00:00</span>
+                                        </div>
+                                        <div class="order-card-products" wire:key="products-{{ $pendingOrder['id'] }}">
+                                            @php
+                                                $productList = [];
+                                                $order = \App\Models\Order::with('items.product')->find($pendingOrder['id']);
+                                                $groupedItems = [];
+                                                
+                                                // Group items by product
+                                                foreach ($order->items as $item) {
+                                                    if (!isset($groupedItems[$item->product_id])) {
+                                                        $groupedItems[$item->product_id] = [
+                                                            'product' => $item->product,
+                                                            'quantity' => 0
+                                                        ];
+                                                    }
+                                                    $groupedItems[$item->product_id]['quantity'] += $item->quantity;
+                                                }
+                                                
+                                                // Create product list with grouped quantities
+                                                foreach ($groupedItems as $item) {
+                                                    $icon = $item['product']->icon_value ?? 'bi-box';
+                                                    $iconType = $item['product']->icon_type ?? 'bootstrap';
+                                                    
+                                                    if ($iconType === 'bootstrap') {
+                                                        $iconHtml = "<i class='{$icon}'></i>";
+                                                    } else {
+                                                        $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='order-product-icon'>";
+                                                    }
+                                                    
+                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item['product']->name}</span>: {$item['quantity']}</span>";
+                                                }
+                                            @endphp
+                                            
+                                            @if(count($productList) > 0)
+                                                {!! implode(', ', $productList) !!}
+                                            @else
+                                                <span class="order-no-products">No products</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="order-card-footer">
+                                        <div class="order-card-actions">
+                                            <button 
+                                                wire:click="toggleStatus({{ $pendingOrder['id'] }})" 
+                                                class="order-status-button order-status-pending"
+                                                wire:loading.attr="disabled"
+                                                wire:key="status-{{ $pendingOrder['id'] }}"
+                                            >
+                                                Pending
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="order-card-footer">
-                                <div class="order-card-actions">
-                                    <button 
-                                        wire:click="toggleStatus({{ $pendingOrder['id'] }})" 
-                                        class="order-status-button order-status-pending"
-                                        wire:loading.attr="disabled"
-                                        wire:key="status-{{ $pendingOrder['id'] }}"
-                                    >
-                                        Pending
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
+                            @endforeach
+                        @else
+                            <p class="no-orders-message">No pending orders at the moment.</p>
+                        @endif
                     </div>
                 </div>
             </div>
-            @endif
 
             <div class="orders-table-container">
                 <div class="orders-table-wrapper">
@@ -385,4 +387,4 @@ const OrderTimer = {
 // Initialize when the page loads
 document.addEventListener('livewire:initialized', () => OrderTimer.init());
 </script>
-@endpush 
+@endpush
