@@ -81,9 +81,18 @@ Route::get('/numbers/livewire', function() {
 })->name('numbers.livewire');
 
 // Guest-accessible routes
-Route::get('/order', [OrderController::class, 'create'])->name('orders.create');
+Route::get('/order', [OrderController::class, 'orderEntry'])->middleware(['auth', 'admin'])->name('orders.create');
 Route::post('/order', [OrderController::class, 'store'])->name('orders.store');
 Route::get('/order/confirmation', [OrderController::class, 'confirmation'])->name('orders.confirmation');
+
+// Add a route to handle redirection based on the unique token
+Route::get('/order/{unique_token}', [TableController::class, 'redirectToOrder'])->name('order.redirect');
+
+// QR Entry route for customers scanning the QR code at the table
+Route::get('/qr-entry/{table}', [OrderController::class, 'qrEntry'])->name('orders.qr-entry');
+
+// Polling endpoint for table status
+Route::get('/poll-table-status/{table}', [OrderController::class, 'pollTableStatus']);
 
 // API route for fetching order data
 Route::get('/api/orders/{order}', [OrderController::class, 'getOrderData']);

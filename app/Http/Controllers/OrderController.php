@@ -69,6 +69,23 @@ class OrderController extends Controller
     }
 
     /**
+     * Show the order creation page or handle table link redirection.
+     */
+    public function orderEntry(Request $request)
+    {
+        $tableId = $request->query('table');
+        if ($tableId) {
+            // If table param is present, use the redirection logic
+            return $this->handleTableLink($request);
+        }
+        // Otherwise, show the generic order creation page
+        $products = Product::orderBy('name')->get();
+        $tables = Table::all();
+        $selectedTableId = null;
+        return view('orders.create', compact('products', 'tables', 'selectedTableId'));
+    }
+
+    /**
      * Store a newly created order in storage.
      */
     public function store(Request $request)
@@ -137,6 +154,7 @@ class OrderController extends Controller
         // Update table order count
         $table->update([
             'orders' => $table->orders + 1,
+            'status' => 'open', // Set status to open when a new order is added
         ]);
         
         return redirect()->route('orders.confirmation')->with('success', 'Your order has been submitted!');
@@ -302,4 +320,84 @@ class OrderController extends Controller
         
         return round($bytes, 2) . ' ' . $units[$pow];
     }
-} 
+
+    /**
+     * Handle permanent table link and redirect to unique token link if open.
+     */
+    public function handleTableLink(Request $request)
+    {
+        $tableId = $request->query('table');
+        if (!$tableId) {
+            abort(404, 'Table not specified.');
+        }
+        $table = Table::where('id', $tableId)->first();
+        if (!$table) {
+            abort(404, 'Table not found.');
+        }
+        if ($table->status === 'open' && $table->unique_token) {
+            // Redirect to the unique token link
+            return redirect()->route('order.redirect', ['unique_token' => $table->unique_token]);
+        }
+        // Table is closed or no token: show a message
+        return response()->view('orders.table-closed', ['table' => $table]);
+    }
+
+    /**
+     * Handle QR code entry: set table to pending_approval and show waiting page, or redirect if open.
+     */
+    public function qrEntry($tableId)
+    {
+        $table = \App\Models\Table::findOrFail($tableId);
+        if ($table->status === 'open' && $table->unique_token) {
+            // Table is already open, redirect to order page
+            return redirect()->route('order.redirect', ['unique_token' => $table->unique_token]);
+        }
+        if ($table->status !== 'pending_approval') {
+            $table->status = 'pending_approval';
+            $table->save();
+        }
+        return view('orders.waiting-approval', ['table' => $table]);
+    }
+
+    /**
+     * Polling endpoint for table status: returns status and redirect URL if open.
+     */
+    public function pollTableStatus($tableId)
+    {
+        $table = \App\Models\Table::find($tableId);
+        if (!$table) {
+            return response()->json(['status' => 'not_found']);
+        }
+        
+        if ($table->status === 'open') {
+            // Generate unique_token if missing
+            if (!$table->unique_token) {
+                $table->generateUniqueToken();
+            }
+            return response()->json([
+                'status' => 'open',
+                'redirect_url' => route('order.redirect', ['unique_token' => $table->unique_token])
+            ]);
+        }
+        
+        return response()->json(['status' => $table->status]);
+    }
+
+    /**
+     * Polling endpoint for customer waiting page: returns order status and redirect URL if approved.
+     */
+    public function pollOrderStatus($orderId)
+    {
+        $order = \App\Models\Order::find($orderId);
+        if ($order && $order->status === 'approved') {
+            $table = \App\Models\Table::find($order->table_id);
+            if ($table && $table->unique_token) {
+                return response()->json([
+                    'status' => 'approved',
+                    'redirect_url' => route('order.redirect', ['unique_token' => $table->unique_token])
+                ]);
+            }
+        }
+        return response()->json(['status' => $order ? $order->status : 'not_found']);
+    }
+}

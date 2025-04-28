@@ -8,6 +8,10 @@ Barmada is a comprehensive bar management dashboard built with Laravel, designed
   - Real-time table status tracking
   - Table assignment and organization
   - Reference notes for each table
+  - **QR Table Request & Approval Flow** (NEW)
+    - Customers can scan a QR code to request a table
+    - Admin approves table requests in real time
+    - Customers are redirected automatically when their table is ready
 
 - **Order Management**
   - Create and manage orders
@@ -36,6 +40,7 @@ Barmada is a comprehensive bar management dashboard built with Laravel, designed
 - Composer
 - MySQL >= 5.7
 - Node.js & NPM (for frontend assets)
+- **NEW:** Laravel migrations require `unique_token` and `status` columns on the `tables` table (see migrations in `database/migrations/`)
 
 ## Installation
 
@@ -79,6 +84,9 @@ DB_PASSWORD=your_password
 ```bash
 php artisan migrate
 ```
+
+**If upgrading:**
+- Make sure to run migrations to add the new `unique_token` and `status` columns to the `tables` table.
 
 8. Create an admin user:
 ```bash

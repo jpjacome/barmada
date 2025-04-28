@@ -374,6 +374,39 @@ class AllOrdersList extends Component
         return $this->exportOrdersToXml();
     }
 
+    public function acceptOrderRequest($orderId)
+    {
+        $order = \App\Models\Order::find($orderId);
+        if ($order && $order->status === 'pending_approval') {
+            $table = \App\Models\Table::find($order->table_id);
+            if ($table) {
+                // Set table status to open (triggers unique token generation)
+                $table->status = 'open';
+                $table->save();
+                // Update order status to approved
+                $order->status = 'approved';
+                $order->save();
+                // Optionally: notify or redirect the customer (could be via polling on the waiting page)
+            }
+            // Refresh lists
+            $this->loadOrders();
+            $this->loadPendingOrders();
+            $this->dispatch('orderDetailsUpdated', [ $orderId => 'removed' ]);
+        }
+    }
+
+    public function acceptTableRequest($tableId)
+    {
+        $table = \App\Models\Table::find($tableId);
+        if ($table && $table->status === 'pending_approval') {
+            $table->status = 'open';
+            $table->save();
+            // Optionally: notify the customer (they will be redirected by polling)
+        }
+        // Optionally: refresh the admin view
+        $this->loadTables();
+    }
+
     public function closeModal()
     {
         $this->showStatusModal = false;
@@ -401,4 +434,4 @@ class AllOrdersList extends Component
             'products' => $this->products,
         ]);
     }
-} 
+}

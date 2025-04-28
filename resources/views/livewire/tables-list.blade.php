@@ -1,39 +1,5 @@
 <div class="tables-container {{ $showOrdersModal ? 'modal-open' : '' }}">
-    @push('scripts')
-    <script>
-        // Debug script to troubleshoot modal issues
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Tables list component loaded');
-            
-            // Log when View Orders buttons are clicked
-            document.querySelectorAll('.table-view-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    console.log('View Orders button clicked');
-                });
-            });
-            
-            // Listen for Livewire events - only if Livewire exists
-            if (typeof Livewire !== 'undefined') {
-                document.addEventListener('livewire:initialized', () => {
-                    console.log('Livewire initialized');
-                });
-                
-                Livewire.hook('message.sent', (message, component) => {
-                    console.log('Livewire message sent:', message.updateQueue);
-                });
-                
-                Livewire.hook('message.processed', (message, component) => {
-                    console.log('Livewire message processed');
-                    if (document.querySelector('.tables-modal-backdrop')) {
-                        console.log('Modal is present in DOM');
-                    } else {
-                        console.log('Modal is NOT present in DOM');
-                    }
-                });
-            }
-        });
-    </script>
-    @endpush
+    
     
     <style>
         @import url('{{ asset('css/tables-list.css') }}');
@@ -46,13 +12,16 @@
     >
         @forelse ($tables as $table)
             <div 
-                class="table-card {{ $this->isTableFullyPaid($table->id) ? 'fully-paid' : '' }}"
+                class="table-card {{ $table->status === 'closed' ? 'fully-paid' : '' }}"
                 wire:key="table-{{ $table->id }}"
             >
                 <div class="table-card-header">
                     <h4 class="table-card-title">Table {{ $table->id }}</h4>
-                    <span class="table-status {{ $this->isTableFullyPaid($table->id) ? 'status-closed' : 'status-open' }}">
-                        {{ $this->isTableFullyPaid($table->id) ? 'Closed' : 'Open' }}
+                    <span class="table-status status-{{ $table->status }}"
+                          style="cursor:pointer;"
+                          wire:click="toggleTableStatus({{ $table->id }})"
+                          title="Click to change table status">
+                        {{ ucfirst($table->status) }}
                     </span>
                 </div>
                 
@@ -104,7 +73,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
-                        <a href="{{ route('orders.create', ['table' => $table->id]) }}" class="table-card-button" target="_blank">
+                        <a href="{{ url('/qr-entry/' . $table->id) }}" class="table-card-button" target="_blank">
                             <i class="bi bi-plus-circle"></i> New Order
                         </a>
                     </div>

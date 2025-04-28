@@ -10,9 +10,6 @@
         <meta name="livewire-asset-path" content="{{ asset('/') }}">
 
         <title>Barmada - Bar Management Dashboard</title>
-
-        <!-- Script interceptor - load first to catch all problematic scripts -->
-        <script src="{{ asset('script-interceptor.js') }}"></script>
         
         <!-- Debug mode check -->
         @if(request()->has('debug'))

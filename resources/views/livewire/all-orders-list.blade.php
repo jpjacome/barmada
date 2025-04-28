@@ -1,6 +1,34 @@
 <div class="orders-container">
     <link href="{{ asset('css/all-orders.css') }}" rel="stylesheet">
     
+    <!-- Compact Pending Table Requests Panel -->
+    <div class="orders-panel compact-pending-orders" style="margin-bottom: var(--spacing-8);">
+        <h3 class="orders-panel-title">Pending Table Requests</h3>
+        <div class="orders-panel-content" wire:poll.5s="loadTables">
+            <div class="orders-scroll-container" style="display: flex; flex-wrap: wrap; gap: var(--spacing-4);">
+                @php
+                    $pendingTables = collect($tables)->filter(fn($t) => $t['status'] === 'pending_approval');
+                @endphp
+                @if($pendingTables->count() > 0)
+                    @foreach($pendingTables as $pendingTable)
+                        <div class="pending-order-card" style="display: flex; align-items: center; gap: var(--spacing-4); padding: var(--spacing-3) var(--spacing-4); background: var(--color-secondary); border: 1px solid var(--color-primary); border-radius: var(--border-radius-md); min-width: 0;">
+                            <span class="pending-order-table" style="font-weight: var(--font-weight-bold); font-size: var(--text-lg); color: var(--color-primary);">Table {{ $pendingTable['id'] }}</span>
+                            <button 
+                                wire:click="acceptTableRequest({{ $pendingTable['id'] }})"
+                                class="pending-order-accept-btn"
+                                style="background: var(--color-success); color: var(--color-secondary); font-weight: var(--font-weight-semibold); padding: var(--spacing-2) var(--spacing-4); border-radius: var(--border-radius-md); border: none; cursor: pointer;"
+                            >
+                                Accept
+                            </button>
+                        </div>
+                    @endforeach
+                @else
+                    <p class="no-orders-message" style="margin: 0;">No pending table requests.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <div class="orders-main">
         
         <div class="orders-data">

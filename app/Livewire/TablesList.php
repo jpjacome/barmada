@@ -237,7 +237,7 @@ class TablesList extends Component
                     'action' => $orderItem->is_paid ? 'paid' : 'unpaid'
                 ]
             ]);
-
+            $this->updateTableStatus($this->selectedTable);
             $this->refreshTableOrders();
         }
     }
@@ -293,6 +293,7 @@ class TablesList extends Component
         ]);
         
         // Refresh the order data
+        $this->updateTableStatus($this->selectedTable);
         $this->refreshTableOrders();
     }
 
@@ -330,6 +331,7 @@ class TablesList extends Component
         ]);
         
         // Refresh the order data
+        $this->updateTableStatus($this->selectedTable);
         $this->refreshTableOrders();
     }
 
@@ -390,5 +392,38 @@ class TablesList extends Component
     public function render()
     {
         return view('livewire.tables-list');
+    }
+
+    protected function updateTableStatus($tableId)
+    {
+        $table = Table::find($tableId);
+        if (!$table) return;
+
+        $orders = Order::where('table_id', $tableId)->get();
+        $totalLeft = $orders->sum(function ($order) {
+            return $order->items->sum(function ($item) {
+                return $item->is_paid ? 0 : $item->price;
+            });
+        });
+
+        $table->status = $totalLeft === 0 ? 'closed' : 'open';
+        $table->save();
+    }
+
+    public function toggleTableStatus($tableId)
+    {
+        $table = Table::find($tableId);
+        if (!$table) return;
+
+        // Switch status: closed <-> open, or pending_approval -> open
+        if ($table->status === 'closed') {
+            $table->status = 'open';
+        } elseif ($table->status === 'open') {
+            $table->status = 'closed';
+        } elseif ($table->status === 'pending_approval') {
+            $table->status = 'open';
+        }
+        $table->save();
+        $this->loadTables();
     }
 }

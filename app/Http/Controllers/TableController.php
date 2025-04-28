@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Table;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class TableController extends Controller
@@ -83,4 +84,20 @@ class TableController extends Controller
         
         return redirect()->route('tables.index')->with('success', 'Table deleted successfully!');
     }
-} 
+
+    /**
+     * Redirect to the order creation page using the unique token.
+     */
+    public function redirectToOrder($unique_token)
+    {
+        $table = Table::where('unique_token', $unique_token)->first();
+        if (!$table || $table->status !== 'open') {
+            return response()->view('orders.table-closed', ['table' => $table]);
+        }
+        $products = Product::orderBy('name')->get();
+        $tables = Table::all();
+        $selectedTableId = $table->id;
+        // Render the order creation view with the table preselected
+        return view('orders.create', compact('products', 'tables', 'selectedTableId'));
+    }
+}
