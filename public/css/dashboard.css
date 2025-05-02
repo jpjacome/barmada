@@ -566,8 +566,6 @@
 
 .activity-item:hover {
     background-color: rgba(115, 171, 132, 0.05);
-    transform: translateX(4px);
-    padding-left: var(--spacing-2);
     border-radius: var(--border-radius-md);
 }
 

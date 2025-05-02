@@ -34,7 +34,14 @@ class AuthenticatedSessionController extends Controller
             session(['theme' => $user->preferences['theme']]);
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Redirect based on user role
+        if ($user && $user->is_admin) {
+            return redirect()->intended(route('admin.dashboard', absolute: false));
+        } elseif ($user && $user->is_editor) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
+        // Default fallback
+        return redirect('/');
     }
 
     /**

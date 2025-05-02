@@ -13,6 +13,9 @@ This section will document the results of each step in the implementation proces
   - No empty order is created; the flow is now fully table-status based.
   - All UI and backend logic for this workflow is complete and tested.
 
+- **Date**: April 28, 2025
+- **Progress**: The QR link system is now stable and editor-specific. QR links are generated in the format `/qr-entry/{editorname}/{table_number}`. This ensures that QR codes remain valid and consistent for each editor and table, even if tables are deleted and recreated. The backend and frontend have been updated to support this, and the flow remains fully table-status based with admin approval. All changes have been tested and confirmed working.
+
 # Progress Update (April 28, 2025)
 
 - The admin view now displays tables with status `pending_approval` in the "Pending Table Requests" section at the top.

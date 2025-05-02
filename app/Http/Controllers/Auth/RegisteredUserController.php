@@ -39,6 +39,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'is_editor' => true, // Ensure every new user is an editor
         ]);
 
         event(new Registered($user));

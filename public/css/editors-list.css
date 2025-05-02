@@ -1,0 +1,198 @@
+/* Editors List Component Styles - uses general variables */
+
+.editors-container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--spacing-2);
+}
+
+.editors-main {
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    transition: var(--transition);
+    position: relative;
+}
+
+.editors-table-container {
+    overflow-x: auto;
+    border-radius: var(--border-radius-md);
+}
+
+.editors-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.editors-table-header {
+    background-color: rgba(121, 199, 197, 0.1);
+    border-bottom: var(--border-width) solid var(--color-primary);
+    line-height: 1.5em;
+}
+
+.editors-table-header-cell {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-accents);
+    text-align: left;
+    border-bottom: var(--border-width) solid var(--color-primary);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-size: var(--text-xs);
+}
+
+.editors-table-cell-right {
+    text-align: right;
+}
+
+.editors-table-body tr:not(:last-child) {
+    border-bottom: var(--border-width) solid rgba(121, 199, 197, 0.1);
+}
+
+.editor-row {
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    outline: var(--border-width) solid var(--color-primary);
+}
+
+.editor-row:hover {
+    background-color: rgba(121, 199, 197, 0.08);
+}
+
+.editor-cell {
+    padding: var(--spacing-2);
+    color: var(--color-accents);
+}
+
+.editor-name {
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.01em;
+    transition: var(--transition);
+}
+
+.editor-email {
+    font-family: 'Inter-tight', sans-serif;
+    color: var(--color-accents);
+    opacity: 0.9;
+}
+
+.editor-created {
+    color: var(--color-accents);
+    font-size: var(--text-sm);
+    opacity: 0.8;
+}
+
+.editor-actions {
+    text-align: right;
+    white-space: nowrap;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-2);
+}
+
+.editor-edit-button, 
+.editor-delete-button {
+    background: none;
+    border: var(--border-width) solid transparent;
+    padding: var(--spacing-2);
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.editor-edit-button {
+    color: var(--color-success);
+}
+
+.editor-delete-button {
+    color: var(--color-danger);
+}
+
+.editor-edit-button:hover {
+    background-color: rgba(153, 209, 156, 0.1);
+    transform: translateY(-2px);
+    border-color: var(--color-success);
+    box-shadow: 0 3px 6px rgba(153, 209, 156, 0.2);
+}
+
+.editor-delete-button:hover {
+    background-color: rgba(250, 136, 136, 0.1);
+    transform: translateY(-2px);
+    border-color: var(--color-danger);
+    box-shadow: 0 3px 6px rgba(250, 136, 136, 0.2);
+}
+
+.editor-dashboard-button {
+    background: none;
+    border: var(--border-width) solid transparent;
+    padding: var(--spacing-2);
+    cursor: pointer;
+    transition: var(--transition);
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: var(--color-primary);
+}
+
+.editor-dashboard-button:hover {
+    background-color: rgba(121, 199, 197, 0.1);
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
+    box-shadow: 0 3px 6px rgba(121, 199, 197, 0.2);
+}
+
+.editor-empty-message {
+    padding: var(--spacing-8);
+    text-align: center;
+    color: var(--color-accents);
+    font-style: italic;
+    background-color: rgba(121, 199, 197, 0.05);
+    border-radius: var(--border-radius);
+}
+
+.editors-pagination {
+    padding: var(--spacing-3);
+    display: flex;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .editors-container {
+        padding: var(--spacing-1);
+    }
+    .editors-table-header-cell {
+        padding: var(--spacing-2);
+        white-space: nowrap;
+    }
+    .editor-cell {
+        padding: var(--spacing-2);
+    }
+    .editor-actions {
+        flex-direction: column;
+        gap: var(--spacing-1);
+        align-items: flex-end;
+    }
+    .editor-edit-button, 
+    .editor-delete-button {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .editors-table {
+        font-size: var(--text-sm);
+    }
+}

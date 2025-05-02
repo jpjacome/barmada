@@ -1,0 +1,100 @@
+# Implementation Plan: QR Image for Table Order Link
+
+## Overview
+This plan details every step required to add QR code image generation for table order links in Barmada. The feature will allow users to generate and view a QR image for each table’s order link, displayed in a modal in the tables list. The implementation uses the simple-qrcode PHP package for server-side QR generation, ensuring reliability and compatibility.
+
+---
+
+## Step 1: Dependency Installation
+
+### 1.1. Install QR Code Package
+- Run `composer require simplesoftwareio/simple-qrcode` to add the package.
+- Confirm the package is present in `composer.json` and installed in `vendor/`.
+
+---
+
+## Step 2: Backend Implementation
+
+### 2.1. Add QR Image Controller Method
+- In `TableController`, add a method:
+  - Accepts a table ID or unique identifier.
+  - Generates the order link (using the same logic as the 'New Order' button in the tables blade).
+  - Uses the QrCode facade to generate a PNG image (not SVG).
+  - Returns the image as a response with the correct content-type (image/png).
+  - No caching: the QR is generated on each request.
+
+### 2.2. Add Route for QR Image
+- In `routes/web.php`, add a route:
+  - `Route::get('/tables/{table}/qr', [TableController::class, 'qrImage'])->name('tables.qr');`
+- Protect the route so only admins and the specific editor for the table can access it.
+
+---
+
+## Step 3: Frontend Integration
+
+### 3.1. Add "Show QR" Button in Tables List
+- In `resources/views/livewire/tables-list.blade.php`:
+  - Add a small button/icon for each table card: "Show QR".
+  - When clicked, open a modal and display the QR image for that table.
+
+### 3.2. Modal for QR Image
+- Add a modal component or inline modal markup styled like the product modal.
+- The modal should:
+  - Fetch the QR image from `/tables/{table}/qr` (use an `<img>` tag with the route as src).
+  - Display only the table number (e.g., 'Table 1') below the QR image.
+  - Include a close button.
+  - Modal can be dismissed by clicking outside or the close button.
+
+---
+
+## Step 4: Styling
+
+### 4.1. Add/Update CSS
+- Update `public/css/tables-list.css` for modal and QR image styling.
+- Ensure the modal matches the style of the product modal and is responsive.
+- The "Show QR" button should be small and visually distinct.
+
+---
+
+## Step 5: Testing
+
+### 5.1. Manual Testing
+- Test as admin and as the specific editor:
+  - Open the tables list.
+  - Click "Show QR" for a table.
+  - Confirm the QR image appears and encodes the correct order link.
+  - Scan the QR with a phone to verify it opens the correct order page.
+  - Confirm the modal displays only the table number and can be closed as expected.
+
+### 5.2. Automated Tests (Optional)
+- Add feature tests to ensure the QR route returns a valid PNG image for valid tables and proper errors for invalid access.
+
+---
+
+## Step 6: Documentation & Rollout
+
+### 6.1. Update Documentation
+- Document the new QR feature in your project docs.
+- Add usage instructions for staff/admins.
+
+### 6.2. Rollout Plan
+- Deploy to staging.
+- Have staff test the feature.
+- Deploy to production after confirmation.
+
+---
+
+## Step 7: Review & Next Steps
+- Review code for security (ensure only authorized users can generate QR codes).
+- Review performance (QR generation is fast, but consider caching for high-traffic environments in the future if needed).
+- Plan for future enhancements (custom QR branding, bulk download, etc.).
+
+---
+
+# Progress Log
+- [2025-05-01] Decided on server-side QR generation using simple-qrcode. Implementation plan drafted with all requirements clarified.
+- [2025-05-01] simple-qrcode package installed successfully.
+- [2025-05-01] Backend QR image route and controller method added to TableController. Next: Add modal and frontend integration in tables list.
+- [2025-05-01] Livewire TablesList component updated with state and listeners for QR modal. Modal now opens and closes with correct table info. Next: polish modal CSS and test feature.
+- [2025-05-01] Polished QR button and modal styling in tables-list.css. Ready for manual testing of the feature as admin and editor.
+- [TODO] Test and document feature before production rollout.

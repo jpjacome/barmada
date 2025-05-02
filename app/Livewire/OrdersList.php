@@ -9,6 +9,7 @@ use App\Models\Table;
 use Livewire\WithPagination;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\OrderItem;
+use Illuminate\Support\Facades\Auth;
 
 class OrdersList extends Component
 {
@@ -33,22 +34,37 @@ class OrdersList extends Component
 
     public function loadOrders()
     {
-        // Load pending orders
-        $this->pendingOrders = Order::where('status', 'pending')
-            ->with('table')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->toArray();
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $this->pendingOrders = Order::where('status', 'pending')
+                ->with('table')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->toArray();
+        } else if ($user->is_editor) {
+            $this->pendingOrders = Order::where('status', 'pending')
+                ->where('editor_id', $user->id)
+                ->with('table')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->toArray();
+        } else {
+            $this->pendingOrders = [];
+        }
 
-        // Load products for display
         $this->products = Product::all()->keyBy('id')->toArray();
-
         $this->lastUpdated = now()->format('Y-m-d H:i:s');
     }
 
     public function updateOrderStatus($orderId, $status)
     {
+        $user = Auth::user();
         $order = Order::findOrFail($orderId);
+
+        if (!$user->is_admin && !($user->is_editor && $order->editor_id == $user->id)) {
+            abort(403);
+        }
+
         $order->status = $status;
         $order->save();
 
@@ -164,7 +180,21 @@ class OrdersList extends Component
 
     public function render()
     {
+        $user = Auth::user();
         $query = Order::with('table');
+
+        if ($user->is_admin) {
+            // no scoping
+        } else if ($user->is_editor) {
+            $query->where('editor_id', $user->id);
+        } else {
+            return view('livewire.orders-list', [
+                'pendingOrders' => [],
+                'allOrders' => collect(),
+                'products' => $this->products,
+                'lastUpdated' => $this->lastUpdated,
+            ]);
+        }
 
         // Apply sorting
         if ($this->sort === 'table_id') {
@@ -187,4 +217,4 @@ class OrdersList extends Component
             'lastUpdated' => $this->lastUpdated,
         ]);
     }
-} 
+}

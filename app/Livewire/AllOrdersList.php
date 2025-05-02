@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
+use Illuminate\Support\Facades\Auth;
 
 class AllOrdersList extends Component
 {
@@ -49,11 +50,12 @@ class AllOrdersList extends Component
 
     public function loadPendingOrders()
     {
-        $this->pendingOrders = Order::where('status', 'pending')
-            ->with('table')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->toArray();
+        $user = Auth::user();
+        $query = Order::where('status', 'pending')->with('table');
+        if (!$user->is_admin) {
+            $query->where('editor_id', $user->id);
+        }
+        $this->pendingOrders = $query->orderBy('created_at', 'desc')->get()->toArray();
     }
 
     protected function initializeOrderDetails()
@@ -415,7 +417,12 @@ class AllOrdersList extends Component
 
     public function render()
     {
+        $user = Auth::user();
         $query = Order::with('table');
+
+        if (!$user->is_admin) {
+            $query->where('editor_id', $user->id);
+        }
 
         if ($this->sort === 'table_id') {
             $query->join('tables', 'orders.table_id', '=', 'tables.id')

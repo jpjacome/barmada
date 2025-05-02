@@ -32,6 +32,7 @@ class Order extends Model
         'product7_qty',
         'product8_qty',
         'product9_qty',
+        'editor_id',
     ];
 
     protected $casts = [
@@ -71,4 +72,14 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-} 
+
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'editor_id');
+    }
+
+    public function getEditorNameAttribute()
+    {
+        return $this->editor ? $this->editor->name : null;
+    }
+}

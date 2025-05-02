@@ -18,6 +18,7 @@ class ActivityLog extends Model
         'amount',
         'description',
         'metadata',
+        'editor_id',
     ];
 
     protected $casts = [
@@ -39,4 +40,14 @@ class ActivityLog extends Model
     {
         return $this->belongsTo(User::class);
     }
-} 
+
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'editor_id');
+    }
+
+    public function getEditorNameAttribute()
+    {
+        return $this->editor ? $this->editor->name : null;
+    }
+}

@@ -16,12 +16,16 @@
                 wire:key="table-{{ $table->id }}"
             >
                 <div class="table-card-header">
-                    <h4 class="table-card-title">Table {{ $table->id }}</h4>
+                    <h4 class="table-card-title">Table {{ $table->table_number ?? $table->id }}</h4>
                     <span class="table-status status-{{ $table->status }}"
                           style="cursor:pointer;"
                           wire:click="toggleTableStatus({{ $table->id }})"
                           title="Click to change table status">
-                        {{ ucfirst($table->status) }}
+                        @if($table->status === 'pending_approval')
+                            Pending Approval
+                        @else
+                            {{ ucfirst($table->status) }}
+                        @endif
                     </span>
                 </div>
                 
@@ -73,7 +77,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
-                        <a href="{{ url('/qr-entry/' . $table->id) }}" class="table-card-button" target="_blank">
+                        <button 
+                            class="table-qr-button" 
+                            wire:click="openQrModal({{ $table->id }}, {{ $table->table_number ?? $table->id }})"
+                            title="Show QR Code"
+                        >
+                            <i class="bi bi-qr-code"></i>
+                        </button>
+                        <a href="{{ url('/qr-entry/' . rawurlencode($editorName) . '/' . $table->table_number) }}" class="table-card-button" target="_blank">
                             <i class="bi bi-plus-circle"></i> New Order
                         </a>
                     </div>
@@ -150,7 +161,7 @@
         >
             <div class="modal" wire:click.stop>
                 <div class="modal-header">
-                    <h3 class="modal-title">Orders for Table {{ $selectedTable }}</h3>
+                    <h3 class="modal-title">Orders for Table {{ $tables->firstWhere('id', $selectedTable)->table_number ?? $selectedTable }}</h3>
                     <button wire:click="closeOrdersModal" class="modal-close">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -288,5 +299,25 @@
             </div>
         </div>
     </div>
+    @endif
+
+    <!-- QR Modal -->
+    @if($showQrModal)
+        <div class="modal-wrapper">
+            <div class="modal-backdrop" wire:click="closeQrModal">
+                <div class="modal" wire:click.stop>
+                    <div class="modal-header">
+                        <h3 class="modal-title">QR for Table {{ $qrTableNumber }}</h3>
+                        <button wire:click="closeQrModal" class="modal-close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="text-align:center;">
+                        <img src="{{ url('/tables/' . $qrTableId . '/qr') }}" alt="QR Code for Table {{ $qrTableNumber }}" style="max-width: 320px; width: 100%; height: auto; margin-bottom: 1rem;" />
+                        <div style="font-size: 1.2em; font-weight: bold; margin-top: 1rem;">Table {{ $qrTableNumber }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endif
 </div>

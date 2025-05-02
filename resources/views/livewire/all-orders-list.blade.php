@@ -12,7 +12,7 @@
                 @if($pendingTables->count() > 0)
                     @foreach($pendingTables as $pendingTable)
                         <div class="pending-order-card" style="display: flex; align-items: center; gap: var(--spacing-4); padding: var(--spacing-3) var(--spacing-4); background: var(--color-secondary); border: 1px solid var(--color-primary); border-radius: var(--border-radius-md); min-width: 0;">
-                            <span class="pending-order-table" style="font-weight: var(--font-weight-bold); font-size: var(--text-lg); color: var(--color-primary);">Table {{ $pendingTable['id'] }}</span>
+                            <span class="pending-order-table" style="font-weight: var(--font-weight-bold); font-size: var(--text-lg); color: var(--color-primary);">Table {{ $pendingTable['table_number'] ?? $pendingTable['id'] }}</span>
                             <button 
                                 wire:click="acceptTableRequest({{ $pendingTable['id'] }})"
                                 class="pending-order-accept-btn"
@@ -46,7 +46,7 @@
                                      wire:ignore>
                                     <div class="order-card-header">
                                         <h4 class="order-card-title">Order #{{ $pendingOrder['id'] }}</h4>
-                                        <span class="order-card-table" wire:key="table-{{ $pendingOrder['id'] }}">Table {{ $pendingOrder['table']['id'] }}</span>
+                                        <span class="order-card-table" wire:key="table-{{ $pendingOrder['id'] }}">Table {{ $pendingOrder['table']['table_number'] ?? $pendingOrder['table']['id'] }}</span>
                                     </div>
                                     
                                     <div class="order-card-body">
@@ -169,7 +169,7 @@
                             @forelse($allOrders as $order)
                                 <tr class="orders-table-row">
                                     <td class="orders-table-cell">{{ $order->id }}</td>
-                                    <td class="orders-table-cell">Table {{ $order->table->id }}</td>
+                                    <td class="orders-table-cell">Table {{ $order->table->table_number ?? $order->table->id }}</td>
                                     <td class="orders-table-cell">
                                         <button 
                                             wire:click="toggleStatus({{ $order->id }})" 
@@ -295,7 +295,7 @@
                         >
                             @foreach($tables as $table)
                                 <option value="{{ $table->id }}" {{ $editingOrder['table_id'] == $table->id ? 'selected' : '' }}>
-                                    Table {{ $table->id }}
+                                    Table {{ $table->table_number ?? $table->id }}
                                 </option>
                             @endforeach
                         </select>

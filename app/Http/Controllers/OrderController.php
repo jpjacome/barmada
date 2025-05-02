@@ -7,6 +7,8 @@ use App\Models\Product;
 use App\Models\Table;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class OrderController extends Controller
 {
@@ -15,14 +17,22 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
         $sort = $request->query('sort');
         $direction = $request->query('direction', 'asc');
         
         // Get all pending orders for the latest orders panel
-        $pendingOrders = Order::with('table')->where('status', 'pending')->latest()->get();
+        $pendingOrders = Order::with('table')
+            ->where('status', 'pending')
+            ->when($user->is_editor, fn($q) => $q->where('editor_id', $user->id))
+            ->latest()->get();
         
         // Start with a base query for all orders
         $query = Order::with('table');
+        
+        if ($user->is_editor) {
+            $query->where('editor_id', $user->id);
+        }
         
         // Apply sorting
         if ($sort === 'table') {
@@ -51,8 +61,9 @@ class OrderController extends Controller
      */
     public function create()
     {
-        $products = Product::orderBy('name')->get();
-        $tables = Table::all();
+        $user = Auth::user();
+        $products = $user->is_admin ? Product::orderBy('name')->get() : Product::where('editor_id', $user->id)->orderBy('name')->get();
+        $tables = $user->is_admin ? Table::all() : Table::where('editor_id', $user->id)->get();
         
         // Get the table ID from the query parameter
         $selectedTableId = request()->query('table');
@@ -60,7 +71,7 @@ class OrderController extends Controller
         // Validate the table ID if provided
         if ($selectedTableId) {
             $table = Table::find($selectedTableId);
-            if (!$table) {
+            if (!$table || ($user->is_editor && $table->editor_id != $user->id)) {
                 return redirect()->route('orders.create')->with('error', 'Invalid table selected.');
             }
         }
@@ -90,6 +101,7 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
         $validated = $request->validate([
             'table_id' => 'required|exists:tables,id',
             'products' => 'required|array',
@@ -112,6 +124,14 @@ class OrderController extends Controller
         // Get the table
         $table = Table::findOrFail($validated['table_id']);
         
+        // Only restrict if user is an editor
+        if ($user && $user->is_editor && $table->editor_id != $user->id) {
+            abort(403);
+        }
+        
+        // Assign editor_id: admin uses table's editor, editor uses own, guest uses table's editor
+        $editorId = $user && $user->is_admin ? $table->editor_id : ($user ? $user->id : $table->editor_id);
+        
         // Create the order
         $order = Order::create([
             'table_id' => $table->id,
@@ -119,6 +139,7 @@ class OrderController extends Controller
             'total_amount' => 0,
             'amount_paid' => 0,
             'amount_left' => 0,
+            'editor_id' => $editorId,
         ]);
         
         // Calculate total amount and create order items
@@ -173,6 +194,11 @@ class OrderController extends Controller
      */
     public function update(Request $request, Order $order)
     {
+        $user = Auth::user();
+        if (!$user->is_admin && !($user->is_editor && $order->editor_id == $user->id)) {
+            abort(403);
+        }
+        
         $validated = $request->validate([
             'status' => 'required|in:pending,delivered,completed,cancelled',
         ]);
@@ -197,6 +223,11 @@ class OrderController extends Controller
      */
     public function updateOrder(Request $request, Order $order)
     {
+        $user = Auth::user();
+        if (!$user->is_admin && !($user->is_editor && $order->editor_id == $user->id)) {
+            abort(403);
+        }
+        
         // Handle status update if status parameter is present
         if ($request->has('status')) {
             $validated = $request->validate([
@@ -345,9 +376,20 @@ class OrderController extends Controller
     /**
      * Handle QR code entry: set table to pending_approval and show waiting page, or redirect if open.
      */
-    public function qrEntry($tableId)
+    public function qrEntry($editorname, $table_number)
     {
-        $table = \App\Models\Table::findOrFail($tableId);
+        // Find the editor by name (or slug if you switch to that)
+        $editor = User::where('name', $editorname)->first();
+        if (!$editor) {
+            abort(404, 'Editor not found.');
+        }
+        // Find the table by editor_id and table_number
+        $table = Table::where('editor_id', $editor->id)
+            ->where('table_number', $table_number)
+            ->first();
+        if (!$table) {
+            abort(404, 'Table not found.');
+        }
         if ($table->status === 'open' && $table->unique_token) {
             // Table is already open, redirect to order page
             return redirect()->route('order.redirect', ['unique_token' => $table->unique_token]);

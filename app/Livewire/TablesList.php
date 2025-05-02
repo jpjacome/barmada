@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\OrderItem;
 use Livewire\Attributes\On;
 use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Auth;
 
 class TablesList extends Component
 {
@@ -37,6 +38,15 @@ class TablesList extends Component
 
     public $visibleOrderProducts = [];
 
+    public $showQrModal = false;
+    public $qrTableId = null;
+    public $qrTableNumber = null;
+
+    protected $listeners = [
+        'openQrModal',
+        'closeQrModal',
+    ];
+
     public function mount()
     {
         $this->loadTables();
@@ -45,7 +55,14 @@ class TablesList extends Component
 
     public function loadTables()
     {
-        $this->tables = Table::orderBy('id')->get();
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $this->tables = Table::orderBy('id')->get();
+        } else if ($user->is_editor) {
+            $this->tables = Table::where('editor_id', $user->id)->orderBy('id')->get();
+        } else {
+            $this->tables = collect();
+        }
         $this->lastUpdated = now()->format('H:i:s');
         $this->status = 'Tables updated at ' . $this->lastUpdated;
     }
@@ -89,24 +106,20 @@ class TablesList extends Component
 
     public function addTable()
     {
-        // Find the lowest available ID
-        $existingIds = Table::orderBy('id')->pluck('id')->toArray();
-        $newId = 1;
-        
-        // Find the first gap in the sequence
-        foreach ($existingIds as $index => $id) {
-            if ($id != $index + 1) {
-                $newId = $index + 1;
-                break;
-            }
-            $newId = count($existingIds) + 1;
+        $user = Auth::user();
+        if (!$user->is_admin && !$user->is_editor) {
+            abort(403);
         }
-        
-        // Create the table with the specific ID
-        Table::create([
-            'id' => $newId,
+        // Find the next table_number for this editor
+        $maxTableNumber = Table::where('editor_id', $user->id)->max('table_number');
+        $nextTableNumber = $maxTableNumber ? $maxTableNumber + 1 : 1;
+
+        $data = [
             'orders' => 0,
-        ]);
+            'editor_id' => $user->id,
+            'table_number' => $nextTableNumber,
+        ];
+        Table::create($data);
 
         $this->toggleAddForm();
         $this->status = 'Table added successfully!';
@@ -115,7 +128,12 @@ class TablesList extends Component
 
     public function deleteTable($tableId)
     {
+        $user = Auth::user();
         $table = Table::findOrFail($tableId);
+        
+        if (!$user->is_admin && !($user->is_editor && $table->editor_id == $user->id)) {
+            abort(403);
+        }
         
         // Check if the table has any active orders
         $hasActiveOrders = Order::where('table_id', $tableId)->exists();
@@ -389,9 +407,27 @@ class TablesList extends Component
         return $totalLeft === 0;
     }
 
+    public function openQrModal($tableId, $tableNumber)
+    {
+        $this->showQrModal = true;
+        $this->qrTableId = $tableId;
+        $this->qrTableNumber = $tableNumber;
+    }
+
+    public function closeQrModal()
+    {
+        $this->showQrModal = false;
+        $this->qrTableId = null;
+        $this->qrTableNumber = null;
+    }
+
     public function render()
     {
-        return view('livewire.tables-list');
+        $user = Auth::user();
+        $editorName = $user->name; // Or use a slug if available/preferred
+        return view('livewire.tables-list', [
+            'editorName' => $editorName
+        ]);
     }
 
     protected function updateTableStatus($tableId)

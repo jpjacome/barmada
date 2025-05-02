@@ -21,9 +21,18 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // Call the product seeder
-        $this->call([
-            ProductSeeder::class,
-        ]);
+        // Create a default editor user if it doesn't exist
+        $editor = User::firstOrCreate(
+            ['email' => 'editor@golems.bar'],
+            [
+                'name' => 'Default Editor',
+                'password' => bcrypt('password'),
+                'is_editor' => true,
+            ]
+        );
+
+        // Store the editor ID in config for use in ProductSeeder
+        config(['barmada.default_editor_id' => $editor->id]);
+        $this->call(ProductSeeder::class);
     }
 }

@@ -63,7 +63,15 @@ class NumberController extends Controller
      */
     public function livewire()
     {
-        $categories = Category::orderBy('sort_order')->get();
+        $user = auth()->user();
+        if ($user && $user->is_admin) {
+            $categories = Category::orderBy('sort_order')->get();
+        } else if ($user && $user->is_editor) {
+            $categories = Category::where('editor_id', $user->id)->orderBy('sort_order')->get();
+        } else {
+            // Guest (public/QR): show no categories or only public ones if you want
+            $categories = collect();
+        }
         return view('products.livewire', compact('categories'));
     }
 

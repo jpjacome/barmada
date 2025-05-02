@@ -1,0 +1,198 @@
+# App Folder Structure and File Descriptions
+
+This document provides a comprehensive overview of every file and folder in the `App` directory. It is intended as a reference for maintainers and developers making architectural changes, ensuring clarity on file purposes, key editing considerations, and inter-file relationships.
+
+---
+
+## Console/
+- **Kernel.php**: Registers and schedules Artisan commands. Key for adding new CLI commands or scheduled tasks.
+- **Commands/**: Contains custom Artisan commands.
+  - **CreateAdminUser.php**: Command to create an admin user from the CLI. Linked to user management and initial setup.
+  - **MigrateOrdersToItems.php**: Command for migrating order data to the new order items structure. Used during major schema changes.
+
+## Events/
+- **NumberAdded.php**: Event broadcast when a new number is added (e.g., for real-time updates). Used with broadcasting and listeners.
+
+## Http/
+- **Controllers/**: Handles HTTP requests and responses.
+  - **Auth/**: Authentication-related controllers (login, registration, password reset, etc.).
+    - **AuthenticatedSessionController.php**: Login/logout logic. Sets session and user theme.
+    - **ConfirmablePasswordController.php**: Handles password confirmation for sensitive actions.
+    - **EmailVerificationNotificationController.php**: Sends email verification links.
+    - **EmailVerificationPromptController.php**: Shows email verification prompt.
+    - **NewPasswordController.php**: Handles password reset form and logic.
+    - **PasswordController.php**: Handles password update for logged-in users.
+    - **PasswordResetLinkController.php**: Handles password reset link requests.
+    - **RegisteredUserController.php**: Handles user registration.
+    - **VerifyEmailController.php**: Handles email verification callbacks.
+  - **CategoryController.php**: CRUD for product categories.
+  - **Controller.php**: Base controller, extended by all others.
+  - **NumberController.php**: Handles number management and broadcasting events.
+  - **OrderController.php**: Handles order CRUD, order creation, updates, and special flows (QR, polling, archive export).
+  - **ProfileController.php**: User profile view, update, and deletion.
+  - **SettingsController.php**: Handles app settings (if implemented).
+  - **TableController.php**: Handles table CRUD, QR/unique token logic, and table-related order flows.
+- **Middleware/**: HTTP middleware for request filtering and preprocessing.
+  - **EnsureUserIsAdmin.php**: Restricts access to admin-only routes.
+  - **HandleUserTheme.php**: Applies user theme preferences to the session.
+- **Requests/**: Form request validation classes.
+  - **Auth/**: Auth-specific validation (e.g., LoginRequest.php).
+    - **LoginRequest.php**: Validates login form data.
+  - **ProfileUpdateRequest.php**: Validates profile update form data.
+
+## Livewire/
+- **AllOrdersList.php**: Livewire component for displaying all orders (admin view), including status changes and exports.
+- **NumbersList.php**: Livewire component for real-time number updates.
+- **OrdersList.php**: Livewire component for listing and editing orders (per-table or per-user view).
+- **OrderTimer.php**: Livewire component for order timing/countdown features.
+- **ProductsList.php**: Livewire component for product CRUD, category management, and icon uploads.
+- **TablesList.php**: Livewire component for table management, order viewing, payment tracking, and status toggling.
+
+## Models/
+- **ActivityLog.php**: Eloquent model for logging activities (payments, changes). Linked to tables, orders, and users.
+- **Category.php**: Eloquent model for product categories.
+- **Number.php**: Eloquent model for numbers (used in real-time features).
+- **Order.php**: Eloquent model for orders. Linked to tables, products, and order items.
+- **OrderItem.php**: Eloquent model for individual items in an order. Linked to orders and products.
+- **Product.php**: Eloquent model for products. Linked to categories and order items.
+- **Table.php**: Eloquent model for tables. Linked to orders and activity logs.
+- **User.php**: Eloquent model for users (admin, editors, etc.).
+
+## Providers/
+- **AppServiceProvider.php**: Registers app-wide services, URL handling, custom Blade directives, and file upload macros.
+- **BroadcastServiceProvider.php**: Registers broadcasting channels for real-time features.
+- **ThemeServiceProvider.php**: Registers and applies user theme middleware.
+
+## View/
+- **Components/**: Blade component classes for layouts.
+  - **AppLayout.php**: Main app layout component. Renders the primary app view.
+  - **GuestLayout.php**: Layout for guest (unauthenticated) users.
+
+---
+
+## bootstrap/
+- **app.php**: Initializes the Laravel application instance. Only edit if you need to customize the app bootstrap process.
+- **providers.php**: Returns the list of service providers to load. Rarely edited directly; used for advanced provider management.
+- **cache/**: Stores framework-generated cache files for performance.
+  - **.gitignore**: Ensures cache files are not tracked by git.
+  - **events.php**: Cached event/service provider mappings. Regenerated by Laravel; do not edit manually.
+  - **packages.php**: Cached package service providers. Regenerated by Laravel; do not edit manually.
+  - **services.php**: Cached service configuration. Regenerated by Laravel; do not edit manually.
+
+## config/
+- **app.php**: Main application configuration (name, env, timezone, locale, providers, aliases). Edit to change core app settings.
+- **auth.php**: Authentication guards, providers, and password reset settings. Edit to change how users authenticate.
+- **broadcasting.php**: Broadcasting connections (pusher, redis, log, null). Edit for real-time event broadcasting setup.
+- **cache.php**: Cache driver and store configuration. Edit to change cache backend (file, redis, etc.).
+- **database.php**: Database connection settings (mysql, sqlite, etc.). Edit to change DB credentials or add connections.
+- **filesystems.php**: Filesystem disks and cloud storage settings. Edit to configure file uploads/storage.
+- **livewire.php**: Livewire-specific configuration (asset paths, middleware, etc.). Edit for Livewire customization.
+- **logging.php**: Logging channels and stack configuration. Edit to change log output (single, daily, slack, etc.).
+- **mail.php**: Mail driver and SMTP settings. Edit to configure outgoing email.
+- **queue.php**: Queue connection and worker settings. Edit for background job processing.
+- **services.php**: Third-party service credentials (mailgun, pusher, etc.). Edit to add or update API keys.
+- **session.php**: Session driver and cookie settings. Edit to change session storage (file, cookie, database, etc.).
+
+---
+
+## database/
+- **.gitignore**: Ensures local database and cache files are not tracked by git.
+- **database.sqlite**: SQLite database file for local development/testing.
+- **factories/**: Contains model factories for generating fake data in tests and seeders.
+  - **UserFactory.php**: Factory for creating user records with randomized data.
+- **migrations/**: Contains all database migration files, which define and modify the database schema over time. Each file is timestamped and describes a specific schema change (e.g., creating tables, adding columns, removing columns). Key migrations include:
+  - **create_users_table.php**: Creates the users table.
+  - **create_tables_table.php**: Creates the tables table (for bar/restaurant tables).
+  - **create_products_table.php**: Creates the products table.
+  - **create_orders_table.php**: Creates the orders table.
+  - **create_order_items_table.php**: Creates the order_items table (for individual items in an order).
+  - **create_activity_logs_table.php**: Creates the activity_logs table (for logging actions).
+  - **add_is_admin_to_users_table.php**: Adds an is_admin column to users for role distinction.
+  - **add_preferences_to_users_table.php**: Adds user preferences column.
+  - **add_unique_token_to_tables_table.php**: Adds unique_token column for secure table access.
+  - **add_status_to_tables_table.php**: Adds status column for table state management.
+  - **Other migrations**: Handle schema changes like removing columns, adding categories, etc.
+- **seeders/**: Contains classes for populating the database with initial or test data.
+  - **DatabaseSeeder.php**: Main seeder that calls other seeders.
+  - **ProductSeeder.php**: Seeds the products table with sample data.
+
+## docs/
+- **live_refresh_options.md**: Documentation on live refresh options and how they are implemented in the app (likely for Livewire or polling features).
+- **tables-payment-system.md**: Documentation on the table payment system, including flow, logic, and integration details.
+
+---
+
+## public/ (root files)
+- **.htaccess**: Apache configuration file for URL rewriting and security. Used mainly on shared hosting; not used by default on Laravel’s built-in server.
+- **favicon.ico**: The website’s favicon, displayed in browser tabs.
+- **index.php**: The main entry point for all HTTP requests; routes requests to Laravel’s front controller. Should not be modified unless customizing the framework’s bootstrap process.
+- **numbers-api.php**: Standalone PHP script for number-related API endpoints. Used for custom logic outside the main Laravel routing; review for security and maintenance.
+- **phpinfo.php**: Outputs PHP configuration info for debugging. Should be removed or access-restricted in production for security reasons.
+- **robots.txt**: Instructs web crawlers on which parts of the site to index or ignore.
+
+## public/build/
+- **assets/**: Contains versioned and hashed build assets generated by the frontend build tool (e.g., Vite or Laravel Mix).
+  - **app-BkfPj1VN.js**: Compiled and minified JavaScript bundle for the application. Do not edit directly; regenerated on build.
+  - **app-D97sHb-L.css**: Compiled and minified CSS bundle for the application. Do not edit directly; regenerated on build.
+- **manifest.json**: Maps original asset filenames to their versioned counterparts for cache busting. Used by the framework to load the correct asset versions.
+
+## public/css/
+- **all-orders.css**: Styles for the all-orders admin view and related components.
+- **app-layout.css**: Styles for the main application layout.
+- **auth.css**: Styles for authentication pages (login, register, etc.).
+- **confirmation.css**: Styles for confirmation dialogs and pages.
+- **create-order.css**: Styles for the order creation page and related UI.
+- **dashboard.css**: Styles for the main dashboard view.
+- **footer.css**: Styles for the application footer.
+- **general-dark.css**: General dark theme styles for the app.
+- **general-light.css**: General light theme styles for the app.
+- **general.css**: General (shared) styles for the app.
+- **navigation.css**: Styles for navigation bars and menus.
+- **products-list.css**: Styles for the products list and product management UI.
+- **settings.css**: Styles for the settings page and related components.
+- **tables-list.css**: Styles for the tables list and table management UI.
+
+## public/fonts/
+- **CrimsonText-Bold.ttf**: Bold variant of the Crimson Text font, used for headings or emphasis in the app’s UI.
+- **CrimsonText-Regular.ttf**: Regular variant of the Crimson Text font, used for body text or general typography.
+
+## public/images/
+- **icon2.png**: PNG icon used in the app (purpose may vary; check usage in templates or CSS).
+- **logo-dark.png / logo-dark.svg**: Dark theme versions of the main logo, used in dark mode or on dark backgrounds.
+- **logo-icon-dark.svg / logo-icon.svg**: Icon-only versions of the logo, for compact branding or favicon use.
+- **logo-light.png / logo-light.svg**: Light theme versions of the main logo, used in light mode or on light backgrounds.
+- **logo.png / logo.svg**: Default main logo files, used in headers, footers, or login screens.
+- **logo1-dark.svg / logo1.svg**: Alternate logo variants (purpose may vary; check usage in templates or CSS).
+- **logo2.png**: Additional logo variant (purpose may vary; check usage in templates or CSS).
+- **logowhite.png / logowhite.svg**: White versions of the logo, for use on colored or image backgrounds.
+
+## public/imgs/
+- **bg1.webp**: WebP background image, likely used for page backgrounds or hero sections.
+- **eye.png**: Eye icon, possibly used for show/hide password or visibility toggles.
+- **icon-beer.svg**: Beer icon, likely used for product or category representation.
+- **icon-canelazo.svg**: Canelazo (drink) icon, likely used for product or category representation.
+- **icon-coke.svg**: Coke icon, likely used for product or category representation.
+- **icon-drink.svg**: Generic drink icon, likely used for product or category representation.
+- **icon-nacho.svg**: Nacho icon, likely used for product or category representation.
+- **icon-whatsapp.png**: WhatsApp icon, likely used for contact or sharing features.
+- **text.png**: Image containing text, possibly for branding or decorative purposes.
+
+## public/js/
+- **.htaccess**: Ensures correct MIME types and security for JS files.
+- **app.js**: Main JavaScript file for the application’s frontend logic. Linked from Blade templates; may include custom scripts or framework initialization.
+- **order-timer.js**: JavaScript for order timing/countdown features, likely used in order management or dashboard views.
+
+## public/storage/
+- **.gitignore**: Ensures storage subfolders are not tracked by git.
+- **archive/**: Contains exported or archived order data, typically in XML format (e.g., `orders_YYYY-MM-DD_HH-MM-SS.xml`). Used for backups or reporting.
+- **product-icons/**: Contains SVG icon files for products, referenced in the UI for product/category representation. Filenames are hashed for uniqueness and cache busting.
+
+## public/vendor/
+- **livewire/**: Contains Livewire’s published frontend assets (JS and manifest files). Required for Livewire components to function on the frontend.
+  - **livewire.esm.js / livewire.js / livewire.min.js**: Main Livewire JavaScript files (ESM and minified versions) for real-time frontend updates.
+  - **.map files**: Source maps for debugging Livewire JS.
+  - **manifest.json**: Maps original asset filenames to their versioned counterparts for cache busting.
+
+---
+
+This document will be expanded as we progress to other folders. Each entry is designed to help you quickly understand the file's role, editing considerations, and dependencies.

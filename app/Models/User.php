@@ -23,6 +23,9 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'preferences',
+        'is_editor',
+        'editor_metadata',
+        'editor_id',
     ];
 
     /**
@@ -36,16 +39,39 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'preferences' => 'array',
+        'editor_metadata' => 'array',
+    ];
+
+    public function tables()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'preferences' => 'array',
-        ];
+        return $this->hasMany(Table::class, 'editor_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'editor_id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'editor_id');
+    }
+
+    public function categories()
+    {
+        return $this->hasMany(Category::class, 'editor_id');
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class, 'editor_id');
     }
 }

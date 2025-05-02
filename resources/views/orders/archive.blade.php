@@ -1,10 +1,6 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Orders Archive
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
+@section('content')
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <style>
@@ -121,7 +117,6 @@
                     opacity: 0.7;
                 }
             </style>
-        
             <div class="archive-container">
                 <div class="archive-header">
                     <div>
@@ -138,7 +133,6 @@
                         Back to Dashboard
                     </a>
                 </div>
-                
                 <div class="archive-table-container">
                     @if(count($files) > 0)
                         <table class="archive-table">
@@ -177,4 +171,4 @@
             </div>
         </div>
     </div>
-</x-app-layout> 
+@endsection

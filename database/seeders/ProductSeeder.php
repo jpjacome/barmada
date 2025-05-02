@@ -12,6 +12,11 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
+        $editorId = config('barmada.default_editor_id');
+        if (!$editorId) {
+            throw new \Exception('No editorId provided to ProductSeeder.');
+        }
+
         // Define the products
         $products = [
             [
@@ -70,9 +75,10 @@ class ProductSeeder extends Seeder
             ],
         ];
 
-        // Insert the products
+        // Insert the products with editor_id
         foreach ($products as $product) {
+            $product['editor_id'] = $editorId;
             Product::create($product);
         }
     }
-} 
+}

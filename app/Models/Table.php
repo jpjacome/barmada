@@ -21,6 +21,8 @@ class Table extends Model
         'orders',
         'status',
         'reference',
+        'editor_id',
+        'table_number', // Added for per-editor numbering
     ];
 
     /**
@@ -87,5 +89,21 @@ class Table extends Model
                 $this->attributes['unique_token'] = null;
             }
         }
+    }
+
+    /**
+     * Get the editor for the table.
+     */
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'editor_id');
+    }
+
+    /**
+     * Get the editor name attribute.
+     */
+    public function getEditorNameAttribute()
+    {
+        return $this->editor ? $this->editor->name : null;
     }
 }

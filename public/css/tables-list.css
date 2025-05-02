@@ -104,7 +104,6 @@
     border-color: var(--color-success);
 }
 
-
 .table-card-header {
     display: flex;
     justify-content: space-between;
@@ -136,8 +135,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 50px;
+    width: 30px;
+    height: 30px;
+    margin: auto;
 }
 
 .table-delete-button:hover {
@@ -192,6 +192,30 @@
 
 .table-card-button i {
     font-size: var(--text-sm);
+}
+
+/* QR Button Styles */
+.table-qr-button {
+    background: none;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: var(--transition);
+    margin: auto;
+    cursor: pointer;
+    padding: 20px;
+}
+
+.table-qr-button:hover {
+    background-color: rgba(121, 199, 197, 0.12);
+    border-color: var(--color-primary);
+    color: var(--color-secondary);
 }
 
 /* Table Status Styles */

@@ -12,6 +12,7 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ImpersonateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,20 +47,30 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
+// Tables Management Routes (accessible to both admins and editors)
+Route::resource('tables', TableController::class)->middleware(['auth']);
+Route::get('/tables/{table}/qr', [\App\Http\Controllers\TableController::class, 'qrImage'])->name('tables.qr');
+
+// Products route (accessible to both admins and editors)
+Route::get('/products', [NumberController::class, 'livewire'])->middleware(['auth'])->name('products.index');
+
+// Orders routes (accessible to both admins and editors)
+Route::get('/orders', [OrderController::class, 'index'])->middleware(['auth'])->name('orders.index');
+Route::patch('/orders/{order}', [OrderController::class, 'update'])->middleware(['auth'])->name('orders.update');
+Route::get('/orders/archive', [OrderController::class, 'archive'])->middleware(['auth'])->name('orders.archive');
+
 // Admin-only routes
 Route::middleware(['auth', 'admin'])->group(function () {
-    // Tables Management Routes
-    Route::resource('tables', TableController::class);
-    
-    // Products route (renamed from numbers/livewire)
-    Route::get('/products', [NumberController::class, 'livewire'])->name('products.index');
-
-    // Orders routes
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::patch('/orders/{order}', [OrderController::class, 'update'])->name('orders.update');
-    
-    // Orders Archive route
-    Route::get('/orders/archive', [OrderController::class, 'archive'])->name('orders.archive');
+    // Admin dashboard route
+    Route::get('/admin/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('admin.dashboard');
+    Route::get('/admin/editors', function () {
+        $editors = User::where('is_editor', true)->paginate(10);
+        return view('admin.editors', compact('editors'));
+    })->name('admin.editors');
+    Route::post('/admin/impersonate/{id}', [ImpersonateController::class, 'impersonate'])->name('admin.impersonate');
+    Route::post('/admin/impersonate/leave', [ImpersonateController::class, 'leave'])->name('admin.impersonate.leave');
 });
 
 // Remove unused Number routes
@@ -89,7 +100,7 @@ Route::get('/order/confirmation', [OrderController::class, 'confirmation'])->nam
 Route::get('/order/{unique_token}', [TableController::class, 'redirectToOrder'])->name('order.redirect');
 
 // QR Entry route for customers scanning the QR code at the table
-Route::get('/qr-entry/{table}', [OrderController::class, 'qrEntry'])->name('orders.qr-entry');
+Route::get('/qr-entry/{editorname}/{table_number}', [OrderController::class, 'qrEntry'])->name('orders.qr-entry');
 
 // Polling endpoint for table status
 Route::get('/poll-table-status/{table}', [OrderController::class, 'pollTableStatus']);
@@ -137,10 +148,10 @@ Route::get('/all-orders', function () {
 })->middleware('auth')   // ✨ only logged‑in users
   ->name('all-orders');
 
-// Category Management Routes
-Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
-Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
-Route::post('/categories/{category}/move-up', [CategoryController::class, 'moveUp'])->name('categories.move-up');
-Route::post('/categories/{category}/move-down', [CategoryController::class, 'moveDown'])->name('categories.move-down');
+// Category Management Routes (accessible to both admins and editors)
+Route::post('/categories', [CategoryController::class, 'store'])->middleware(['auth'])->name('categories.store');
+Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->middleware(['auth'])->name('categories.destroy');
+Route::post('/categories/{category}/move-up', [CategoryController::class, 'moveUp'])->middleware(['auth'])->name('categories.move-up');
+Route::post('/categories/{category}/move-down', [CategoryController::class, 'moveDown'])->middleware(['auth'])->name('categories.move-down');
 
 require __DIR__.'/auth.php';

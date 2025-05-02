@@ -1,0 +1,12 @@
+END USER LICENSE AGREEMENT (EULA)
+
+This software and its source code ("Software") are licensed, not sold, by DR PIXEL.
+
+1. Permission is granted to view and download the Software for personal, non-commercial use only.
+2. You may not modify, adapt, merge, translate, reverse engineer, or create derivative works of the Software without express written permission from DR PIXEL.
+3. You may not use any part of the Software in your own projects or distribute it, in whole or in part, without permission.
+4. The Software is provided “as is” without warranty of any kind.
+
+By using or downloading the Software, you agree to these terms.
+
+Copyright © 2025, DR PIXEL. All rights reserved.

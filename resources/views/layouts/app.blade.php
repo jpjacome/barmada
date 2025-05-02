@@ -31,8 +31,9 @@
 
         <!-- Styles - using relative paths that are confirmed working -->
         <link href="{{ asset('css/general-' . session('theme', 'light') . '.css') }}" rel="stylesheet">
-        <link rel="stylesheet" href="{{ asset('css/app-layout.css') }}">
-        
+        @if (!request()->is('/'))
+            <link rel="stylesheet" href="{{ asset('css/app-layout.css') }}">
+        @endif
         <!-- Component-specific Styles -->
         <link href="{{ asset('css/navigation.css') }}" rel="stylesheet">
         <link href="{{ asset('css/settings.css') }}" rel="stylesheet">
@@ -66,21 +67,25 @@
         <script src="{{ asset('js/app.js') }}" defer></script>
     </head>
     <body class="theme-{{ session('theme', 'light') }}">
+        @if (request()->is('/'))
+            @include('layouts.navigation')
+            @yield('content')
+        @else
         <div class="app-container">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
-            @isset($header)
+            @hasSection('header')
                 <header class="page-header">
                     <div class="page-header-content">
-                        {{ $header }}
+                        @yield('header')
                     </div>
                 </header>
-            @endisset
+            @endif
 
             <!-- Page Content -->
             <main class="main-content">
-                {{ $slot }}
+                @yield('content')
             </main>
             
             <!-- Footer -->
@@ -94,7 +99,7 @@
                 </div>
             </footer>
         </div>
-        
+        @endif
         
         <!-- Stacked Scripts -->
         @stack('scripts')

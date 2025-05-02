@@ -8,6 +8,7 @@ use App\Models\Category;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Rule;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Auth;
 
 class ProductsList extends Component
 {
@@ -70,16 +71,36 @@ class ProductsList extends Component
 
     public function loadProducts()
     {
-        $this->products = Product::with('category')
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->get();
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $this->products = Product::with('category')
+                ->orderBy($this->sortField, $this->sortDirection)
+                ->get();
+        } else if ($user->is_editor) {
+            $this->products = Product::with('category')
+                ->where('editor_id', $user->id)
+                ->orderBy($this->sortField, $this->sortDirection)
+                ->get();
+        } else {
+            $this->products = collect();
+        }
         $this->lastUpdated = now()->format('H:i:s');
         $this->status = 'Products updated at ' . $this->lastUpdated;
     }
 
     public function loadCategories()
     {
-        $this->categories = Category::orderBy('name')->get();
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $this->categories = Category::orderBy('name')->get();
+        } else if ($user->is_editor) {
+            $this->categories = Category::where('editor_id', $user->id)->orderBy('name')->get();
+        } else {
+            $this->categories = collect();
+        }
+        
+        // Log category scoping
+        \Log::info('Categories loaded for user ' . $user->id . ' (admin=' . ($user->is_admin ? '1' : '0') . ', editor=' . ($user->is_editor ? '1' : '0') . '): ' . $this->categories->pluck('id')->join(','));
     }
 
     #[On('refresh-products')]
@@ -91,6 +112,7 @@ class ProductsList extends Component
     // Create or update a product
     public function saveProduct()
     {
+        $user = Auth::user();
         if ($this->iconType === 'bootstrap') {
             $this->validate([
                 'name' => 'required|min:3|max:255',
@@ -117,6 +139,9 @@ class ProductsList extends Component
         
         if ($this->editMode) {
             $product = Product::findOrFail($this->productId);
+            if (!$user->is_admin && !($user->is_editor && $product->editor_id == $user->id)) {
+                abort(403);
+            }
             $product->update([
                 'name' => $this->name,
                 'price' => $this->price,
@@ -126,13 +151,19 @@ class ProductsList extends Component
             ]);
             $this->status = "Product '{$this->name}' updated successfully!";
         } else {
-            Product::create([
+            $data = [
                 'name' => $this->name,
                 'price' => $this->price,
                 'icon_type' => $this->iconType,
                 'icon_value' => $iconValue,
                 'category_id' => $this->categoryId,
-            ]);
+            ];
+            if ($user->is_admin) {
+                $data['editor_id'] = $user->id; // Optionally allow admin to set another editor_id if needed
+            } else {
+                $data['editor_id'] = $user->id;
+            }
+            Product::create($data);
             $this->status = "Product '{$this->name}' added successfully!";
         }
         
@@ -142,11 +173,15 @@ class ProductsList extends Component
     
     public function saveCategory()
     {
+        $user = Auth::user();
         $this->validate([
             'categoryName' => 'required|min:3|max:255|unique:categories,name',
         ]);
 
-        Category::create(['name' => $this->categoryName]);
+        Category::create([
+            'name' => $this->categoryName,
+            'editor_id' => $user->id,
+        ]);
         $this->categoryName = '';
         $this->loadCategories();
         $this->status = 'Category added successfully!';
@@ -213,6 +248,7 @@ class ProductsList extends Component
     // Delete a product when called directly (from the button)
     public function deleteProduct($id = null)
     {
+        $user = Auth::user();
         $productId = $id ?? $this->productId;
         
         if (!$productId) {
@@ -225,6 +261,10 @@ class ProductsList extends Component
         if (!$product) {
             $this->status = "Error: Product not found";
             return;
+        }
+        
+        if (!$user->is_admin && !($user->is_editor && $product->editor_id == $user->id)) {
+            abort(403);
         }
         
         $productName = $product->name;
@@ -270,8 +310,16 @@ class ProductsList extends Component
 
     public function render()
     {
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $products = Product::with('category')->get();
+        } else if ($user->is_editor) {
+            $products = Product::with('category')->where('editor_id', $user->id)->get();
+        } else {
+            $products = collect();
+        }
         return view('livewire.products-list', [
-            'products' => Product::with('category')->get(),
+            'products' => $products,
         ]);
     }
 }

@@ -9,10 +9,20 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'editor_id'];
 
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'editor_id');
+    }
+
+    public function getEditorNameAttribute()
+    {
+        return $this->editor ? $this->editor->name : null;
     }
 }

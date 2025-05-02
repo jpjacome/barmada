@@ -17,12 +17,11 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check if user is authenticated and is an admin
-        if (!$request->user() || !$request->user()->is_admin) {
-            // Redirect to dashboard with an error message
+        $user = $request->user();
+        // Allow if user is admin, regardless of is_editor
+        if (!$user || !$user->is_admin) {
             return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
         }
-
         return $next($request);
     }
-} 
+}

@@ -18,24 +18,26 @@
             <div class="navigation-right">
                 <!-- Navigation Links -->
                 <div class="navigation-links">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                    
-                    <!-- Admin Only Links -->
                     @if(Auth::check() && Auth::user()->is_admin)
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
+                            {{ __('Admin Dashboard') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.editors')" :active="request()->routeIs('admin.editors')">
+                            {{ __('Establishments') }}
+                        </x-nav-link>
+                    @elseif(Auth::check() && Auth::user()->is_editor)
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('tables.index')" :active="request()->routeIs('tables.*')">
                             {{ __('Tables') }}
                         </x-nav-link>
-                        
                         <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">
                             {{ __('Products') }}
                         </x-nav-link>
-                        
                         <x-nav-link :href="route('all-orders')" :active="request()->routeIs('all-orders')">
                             {{ __('Orders') }}
                         </x-nav-link>
-                        
                         <a href="{{ route('orders.create') }}" class="nav-new-order-button">
                             <span class="nav-button-text">New Order</span>
                         </a>
@@ -124,24 +126,26 @@
          x-transition:leave-end="opacity-0 transform scale-95" 
          class="responsive-navigation">
         <div class="responsive-navigation-content">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-            
-            <!-- Admin Only Mobile Links -->
             @if(Auth::check() && Auth::user()->is_admin)
+                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
+                    {{ __('Admin Dashboard') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.editors')" :active="request()->routeIs('admin.editors')">
+                    {{ __('Establishments') }}
+                </x-responsive-nav-link>
+            @elseif(Auth::check() && Auth::user()->is_editor)
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    {{ __('Dashboard') }}
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('tables.index')" :active="request()->routeIs('tables.*')">
                     {{ __('Tables') }}
                 </x-responsive-nav-link>
-                
                 <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">
                     {{ __('Products') }}
                 </x-responsive-nav-link>
-                
                 <x-responsive-nav-link :href="route('all-orders')" :active="request()->routeIs('all-orders')">
                     {{ __('Orders') }}
                 </x-responsive-nav-link>
-                
                 <x-responsive-nav-link :href="route('orders.create')" class="responsive-new-order">
                     {{ __('New Order') }}
                 </x-responsive-nav-link>
