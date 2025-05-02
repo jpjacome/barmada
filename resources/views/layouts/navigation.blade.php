@@ -27,7 +27,7 @@
                         </x-nav-link>
                     @elseif(Auth::check() && Auth::user()->is_editor)
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                            {{ __('Dashboard') }}
+                            <i class="bi bi-house-door-fill" style="font-size: 1.2em;"></i>
                         </x-nav-link>
                         <x-nav-link :href="route('tables.index')" :active="request()->routeIs('tables.*')">
                             {{ __('Tables') }}
@@ -37,6 +37,9 @@
                         </x-nav-link>
                         <x-nav-link :href="route('all-orders')" :active="request()->routeIs('all-orders')">
                             {{ __('Orders') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('staff.index')" :active="request()->routeIs('staff.index')">
+                            {{ __('Staff') }}
                         </x-nav-link>
                         <a href="{{ route('orders.create') }}" class="nav-new-order-button">
                             <span class="nav-button-text">New Order</span>
@@ -135,7 +138,7 @@
                 </x-responsive-nav-link>
             @elseif(Auth::check() && Auth::user()->is_editor)
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                    {{ __('Dashboard') }}
+                    <i class="bi bi-house-door-fill" style="font-size: 1.2em;"></i>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('tables.index')" :active="request()->routeIs('tables.*')">
                     {{ __('Tables') }}
@@ -145,6 +148,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('all-orders')" :active="request()->routeIs('all-orders')">
                     {{ __('Orders') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('staff.index')" :active="request()->routeIs('staff.index')">
+                    {{ __('Staff') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('orders.create')" class="responsive-new-order">
                     {{ __('New Order') }}

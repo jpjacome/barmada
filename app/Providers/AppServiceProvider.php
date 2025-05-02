@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Livewire;
+use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\EnsureUserIsEditor;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -56,5 +58,8 @@ HTML;
         \Illuminate\Support\Facades\Validator::extend('svg', function ($attribute, $value) {
             return $value instanceof \Illuminate\Http\UploadedFile && $value->isSvg();
         });
+
+        // Register 'editor' middleware alias for Laravel 12+
+        Route::aliasMiddleware('editor', EnsureUserIsEditor::class);
     }
 }

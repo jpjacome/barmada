@@ -55,6 +55,14 @@ class Table extends Model
     }
 
     /**
+     * Get the sessions for the table.
+     */
+    public function sessions()
+    {
+        return $this->hasMany(TableSession::class);
+    }
+
+    /**
      * Generate a unique token for the table.
      */
     public function generateUniqueToken(): void

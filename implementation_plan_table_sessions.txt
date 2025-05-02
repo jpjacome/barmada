@@ -1,0 +1,101 @@
+# Implementation Plan: Table Sessions, Unique Tokens, and Session Management
+
+## Overview
+This plan details the steps to implement per-table sessions, unique token management, and session open/close tracking in the Barmada app. Each table session represents a customer group’s visit, is linked to a unique token for QR access, and tracks which staff/editor opened/closed the session. Sessions can only be reopened by the editor (owner), not staff. No new history or reporting views are included in this phase.
+
+---
+
+## Step 1: Database & Model Changes
+
+### 1.1. Create TableSessions Table
+- Added a new `table_sessions` table with columns:
+  - `id`
+  - `table_id` (foreign key)
+  - `session_number` (increments per table, resets daily)
+  - `date` (date of session)
+  - `unique_token` (string, for QR/entry)
+  - `status` (open/closed/reopened)
+  - `opened_at`, `closed_at` (timestamps)
+  - `opened_by` (user_id, staff/editor)
+  - `closed_by` (user_id, staff/editor)
+  - `editor_id` (redundant for fast queries, foreign key)
+- Added Eloquent model: `TableSession`.
+
+### 1.2. Link Orders to Sessions
+- Added `table_session_id` (foreign key) to `orders` table.
+- On order creation, assign the current open session for the table.
+
+---
+
+## Step 2: Session Lifecycle Logic
+
+### 2.1. Opening a Table/Session
+- When a table is opened (by editor or staff), create a new `TableSession`:
+  - Generate a new unique token.
+  - Set `opened_by` to the user.
+  - Set `status` to “open”.
+  - Set `session_number` to 1 + max for that table on the current date.
+  - Set `date` to today.
+  - Assign the token to the table for QR access.
+- If a session is already open, prevent duplicate sessions.
+
+### 2.2. Closing a Session
+- When all orders are paid, allow staff to close the session:
+  - Set `closed_at` and `closed_by` in `TableSession`.
+  - Set `status` to “closed”.
+  - Remove/clear the table’s unique token (or mark as inactive).
+  - Orders remain linked to the session for reporting.
+
+### 2.3. Reopening a Session
+- Only editors (owners) can reopen a closed session:
+  - Set `status` to “reopened”.
+  - Generate a new unique token.
+  - Set `opened_by` to the editor.
+  - Update `opened_at`.
+  - Assign the token to the table.
+
+---
+
+## Step 3: UI and Access Control
+
+### 3.1. Staff vs. Editor Permissions
+- Staff can open/close sessions, but cannot reopen closed sessions.
+- Editors can open, close, and reopen sessions.
+
+### 3.2. QR/Token Flow
+- The table’s current unique token always points to the open session.
+- When a session is closed, the token is invalidated.
+- When a session is reopened, a new token is generated and assigned.
+
+---
+
+## Step 4: Model and Relationship Updates
+
+- Table hasMany TableSessions.
+- TableSession belongsTo Table, User (opened_by, closed_by), Editor.
+- Order belongsTo TableSession.
+
+---
+
+## Step 5: Documentation & Structure
+
+- Update documentation to reflect session logic, token flow, and new relationships.
+- No new history or reporting views are included in this phase.
+
+---
+
+# Progress Log
+- [2025-05-02] Started implementation of table sessions and unique tokens. Decided to log every step, including problems and decisions, in this file. Ready to begin with Step 1: Database & Model Changes.
+- [2025-05-02] Created migration for table_sessions with all required columns and foreign keys.
+- [2025-05-02] Created TableSession Eloquent model using artisan command. Implemented fillable fields and relationships in TableSession model.
+- [2025-05-02] Created migration to add table_session_id foreign key to orders table. Updated up/down methods for schema changes. Updated Order model: added table_session_id to $fillable and implemented tableSession() relationship.
+- [2025-05-02] Ran migrations for table_sessions and table_session_id in orders. Migrations completed successfully with no errors.
+- [2025-05-02] Updated addTable() in TablesList.php to assign the lowest available table_number for the editor, ensuring continuous numbering. Updated deleteTable() to free up the table_number for reuse and show the correct table_number in the status message.
+- [2025-05-02] Ensured tables are always displayed in progressive order by table_number in the UI. Updated loadTables() in TablesList.php to order by table_number for both admin and editor views. Tables now appear in correct order even after deletion and re-adding.
+- [2025-05-02] Updated loadTableOrders() in TablesList.php to only show orders for the current open TableSession. After closing and reopening a table, the orders list starts empty for the new session.
+- [2025-05-02] Identified and fixed issue: orders were not being linked to the current TableSession on creation. Next: update order creation logic (OrderController and any Livewire components) to set table_session_id to the current open TableSession for the table.
+- [2025-05-02] Updated OrderController@store to set table_session_id to the current open TableSession when creating a new order. This ensures all new orders are linked to the correct session and will appear in the session-based order views. If no open session exists, order creation is blocked with an error. This step completes the critical session linkage for order creation.
+- [2025-05-02] Added staff user support: created migration to add is_staff boolean column to users table and updated User model. This enables assignment of staff users to table sessions (opened_by, closed_by). All existing logic for is_admin and is_editor remains unchanged. Next: update session management logic and UI to allow staff assignment and display staff info where relevant.
+- [2025-05-02] Implemented staff management UI for editors: created StaffList Livewire component, staff-list Blade view, and staff-list.css. Editors can now view, add, and delete staff members linked to their establishment. UI and logic closely follow the products-list pattern for consistency. All styles use general-light.css variables. Staff page is now fully functional and ready for further enhancements if needed.
+- [2025-05-02] Fixed 'Target class [editor] does not exist' error for staff page. Registered the 'editor' middleware alias in AppServiceProvider (Laravel 12+), and created EnsureUserIsEditor middleware. Editors can now access the staff page as intended. Confirmed working in production. Documented the new Laravel kernel behavior in APP_STRUCTURE_REFERENCE.txt for future reference.
+- [2025-05-02] TODO (leave for later): Implement staff management UI for editors. This will allow editors to create, edit, and delete staff accounts, and assign them to their establishment. Staff will have limited permissions compared to editors.

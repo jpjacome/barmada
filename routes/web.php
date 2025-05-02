@@ -73,6 +73,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/impersonate/leave', [ImpersonateController::class, 'leave'])->name('admin.impersonate.leave');
 });
 
+// Staff placeholder page (for editors)
+Route::middleware(['auth', 'editor'])->group(function () {
+    Route::get('/staff', function () {
+        return view('staff.index');
+    })->name('staff.index');
+});
+
 // Remove unused Number routes
 // Redirect old routes to avoid errors
 Route::get('/numbers', function() {

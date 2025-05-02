@@ -129,12 +129,23 @@ class OrderController extends Controller
             abort(403);
         }
         
+        // Find the current open TableSession for this table
+        $currentSession = \App\Models\TableSession::where('table_id', $table->id)
+            ->whereIn('status', ['open', 'reopened'])
+            ->latest('opened_at')
+            ->first();
+        
+        if (!$currentSession) {
+            return redirect()->back()->withErrors(['table_id' => 'No open session for this table. Please open the table first.']);
+        }
+        
         // Assign editor_id: admin uses table's editor, editor uses own, guest uses table's editor
         $editorId = $user && $user->is_admin ? $table->editor_id : ($user ? $user->id : $table->editor_id);
         
         // Create the order
         $order = Order::create([
             'table_id' => $table->id,
+            'table_session_id' => $currentSession->id,
             'status' => 'pending',
             'total_amount' => 0,
             'amount_paid' => 0,

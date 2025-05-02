@@ -57,9 +57,9 @@ class TablesList extends Component
     {
         $user = Auth::user();
         if ($user->is_admin) {
-            $this->tables = Table::orderBy('id')->get();
+            $this->tables = Table::orderBy('table_number')->get();
         } else if ($user->is_editor) {
-            $this->tables = Table::where('editor_id', $user->id)->orderBy('id')->get();
+            $this->tables = Table::where('editor_id', $user->id)->orderBy('table_number')->get();
         } else {
             $this->tables = collect();
         }
@@ -110,17 +110,18 @@ class TablesList extends Component
         if (!$user->is_admin && !$user->is_editor) {
             abort(403);
         }
-        // Find the next table_number for this editor
-        $maxTableNumber = Table::where('editor_id', $user->id)->max('table_number');
-        $nextTableNumber = $maxTableNumber ? $maxTableNumber + 1 : 1;
-
+        // Find the lowest available table_number for this editor
+        $existingNumbers = Table::where('editor_id', $user->id)->pluck('table_number')->toArray();
+        $nextTableNumber = 1;
+        while (in_array($nextTableNumber, $existingNumbers)) {
+            $nextTableNumber++;
+        }
         $data = [
             'orders' => 0,
             'editor_id' => $user->id,
             'table_number' => $nextTableNumber,
         ];
         Table::create($data);
-
         $this->toggleAddForm();
         $this->status = 'Table added successfully!';
         $this->dispatch('refresh-tables');
@@ -130,23 +131,19 @@ class TablesList extends Component
     {
         $user = Auth::user();
         $table = Table::findOrFail($tableId);
-        
         if (!$user->is_admin && !($user->is_editor && $table->editor_id == $user->id)) {
             abort(403);
         }
-        
         // Check if the table has any active orders
         $hasActiveOrders = Order::where('table_id', $tableId)->exists();
-        
         if ($hasActiveOrders) {
             $this->errorMessage = 'Cannot delete table #' . $tableId . ' because it has active orders.';
             $this->showErrorModal = true;
             return;
         }
-        
         // Delete the table if it has no active orders
         $table->delete();
-        $this->status = 'Table #' . $tableId . ' deleted successfully!';
+        $this->status = 'Table #' . $table->table_number . ' deleted successfully!';
         $this->dispatch('refresh-tables');
     }
 
@@ -162,11 +159,23 @@ class TablesList extends Component
     
     public function loadTableOrders()
     {
-        $orders = Order::where('table_id', $this->selectedTable)
-            ->with(['items.product'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
+        // Find the current open TableSession for this table
+        $currentSession = null;
+        if ($this->selectedTable) {
+            $currentSession = \App\Models\TableSession::where('table_id', $this->selectedTable)
+                ->whereIn('status', ['open', 'reopened'])
+                ->latest('opened_at')
+                ->first();
+        }
+        if ($currentSession) {
+            $orders = Order::where('table_id', $this->selectedTable)
+                ->where('table_session_id', $currentSession->id)
+                ->with(['items.product'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $orders = collect();
+        }
         $this->tableOrders = $orders->map(function ($order) {
             $totalAmount = $order->items->sum(function ($item) {
                 return $item->price;
@@ -175,8 +184,6 @@ class TablesList extends Component
                 return $item->price;
             });
             $leftAmount = $totalAmount - $paidAmount;
-
-            // Keep items ungrouped
             $ungroupedItems = $order->items->map(function ($item) {
                 return [
                     'id' => $item->id,
@@ -192,7 +199,6 @@ class TablesList extends Component
                     ]
                 ];
             })->toArray();
-
             return [
                 'id' => $order->id,
                 'created_at' => $order->created_at,
@@ -202,8 +208,6 @@ class TablesList extends Component
                 'items' => $ungroupedItems
             ];
         })->toArray();
-
-        // Calculate table totals
         $this->tableTotal = collect($this->tableOrders)->sum('total_amount');
         $this->tablePaid = collect($this->tableOrders)->sum('amount_paid');
         $this->tableLeft = $this->tableTotal - $this->tablePaid;
@@ -240,6 +244,10 @@ class TablesList extends Component
             $orderItem->is_paid = !$orderItem->is_paid;
             $orderItem->save();
 
+            // Get the table's editor_id
+            $table = Table::find($this->selectedTable);
+            $editorId = $table ? $table->editor_id : null;
+
             // Log the payment activity
             ActivityLog::create([
                 'type' => 'payment',
@@ -253,7 +261,8 @@ class TablesList extends Component
                     'product_id' => $productId,
                     'item_index' => $itemIndex,
                     'action' => $orderItem->is_paid ? 'paid' : 'unpaid'
-                ]
+                ],
+                'editor_id' => $editorId,
             ]);
             $this->updateTableStatus($this->selectedTable);
             $this->refreshTableOrders();
@@ -296,6 +305,8 @@ class TablesList extends Component
         });
         
         // Log the bulk payment activity
+        $table = Table::find($this->selectedTable);
+        $editorId = $table ? $table->editor_id : null;
         ActivityLog::create([
             'type' => 'payment',
             'table_id' => $this->selectedTable,
@@ -307,7 +318,8 @@ class TablesList extends Component
             'metadata' => [
                 'items_count' => $items->count(),
                 'action' => !$allPaid ? 'paid' : 'unpaid'
-            ]
+            ],
+            'editor_id' => $editorId,
         ]);
         
         // Refresh the order data
@@ -334,6 +346,8 @@ class TablesList extends Component
         });
         
         // Log the table-wide payment activity
+        $table = Table::find($this->selectedTable);
+        $editorId = $table ? $table->editor_id : null;
         ActivityLog::create([
             'type' => 'payment',
             'table_id' => $this->selectedTable,
@@ -345,7 +359,8 @@ class TablesList extends Component
                 'orders_count' => $orders->count(),
                 'items_count' => $allItems->count(),
                 'action' => !$allPaid ? 'paid' : 'unpaid'
-            ]
+            ],
+            'editor_id' => $editorId,
         ]);
         
         // Refresh the order data
@@ -451,15 +466,58 @@ class TablesList extends Component
         $table = Table::find($tableId);
         if (!$table) return;
 
-        // Switch status: closed <-> open, or pending_approval -> open
-        if ($table->status === 'closed') {
+        $user = Auth::user();
+        $today = now()->toDateString();
+
+        // Only allow opening if not already open for today
+        if ($table->status === 'closed' || $table->status === 'pending_approval') {
+            // Check for existing open session for today
+            $existingSession = $table->sessions()
+                ->where('date', $today)
+                ->whereIn('status', ['open', 'reopened'])
+                ->first();
+            if ($existingSession) {
+                // Prevent duplicate open sessions
+                $table->status = 'open';
+                $table->unique_token = $existingSession->unique_token;
+                $table->save();
+                $this->loadTables();
+                return;
+            }
+            // Get next session number for today
+            $maxSessionNumber = $table->sessions()->where('date', $today)->max('session_number');
+            $sessionNumber = $maxSessionNumber ? $maxSessionNumber + 1 : 1;
+            $uniqueToken = (string) \Illuminate\Support\Str::uuid();
+            // Create new TableSession
+            $session = \App\Models\TableSession::create([
+                'table_id' => $table->id,
+                'session_number' => $sessionNumber,
+                'date' => $today,
+                'unique_token' => $uniqueToken,
+                'status' => 'open',
+                'opened_at' => now(),
+                'opened_by' => $user->id,
+                'editor_id' => $table->editor_id,
+            ]);
             $table->status = 'open';
+            $table->unique_token = $uniqueToken;
+            $table->save();
         } elseif ($table->status === 'open') {
+            // Close the table and session
+            $openSession = $table->sessions()
+                ->whereIn('status', ['open', 'reopened'])
+                ->latest('opened_at')
+                ->first();
+            if ($openSession) {
+                $openSession->status = 'closed';
+                $openSession->closed_at = now();
+                $openSession->closed_by = $user->id;
+                $openSession->save();
+            }
             $table->status = 'closed';
-        } elseif ($table->status === 'pending_approval') {
-            $table->status = 'open';
+            $table->unique_token = null;
+            $table->save();
         }
-        $table->save();
         $this->loadTables();
     }
 }

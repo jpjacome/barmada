@@ -18,6 +18,7 @@ class Order extends Model
      */
     protected $fillable = [
         'table_id',
+        'table_session_id',
         'status',
         'total_amount',
         'amount_paid',
@@ -81,5 +82,10 @@ class Order extends Model
     public function getEditorNameAttribute()
     {
         return $this->editor ? $this->editor->name : null;
+    }
+
+    public function tableSession()
+    {
+        return $this->belongsTo(TableSession::class, 'table_session_id');
     }
 }

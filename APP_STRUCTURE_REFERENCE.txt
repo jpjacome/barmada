@@ -39,6 +39,7 @@ This document provides a comprehensive overview of every file and folder in the 
   - **Auth/**: Auth-specific validation (e.g., LoginRequest.php).
     - **LoginRequest.php**: Validates login form data.
   - **ProfileUpdateRequest.php**: Validates profile update form data.
+- **Kernel.php**: (Laravel 11+ and 12) This file is optional. If it does not exist, Laravel will use the default HTTP kernel from the framework (Illuminate\Foundation\Http\Kernel). All default middleware (auth, web, etc.) will still work. Only create this file if you need to customize or add your own middleware. If missing, the app will work perfectly with the framework's built-in kernel. (See also: vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php)
 
 ## Livewire/
 - **AllOrdersList.php**: Livewire component for displaying all orders (admin view), including status changes and exports.

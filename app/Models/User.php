@@ -24,6 +24,7 @@ class User extends Authenticatable
         'is_admin',
         'preferences',
         'is_editor',
+        'is_staff',
         'editor_metadata',
         'editor_id',
     ];
