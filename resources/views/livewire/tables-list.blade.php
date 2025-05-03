@@ -1,3 +1,7 @@
+@section('header')
+    <h1 class="page-title">Tables</h1>
+@endsection
+
 <div class="tables-container {{ $showOrdersModal ? 'modal-open' : '' }}">
     
     

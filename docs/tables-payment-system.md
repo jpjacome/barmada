@@ -162,4 +162,31 @@ $order = [
 3. Update the view to:
    - Display items correctly
    - Show proper payment status
-   - Handle item selection and payment marking 
+   - Handle item selection and payment marking
+
+## Table Sessions, Staff, and QR Code Flow (2025-05-02 Update)
+
+### Table Sessions
+- Each table session is represented by a TableSession model and database record.
+- A session is opened by a staff member or editor (recorded in `opened_by` and `opened_at`).
+- A session is closed by a staff member or editor (recorded in `closed_by` and `closed_at`).
+- Session duration can be calculated as `closed_at - opened_at`.
+- Each session has a unique token for QR access, a session number (per table, per day), and is linked to all orders created during the session.
+- Only editors can reopen closed sessions; reopening generates a new token and updates `opened_by`/`opened_at`.
+
+### Staff Users and Management
+- Staff users are a distinct user type with limited permissions compared to editors.
+- Editors and admins can manage staff accounts via the staff management UI (add, view, delete staff).
+- Staff can open and close table sessions, but only editors can reopen sessions.
+- Staff actions (opening/closing sessions) are tracked in TableSession (`opened_by`, `closed_by`).
+
+### QR Code Functionality
+- Each table has a unique QR code image generated and stored in `public/images/`.
+- QR codes are generated using the endroid/qr-code and simplesoftwareio/simple-qrcode packages.
+- Scanning a QR code allows customers to access the table, request service, or place orders (depending on table/session status).
+- QR codes are regenerated with each new session (new token).
+
+### UI and Data Flow
+- The UI displays a QR code modal for each table, accessible to editors and staff.
+- The staff management UI is accessible to editors and admins.
+- Table session data (who opened/closed, when, duration, orders) is tracked in the database and can be displayed in the UI if needed.

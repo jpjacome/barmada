@@ -1,5 +1,10 @@
+@section('header')
+    <h1 class="page-title">Staff Management</h1>
+@endsection
 <div class="staff-container">
-    <link href="{{ asset('css/staff-list.css') }}" rel="stylesheet">
+    <style>
+        @import url('{{ asset('css/staff-list.css') }}');
+    </style>
     <div class="staff-main">
         <div class="staff-data">
             <div class="staff-table-container">

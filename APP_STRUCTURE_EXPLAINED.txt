@@ -1,0 +1,84 @@
+# Application Architecture and How Everything Works
+
+This document provides a clear, specific, and comprehensive explanation of how the entire application is structured and how its components interact, based on the detailed app structure references.
+
+---
+
+## 1. Core Application Structure
+
+The application is a Laravel-based system designed for bar and restaurant management. It is organized into logical folders, each with a specific responsibility:
+
+- **App/**: Contains the main application logic, including controllers (handling HTTP requests), models (database interaction), Livewire components (real-time UI), events, service providers, and Blade view components.
+- **bootstrap/**: Handles application bootstrapping and caching of configuration and services.
+- **config/**: All configuration files for authentication, broadcasting, cache, database, mail, queue, services, session, logging, and Livewire.
+- **database/**: Contains migrations (schema changes), factories (test data), and seeders (initial data population).
+- **docs/**: Project documentation for features and technical flows.
+- **public/**: Web server root. Contains entry points, compiled assets, images, fonts, JS, CSS, and symlinked storage for user uploads.
+- **resources/**: Source files for frontend assets (CSS, JS) and Blade templates for all UI views.
+- **routes/**: Route definitions for web, API, authentication, broadcasting, and console commands.
+- **storage/**: Stores user files, framework cache, sessions, compiled views, and logs.
+- **tests/**: Feature and unit tests for all major flows and components.
+- **vendor/**: Composer-managed PHP dependencies. Never edited directly.
+
+---
+
+## 2. How the Application Works
+
+### Request Lifecycle
+1. **Entry Point**: All HTTP requests enter via `public/index.php`.
+2. **Routing**: Laravel routes the request using definitions in `routes/web.php` (for web), `api.php` (for API), etc.
+3. **Controllers**: The appropriate controller in `App/Http/Controllers` handles the request, interacts with models, and returns a response (often a Blade view or JSON).
+4. **Middleware**: Requests pass through middleware for authentication, admin checks, theme handling, etc.
+5. **Views**: Blade templates in `resources/views` render the UI, using layouts, components, and Livewire for dynamic features.
+6. **Assets**: CSS/JS are compiled from `resources/css` and `resources/js` and served from `public/`.
+7. **Database**: Eloquent models in `App/Models` interact with the database, using migrations to define schema and seeders/factories for data.
+8. **Real-Time**: Livewire components and events enable real-time updates (e.g., order status, table requests).
+
+### Key Flows
+- **Authentication**: Managed by Laravel’s built-in system, with custom controllers and views for login, registration, password reset, and email verification.
+- **Admin vs. User**: Middleware and policies restrict access to admin-only features. Admins can manage tables, products, orders, and view all activity.
+- **QR Table Requests**: Customers scan a QR code, triggering a table status change and admin approval flow. Admins see pending requests and can approve them, which updates the table status and allows customers to order.
+- **Order Management**: Orders are created, updated, and tracked via Livewire components and Eloquent models. Activity is logged for auditing.
+- **Product & Table Management**: Products and tables are managed via CRUD controllers and Livewire components, with category and icon support.
+- **Settings & Profile**: Users can update their profile and settings via dedicated views and controllers.
+- **Testing**: Feature and unit tests ensure all flows work as expected.
+
+### Security & Privacy
+Barmada is built with a strong focus on security and privacy:
+- **Authentication & Authorization**: All access is protected by Laravel’s authentication system. User roles (admin, editor, etc.) are enforced via middleware and policies, restricting sensitive actions to authorized users only.
+- **Data Protection**: User data, orders, and business information are stored securely using Eloquent models. Sensitive data is protected by Laravel’s encryption and secure session management.
+- **Access Control**: Middleware such as `EnsureUserIsAdmin` and custom policies ensure only permitted users can access or modify critical resources.
+- **Audit Logging**: All important actions (such as order changes, payments, and user management) are logged in the `activity_logs` table, providing a full audit trail for transparency and accountability.
+- **Secure Asset Handling**: File uploads and user-generated content are stored in protected directories, with public access only to intended files via symlinks.
+- **HTTPS & Session Security**: The app is designed to run over HTTPS, and sessions are securely managed to prevent unauthorized access.
+- **Testing & Validation**: Feature and unit tests cover authentication, authorization, and data validation to ensure security is maintained as the app evolves.
+
+---
+
+## 3. File and Folder Relationships
+- **Controllers** call **models** for data, return **views** for UI, and use **middleware** for access control.
+- **Livewire components** provide real-time interactivity, with paired PHP and Blade files.
+- **Migrations** define the database structure; **seeders** and **factories** populate and test data.
+- **Assets** are authored in `resources/`, compiled, and served from `public/`.
+- **Storage** is used for user uploads, logs, cache, and compiled views.
+- **Vendor** contains all third-party PHP code, managed by Composer.
+
+---
+
+## 4. Editing and Extending
+- To add features, create or update controllers, models, migrations, and views as needed.
+- Use Livewire for real-time UI updates.
+- Update routes to expose new endpoints.
+- Use middleware for new access rules.
+- Add tests in `tests/` to cover new features.
+- Manage dependencies via Composer and NPM.
+
+---
+
+## Analytics Feature Status (as of May 3, 2025)
+- The analytics dashboard is currently implemented as a front-end shell only. It displays static or random data and is not yet connected to real backend analytics or database data.
+- Next step: Develop the analytics page to work with the backend, so it displays real analytics and statistics for editors and admins.
+
+---
+
+This document is a high-level map of how everything fits together. For file-by-file details, see the APP_STRUCTURE_REFERENCE files.

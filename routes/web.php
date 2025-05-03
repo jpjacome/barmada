@@ -13,6 +13,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ImpersonateController;
+use App\Http\Controllers\AnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +79,11 @@ Route::middleware(['auth', 'editor'])->group(function () {
     Route::get('/staff', function () {
         return view('staff.index');
     })->name('staff.index');
+});
+
+// Analytics dashboard route for editors
+Route::middleware(['auth', 'editor'])->group(function () {
+    Route::get('/analytics', \App\Livewire\AnalyticsDashboard::class)->name('analytics.dashboard');
 });
 
 // Remove unused Number routes

@@ -32,9 +32,11 @@ This document provides a comprehensive overview of every file and folder in the 
   - **ProfileController.php**: User profile view, update, and deletion.
   - **SettingsController.php**: Handles app settings (if implemented).
   - **TableController.php**: Handles table CRUD, QR/unique token logic, and table-related order flows.
+  - **AnalyticsController.php**: Handles analytics dashboard requests, data aggregation, and API endpoints for analytics charts. Added May 2025.
 - **Middleware/**: HTTP middleware for request filtering and preprocessing.
   - **EnsureUserIsAdmin.php**: Restricts access to admin-only routes.
   - **HandleUserTheme.php**: Applies user theme preferences to the session.
+  - **EnsureUserIsEditor.php**: Middleware to restrict access to editor-only routes. Registered in AppServiceProvider for Laravel 12+.
 - **Requests/**: Form request validation classes.
   - **Auth/**: Auth-specific validation (e.g., LoginRequest.php).
     - **LoginRequest.php**: Validates login form data.
@@ -48,6 +50,8 @@ This document provides a comprehensive overview of every file and folder in the 
 - **OrderTimer.php**: Livewire component for order timing/countdown features.
 - **ProductsList.php**: Livewire component for product CRUD, category management, and icon uploads.
 - **TablesList.php**: Livewire component for table management, order viewing, payment tracking, and status toggling.
+- **StaffList.php**: Livewire component for staff management. Editors and admins can view, add, and delete staff members linked to their establishment. Staff users have limited permissions compared to editors. UI is accessible to both editors and admins.
+- **AnalyticsDashboard.php**: Livewire component for displaying analytics dashboards (charts, stats, etc.) for editors/admins. Integrates with analytics JS and controller. Added May 2025.
 
 ## Models/
 - **ActivityLog.php**: Eloquent model for logging activities (payments, changes). Linked to tables, orders, and users.
@@ -57,6 +61,7 @@ This document provides a comprehensive overview of every file and folder in the 
 - **OrderItem.php**: Eloquent model for individual items in an order. Linked to orders and products.
 - **Product.php**: Eloquent model for products. Linked to categories and order items.
 - **Table.php**: Eloquent model for tables. Linked to orders and activity logs.
+- **TableSession.php**: Eloquent model for table sessions. Tracks each session's open/close lifecycle, unique token, session number, date, opened_by, closed_by, opened_at, closed_at, and editor_id. Orders are linked to TableSession via table_session_id. Used for per-table session management, QR access, and session duration tracking.
 - **User.php**: Eloquent model for users (admin, editors, etc.).
 
 ## Providers/
@@ -119,7 +124,7 @@ This document provides a comprehensive overview of every file and folder in the 
 
 ## docs/
 - **live_refresh_options.md**: Documentation on live refresh options and how they are implemented in the app (likely for Livewire or polling features).
-- **tables-payment-system.md**: Documentation on the table payment system, including flow, logic, and integration details.
+- **tables-payment-system.md**: Documentation on the table payment system, including session logic, staff/editor roles, QR code flow, and session/order relationships.
 
 ---
 
@@ -152,6 +157,7 @@ This document provides a comprehensive overview of every file and folder in the 
 - **products-list.css**: Styles for the products list and product management UI.
 - **settings.css**: Styles for the settings page and related components.
 - **tables-list.css**: Styles for the tables list and table management UI.
+- **analytics.css**: Styles for the analytics dashboard and related charts. Added May 2025.
 
 ## public/fonts/
 - **CrimsonText-Bold.ttf**: Bold variant of the Crimson Text font, used for headings or emphasis in the app’s UI.
@@ -166,6 +172,7 @@ This document provides a comprehensive overview of every file and folder in the 
 - **logo1-dark.svg / logo1.svg**: Alternate logo variants (purpose may vary; check usage in templates or CSS).
 - **logo2.png**: Additional logo variant (purpose may vary; check usage in templates or CSS).
 - **logowhite.png / logowhite.svg**: White versions of the logo, for use on colored or image backgrounds.
+- **images/**: Contains static images and QR code images generated for tables. QR images are generated using the endroid/qr-code and simplesoftwareio/simple-qrcode packages and are used for table access and order flows.
 
 ## public/imgs/
 - **bg1.webp**: WebP background image, likely used for page backgrounds or hero sections.
@@ -182,6 +189,7 @@ This document provides a comprehensive overview of every file and folder in the 
 - **.htaccess**: Ensures correct MIME types and security for JS files.
 - **app.js**: Main JavaScript file for the application’s frontend logic. Linked from Blade templates; may include custom scripts or framework initialization.
 - **order-timer.js**: JavaScript for order timing/countdown features, likely used in order management or dashboard views.
+- **analytics-dashboard.js**: JavaScript for analytics dashboard charts and interactivity. Added May 2025.
 
 ## public/storage/
 - **.gitignore**: Ensures storage subfolders are not tracked by git.
@@ -193,6 +201,9 @@ This document provides a comprehensive overview of every file and folder in the 
   - **livewire.esm.js / livewire.js / livewire.min.js**: Main Livewire JavaScript files (ESM and minified versions) for real-time frontend updates.
   - **.map files**: Source maps for debugging Livewire JS.
   - **manifest.json**: Maps original asset filenames to their versioned counterparts for cache busting.
+
+## resources/views/livewire/
+- **analytics-dashboard.blade.php**: View for the analytics dashboard Livewire component. Added May 2025.
 
 ---
 

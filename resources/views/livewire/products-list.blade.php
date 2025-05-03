@@ -1,3 +1,6 @@
+@section('header')
+    <h1 class="page-title">Products & Categories</h1>
+@endsection
 <div class="products-container">
     <!-- Link to component-specific CSS only, since general CSS is loaded in the layout -->
     <link href="{{ asset('css/products-list.css') }}" rel="stylesheet">

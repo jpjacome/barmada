@@ -1,3 +1,4 @@
+
 <div class="orders-container">
     <!-- Link to the external CSS file -->
     <link href="{{ asset('css/orders.css') }}" rel="stylesheet">

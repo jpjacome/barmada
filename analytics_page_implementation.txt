@@ -1,0 +1,108 @@
+# Progress Log
+- [2025-05-02] Decided to implement a comprehensive analytics dashboard for editors/owners. The dashboard will include sections for Sales, Products, Tables/Sessions, Staff, Payments, QR, and more, as outlined below. For now, we will create a complete front-end shell with all sections, cards, and placeholders, using static/random data for display. No backend or Chart.js integration yet. Subpages/tabs may be added later if needed, but the initial version will be a single scrollable dashboard for overview and UX. Every step will be logged here.
+- [2025-05-02] Scaffolded the analytics dashboard: created a Livewire component (AnalyticsDashboard.php) and Blade view (analytics-dashboard.blade.php) with all analytics sections and cards, using static/random data. Next: add route and navigation link for editors/owners to access the analytics page.
+- [2025-05-02] Updated the navigation bar to point the Analytics link to route('analytics.dashboard') (the new Livewire analytics dashboard).
+- [2025-05-02] Removed the old analytics controller route from routes/web.php to avoid duplicate/legacy analytics pages.
+- [2025-05-02] App crashed with Symfony\Component\Routing\Exception\RouteNotFoundException: Route [analytics] not defined. Cause: The navigation bar or some part of the app still references route('analytics'), which no longer exists after removing the old route. The error occurred in resources/views/layouts/navigation.blade.php and possibly other places. Next: Search for and update all remaining references to route('analytics') to use route('analytics.dashboard') instead, and ensure no code or view expects the old route to exist.
+- [2025-05-02] Updated the analytics navbar link to use route('analytics.dashboard', ['editor' => Auth::user()->id]) so it points to the signed-in editor's analytics page.
+- [2025-05-02] Navigated to http://localhost:8000/analytics?editor=4 and encountered a crash: Livewire\Features\SupportPageComponents\MissingLayoutException: Livewire page component layout view not found: [components.layouts.app]. Cause: The Livewire AnalyticsDashboard component is not using the correct layout or the layout file is missing/misnamed. Next: Update the Livewire component to use the correct layout (layouts.app) or ensure the layout exists at resources/views/layouts/app.blade.php.
+- [2025-05-02] Deleted resources/views/analytics.blade.php (the old analytics page). Confirmed that resources/views/livewire/analytics-dashboard.blade.php is now the only analytics dashboard, fully styled with analytics.css and containing all required static analytics sections and cards. All navigation and references now point to the Livewire dashboard only.
+- [2025-05-02] Updated public/css/analytics.css to match the visual style, card/grid layout, and UX of the tables page. The analytics dashboard now uses the same card backgrounds, borders, shadows, and grid system for a consistent and beautiful UI across both analytics and tables management.
+- [2025-05-02] Next step: Integrate Chart.js (or a similar charting library) into the analytics dashboard, using static/random data for all charts and visualizations. This will allow us to finalize the dashboard's look and UX, and define the data structure needed for each chart.
+- [2025-05-02] Attempted to implement analytics visualizations using Highcharts, but encountered licensing/cost concerns and integration issues. Decided to backtrack from Highcharts and remove all related code.
+- [2025-05-02] Decided to proceed with Chart.js as the new charting library for the analytics dashboard. Chart.js is open-source, free, and well-suited for interactive analytics visualizations in Laravel + Vite projects.
+- [2025-05-02] After chart integration, begin connecting each analytics card and chart to real backend data for the current editor, replacing static data with live metrics and ensuring all data is scoped and isolated per editor.
+- [2025-05-02] Chart.js successfully integrated via CDN. The first chart (Sales & Revenue line chart) is now loading and visible in the analytics dashboard. Next: Replace static data cards that are better represented as charts with appropriate Chart.js visualizations in the analytics dashboard.
+
+# Analytics Page Implementation: Comprehensive Metrics for Editors/Owners
+
+This document lists all analytics, metrics, and visualizations that would be most useful for an editor/owner in the Barmada app. The goal is to provide actionable insights, business intelligence, and operational transparency, leveraging all available data. These metrics are designed to be visualized with Chart.js or similar tools.
+
+---
+
+## Sales & Revenue
+- Total sales (amount) per day, week, month, year
+- Total number of orders per day, week, month, year
+- Sales breakdown by product (amount and quantity) per day, week, month, year
+- Sales breakdown by product category per period
+- Average order value per period
+- Peak sales hours (hourly sales heatmap)
+- Sales by staff member (who opened/closed sessions, who created orders)
+- Sales by table (which tables generate most revenue)
+- Sales by session (session-level revenue, duration, and staff/editor)
+- Refunds/voids per period (if supported)
+
+## Product Analytics
+- Top-selling products (by quantity and revenue) per period
+- Least-selling products per period
+- Product trends (sales growth/decline over time)
+- Product combinations (frequently bought together)
+- Product performance by time of day/week
+
+## Table & Session Analytics
+- Table utilization rate (how often each table is used per period)
+- Average session duration per table
+- Session open/close times (distribution, e.g., busiest opening/closing hours)
+- Number of sessions per table per period
+- Session revenue and order count
+- Staff/editor responsible for each session
+- Session reopening frequency (how often sessions are reopened)
+
+## Staff Performance
+- Orders handled per staff/editor per period
+- Revenue generated per staff/editor
+- Average session duration per staff/editor
+- Number of sessions opened/closed per staff/editor
+- Staff activity heatmap (when staff are most active)
+
+## Customer & Order Flow
+- Number of unique customers served per period (if tracked)
+- Repeat customer rate (if tracked)
+- Average number of orders per session
+- Average items per order
+- Time from order creation to payment (order fulfillment time)
+- Unpaid/partially paid orders per period
+
+## Payment Analytics
+- Payment method breakdown (cash, card, etc. if tracked)
+- Paid vs. unpaid orders per period
+- Outstanding balances per table/session
+- Payment completion time (from order to payment)
+
+## QR & Digital Flow
+- QR code scans per table per period
+- Conversion rate: QR scan to order placed
+- Average time from QR scan to first order
+- Abandoned QR scans (scanned but no order placed)
+
+## Operational Metrics
+- Inventory depletion rate (if tracked)
+- Out-of-stock product frequency
+- Table turnover rate (how quickly tables are reused)
+- Downtime per table (time between sessions)
+- Session overlap/conflict detection
+
+## Custom & Advanced Analytics
+- Custom date range selection for all metrics
+- Comparison charts (e.g., this week vs. last week, this month vs. last month)
+- Forecasting (predictive sales, demand trends)
+- Anomaly detection (unusual sales spikes/drops)
+- Exportable reports (CSV, PDF)
+- Drill-down capability (click on a chart to see detailed data)
+- Real-time dashboard widgets (live sales, live orders, live table status)
+
+---
+
+## Visualization Suggestions (for Chart.js)
+- Line charts for sales/revenue over time
+- Bar charts for product/category sales
+- Pie/donut charts for payment method breakdown, product share
+- Heatmaps for table usage, staff activity, sales by hour (with Chart.js plugins or custom code)
+- Scatter plots for order value vs. session duration
+- Stacked columns for multi-metric comparisons
+- Area charts for cumulative sales
+- Gauges for KPIs (e.g., table utilization, average order value) (with Chart.js plugins)
+
+---
+
+This list is intended to be exhaustive and can be prioritized or filtered based on business needs. Each metric should be scoped to the current editor/owner and respect all data isolation rules.

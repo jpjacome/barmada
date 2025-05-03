@@ -349,3 +349,26 @@ tr:last-child td:last-child {
     background-color: #d9f1ff!important;
 }
 
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 10px;
+    background: var(--color-secondary);
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--color-primary) 60%, var(--color-success));
+    border-radius: var(--border-radius-full);
+    border: 2px solid var(--color-secondary);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--color-success-dark), var(--color-primary));
+}
+::-webkit-scrollbar-corner {
+    background: var(--color-secondary);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-secondary);
+}
+

@@ -38,9 +38,6 @@
                         <x-nav-link :href="route('all-orders')" :active="request()->routeIs('all-orders')">
                             {{ __('Orders') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('staff.index')" :active="request()->routeIs('staff.index')">
-                            {{ __('Staff') }}
-                        </x-nav-link>
                         <a href="{{ route('orders.create') }}" class="nav-new-order-button">
                             <span class="nav-button-text">New Order</span>
                         </a>
@@ -59,47 +56,54 @@
                 </div>
                 
                 @auth
-    {{-- Logged‑in users: profile dropdown --}}
-    <x-dropdown align="right" width="48">
-        <x-slot name="trigger">
-            <button class="dropdown-trigger">
-                <div class="dropdown-trigger-text">{{ Auth::user()->name }}</div>
+                @if(Auth::user()->is_admin || Auth::user()->is_editor)
+                <a href="{{ route('staff.index') }}" class="dropdown-trigger" title="Staff">
+                    <i class="bi bi-person"></i>
+                </a>
+                <a href="{{ route('analytics.dashboard', ['editor' => Auth::user()->id]) }}" class="dropdown-trigger" title="Analytics">
+                    <i class="bi bi-bar-chart"></i>
+                </a>
+                @endif
+                <x-dropdown align="right" width="48">
+                    <x-slot name="trigger">
+                        <button class="dropdown-trigger">
+                            <i class="bi bi-gear"></i>
 
-                <div class="dropdown-trigger-icon">
-                    <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                              clip-rule="evenodd" />
-                    </svg>
-                </div>
-            </button>
-        </x-slot>
+                            <div class="dropdown-trigger-icon">
+                                <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                          clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </button>
+                    </x-slot>
 
-        <x-slot name="content">
-            <x-dropdown-link :href="route('settings.index')">
-                {{ __('Settings') }}
-            </x-dropdown-link>
+                    <x-slot name="content">
+                        <x-dropdown-link :href="route('settings.index')">
+                            {{ __('Settings') }}
+                        </x-dropdown-link>
 
-            <x-dropdown-link :href="route('profile.edit')">
-                {{ __('Profile') }}
-            </x-dropdown-link>
+                        <x-dropdown-link :href="route('profile.edit')">
+                            {{ __('Profile') }}
+                        </x-dropdown-link>
 
-            <!-- Authentication -->
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <x-dropdown-link :href="route('logout')"
-                        onclick="event.preventDefault(); this.closest('form').submit();">
-                    {{ __('Log Out') }}
-                </x-dropdown-link>
-            </form>
-        </x-slot>
-    </x-dropdown>
-@else
-    {{-- Guests: simple Log in button (desktop) --}}
-    <a href="{{ route('login') }}" class="nav-link">
-        {{ __('Log in') }}
-    </a>
-@endauth
+                        <!-- Authentication -->
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <x-dropdown-link :href="route('logout')"
+                                    onclick="event.preventDefault(); this.closest('form').submit();">
+                                {{ __('Log Out') }}
+                            </x-dropdown-link>
+                        </form>
+                    </x-slot>
+                </x-dropdown>
+                @else
+                {{-- Guests: simple Log in button (desktop) --}}
+                <a href="{{ route('login') }}" class="nav-link">
+                    {{ __('Log in') }}
+                </a>
+                @endauth
 
             </div>
 
@@ -150,7 +154,7 @@
                     {{ __('Orders') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('staff.index')" :active="request()->routeIs('staff.index')">
-                    {{ __('Staff') }}
+                    <i class="bi bi-person"></i>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('orders.create')" class="responsive-new-order">
                     {{ __('New Order') }}

@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Make dropdown trigger icon a bit larger for clarity */
+.dropdown-trigger .bi-gear {
+    font-size: 1.3em;
+}

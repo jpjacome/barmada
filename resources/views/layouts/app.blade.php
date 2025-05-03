@@ -38,6 +38,7 @@
         <link href="{{ asset('css/navigation.css') }}" rel="stylesheet">
         <link href="{{ asset('css/settings.css') }}" rel="stylesheet">
         <link href="{{ asset('css/footer.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/analytics.css') }}" rel="stylesheet">
         
         <!-- Livewire Styles -->
         @livewireStyles
@@ -64,7 +65,6 @@
                 }
             }, true);
         </script>
-        <script src="{{ asset('js/app.js') }}" defer></script>
     </head>
     <body class="theme-{{ session('theme', 'light') }}">
         @if (request()->is('/'))
