@@ -86,6 +86,13 @@ Route::middleware(['auth', 'editor'])->group(function () {
     Route::get('/analytics', \App\Livewire\AnalyticsDashboard::class)->name('analytics.dashboard');
 });
 
+// Analytics API endpoints for Livewire dashboard
+Route::middleware(['auth', 'editor'])->group(function () {
+    Route::get('/analytics/sales-stats', [\App\Http\Controllers\AnalyticsController::class, 'getSalesAndRevenueStats'])->name('analytics.sales-stats');
+    Route::get('/analytics/product-category-stats', [\App\Http\Controllers\AnalyticsController::class, 'getProductCategoryAnalytics'])->name('analytics.product-category-stats');
+    Route::get('/analytics/service-ops-stats', [\App\Http\Controllers\AnalyticsController::class, 'getServiceOperationsStats'])->name('analytics.service-ops-stats');
+});
+
 // Remove unused Number routes
 // Redirect old routes to avoid errors
 Route::get('/numbers', function() {
@@ -105,8 +112,8 @@ Route::get('/numbers/livewire', function() {
 })->name('numbers.livewire');
 
 // Guest-accessible routes
-Route::get('/order', [OrderController::class, 'orderEntry'])->middleware(['auth', 'admin'])->name('orders.create');
-Route::post('/order', [OrderController::class, 'store'])->name('orders.store');
+Route::get('/order', [OrderController::class, 'orderEntry'])->middleware(['auth'])->name('orders.create');
+Route::post('/order', [OrderController::class, 'store'])->middleware(['auth'])->name('orders.store');
 Route::get('/order/confirmation', [OrderController::class, 'confirmation'])->name('orders.confirmation');
 
 // Add a route to handle redirection based on the unique token

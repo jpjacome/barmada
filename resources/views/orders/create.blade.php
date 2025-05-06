@@ -26,7 +26,7 @@
                     <select name="table_id" id="table_id" class="form-select" {{ $selectedTableId ? 'disabled' : '' }}>
                         <option value="">-- Selecciona una Mesa --</option>
                         @foreach ($tables as $table)
-                            <option value="{{ $table->id }}" {{ $selectedTableId == $table->id ? 'selected' : '' }}>Mesa {{ $table->id }}</option>
+                            <option value="{{ $table->id }}" {{ $selectedTableId == $table->id ? 'selected' : '' }}>Mesa {{ $table->table_number }}</option>
                         @endforeach
                     </select>
                     @if ($tables->isEmpty())

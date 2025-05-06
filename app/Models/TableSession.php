@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class TableSession extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'table_id',
         'session_number',
@@ -17,6 +20,11 @@ class TableSession extends Model
         'opened_by',
         'closed_by',
         'editor_id',
+    ];
+
+    protected $casts = [
+        'opened_at' => 'datetime',
+        'closed_at' => 'datetime',
     ];
 
     public function table()

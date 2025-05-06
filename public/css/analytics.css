@@ -398,6 +398,8 @@
     overflow-y: auto;
     top: 2em;
     left: 0;
+    color: var(--color-accents);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 .analytics-dropdown-menu-days {
     top: 2em;
@@ -406,10 +408,13 @@
 .analytics-dropdown-option {
     padding: 0.5em 1em;
     cursor: pointer;
+    background: transparent;
+    color: var(--color-accents);
+    transition: background 0.15s, color 0.15s;
 }
 .analytics-dropdown-option:hover {
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-secondary);
 }
 
 /* Flex helpers for analytics cards */

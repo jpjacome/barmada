@@ -13,6 +13,81 @@
 - [2025-05-02] Decided to proceed with Chart.js as the new charting library for the analytics dashboard. Chart.js is open-source, free, and well-suited for interactive analytics visualizations in Laravel + Vite projects.
 - [2025-05-02] After chart integration, begin connecting each analytics card and chart to real backend data for the current editor, replacing static data with live metrics and ensuring all data is scoped and isolated per editor.
 - [2025-05-02] Chart.js successfully integrated via CDN. The first chart (Sales & Revenue line chart) is now loading and visible in the analytics dashboard. Next: Replace static data cards that are better represented as charts with appropriate Chart.js visualizations in the analytics dashboard.
+- [2025-05-03] Started analytics backend implementation. Logged all planned steps and data mappings in analytics_page_implementation.txt.
+- [2025-05-04] Proceeding with Step 2: Backend Data Aggregation Logic. Preparing to scaffold AnalyticsController methods for Sales & Revenue metrics. Will review the implementation plan before each step and log all progress here.
+- [2025-05-04] Scaffolded getSalesAndRevenueStats method in AnalyticsController with comments and a placeholder response. This is the first backend endpoint for analytics aggregation, matching the implementation plan. Next: implement the actual aggregation logic for sales, orders, top product, average order value, and peak hour, scoped by time range and editor.
+- [2025-05-04] Implemented aggregation logic in getSalesAndRevenueStats for today, last 7 days, last 30 days, and current month. Endpoint returns total sales, order count, top product, average order value, and peak hour for the selected time range and editor. Next: expose this data to the Livewire AnalyticsDashboard component and begin frontend integration.
+- [2025-05-04] Updated AnalyticsDashboard Livewire component to fetch sales & revenue analytics data from the backend via HTTP request to AnalyticsController. Added public properties for analytics data and time range, and exposed them to the Blade view. Next: update the Blade view to display dynamic analytics data from Livewire.
+- [2025-05-04] Updated analytics-dashboard.blade.php to display dynamic sales & revenue data for the 'Today' card using Livewire $salesStats. Next: enable dynamic time range selection for 'Today', 'Last 7 Days', and 'Last 30 Days' cards, so users can interactively update analytics.
+- [2025-05-04] Refactored Livewire AnalyticsDashboard to fetch and display stats for all main time ranges (today, 7days, 30days, month). Updated Blade view to show real backend data for Today, Last 7 Days, and Last 30 Days cards. Next: proceed to dynamic product/category analytics or another section as prioritized.
+- [2025-05-04] Scaffolded getProductCategoryAnalytics method in AnalyticsController for product/category analytics aggregation (top/least selling products, category sales/order counts, all time ranges). Next: implement aggregation logic for these metrics and expose to Livewire.
+- [2025-05-04] Implemented backend aggregation logic in getProductCategoryAnalytics for top/least selling products and category sales/order counts, supporting all time ranges and editor scoping. Next: update Livewire component to fetch and expose this data, then update Blade view for dynamic product/category analytics.
+- [2025-05-04] Updated AnalyticsDashboard Livewire component to fetch and expose product/category analytics for all time ranges. Next: update Blade view to display dynamic top/least selling products and category breakdowns using Livewire data.
+- [2025-05-04] Updated analytics-dashboard.blade.php to display dynamic category order data for each time range using Livewire $productCategoryStats. Next: update category revenue cards and prepare for dynamic chart data integration.
+- [2025-05-04] Added getCategoryChartData method to AnalyticsDashboard Livewire component to prepare chart-ready data for category doughnut charts (orders and revenue). Next: update Blade view and JS to use this data for dynamic Chart.js rendering.
+- [2025-05-04] Reviewed analytics-dashboard.js. Most chart data and initialization is static and must be replaced with dynamic data from the backend. UI logic (dropdowns, modals, sorting) can be adapted. Next: refactor analytics-dashboard.js to use dynamic chart data from Blade/Livewire for category doughnut charts and remove obsolete static data.
+- [2025-05-04] Refactored analytics-dashboard.js to remove static data for category doughnut charts and use dynamic data from window.categoryChartData (injected by Blade/Livewire). Next: inject categoryChartData as JSON from Blade view for Chart.js to consume, completing dynamic chart integration for this section.
+- [2025-05-04] Scaffolded getServiceOperationsStats method in AnalyticsController for service/operations analytics aggregation (table usage, session stats, QR scans, staff performance, etc., all time ranges). Next: implement aggregation logic for these metrics and expose to Livewire.
+- [2025-05-04] Implemented backend aggregation logic in getServiceOperationsStats for service/operations analytics (table usage, session stats, QR scans, staff performance, etc.), supporting all time ranges and editor scoping. Next: update Livewire component to fetch and expose this data, then update Blade view for dynamic service/operations analytics.
+- [2025-05-04] Updated AnalyticsDashboard Livewire component to fetch and expose service/operations analytics for all time ranges. Next: update Blade view to display dynamic Service & Operations Analytics using this data, replacing static values.
+- [2025-05-04] Updated analytics-dashboard.blade.php to display dynamic Service & Operations Analytics using Livewire $serviceOpsStats for each time range, replacing static values. Next: integrate dynamic data for the table usage pie chart and proceed to the next analytics section as described in the plan.
+- [2025-05-04] Integrated dynamic data for the table usage pie chart: Blade injects window.tablePieChartData from Livewire, and analytics-dashboard.js uses it for Chart.js rendering and dropdown updates. Service & Operations Analytics section is now fully dynamic. Next: proceed to Advanced/Custom Analytics (export, etc.) as described in the plan.
+- [2025-05-04] Refactored AnalyticsDashboard Livewire component to use direct Eloquent queries and internal aggregation methods instead of HTTP requests to backend endpoints. This resolves the infinite loop/timeout issue and matches best practices for Livewire analytics dashboards. Next: verify dashboard loads and displays analytics data, then proceed to export functionality.
+- [2025-05-04] Error: Call to a member function diffInMinutes() on string in AnalyticsDashboard.php:236 (aggregateServiceOpsStats). Cause: opened_at/closed_at not cast as datetime. Fix: Added $casts for opened_at and closed_at in TableSession model.
+- [2025-05-04] Error: ParseError Unclosed '[' on line 364 does not match ')' in analytics-dashboard.blade.php. Cause: Trailing comma and/or bracket mismatch in @json([...]) block. Fix: Removed trailing commas and checked bracket/parenthesis matching in @json([...]) block for window.tablePieChartData.
+- [2025-05-04] Fixed Blade parse error (Unclosed '[') in analytics-dashboard.blade.php by moving the complex PHP array for tablePieChartData into a @php block and referencing it in JS with @json($tablePieData).
+- [2025-05-04] Fixed undefined variable $salesStats in analytics-dashboard.blade.php by updating the dynamic range card to use $stats[$range] (matching the Livewire property) instead of $salesStats.
+- [2025-05-04] Confirmed: Analytics dashboard now loads with no Blade or PHP errors, and all dynamic cards use Livewire properties as intended. Ready for further feature work or QA.
+- [2025-05-04] Confirmed: All fixes ensure the analytics dashboard loads even if there is no data. Awaiting further test results for any new errors.
+- [2025-05-04] Database seeding and schema alignment complete. Analytics dashboard now loads with real data for all main cards and category/service sections.
+- [2025-05-04] NEXT: Remove all remaining static/hardcoded analytics data from Blade and JS. Refactor:
+    - Previous month stats card and dropdown (Blade/JS): Replace static values with dynamic data from Livewire/backend aggregation.
+    - Sales & revenue charts (JS): Replace hardcoded arrays with dynamic data injected from Blade/Livewire.
+    - Product bar chart (JS): Replace hardcoded product data with dynamic data from backend.
+    - Product sales table (Blade): Replace static product/time matrix with dynamic data from Livewire.
+    - Dropdown stats for last 7/30 days (JS): Replace hardcoded stats with dynamic data.
+- [2025-05-04] All summary cards, product/category analytics, service/ops analytics, and category/table charts are already dynamic and use Livewire properties.
+- [2025-05-04] Analytics Data Flow and QA Review:
+
+Here’s a summary of how analytics data and the database structure work together, and why analytics may be “off”:
+
+Database Relationships (How Data Flows):
+- Users: Editors and staff. Editors own all business data (tables, products, categories, orders, sessions, logs).
+- Tables: Belong to an editor. Each table can have many sessions and orders.
+- TableSessions: Track each table’s open/close lifecycle, who opened/closed, and session duration. Linked to tables and editors.
+- Products: Belong to an editor and a category. Used in orders.
+- Categories: Belong to an editor. Used to group products.
+- Orders: Belong to a table, table session, and editor. Contain many order items.
+- OrderItems: Belong to an order and a product. Track quantity, price, and payment status.
+- ActivityLogs: Track actions (payments, QR scans, etc.) and are linked to tables, orders, and editors.
+
+Analytics Data Sources:
+- Sales & Revenue: Aggregated from orders and order_items (sum, count, group by day/week/month).
+- Product & Category Analytics: Aggregated from order_items (quantity, revenue, grouped by product/category).
+- Table & Session Analytics: From table_sessions (session count, duration, turnover, downtime).
+- Staff Performance: From orders and table_sessions (who handled what, how many, revenue per staff).
+- QR & Payment Analytics: From activity_logs (QR scans, conversion, payment events).
+
+Why Your Analytics May Be Off:
+- Per-Day/Per-Period Breakdown: Current code aggregates totals for a period, but does not break down sales by day (for line charts) or by product/category for each day. This makes charts flat or misleading.
+- Product/Category Stats: Only top/least products are shown, but not all products/categories, so tables/charts may miss data.
+- Session/Staff/QR Data: If not joined or grouped correctly, metrics like table turnover, staff orders, or QR conversion may be inaccurate.
+- Editor Scoping: All queries must filter by the current editor’s ID to avoid cross-business data leaks.
+
+What To Fix for Accurate Analytics:
+- Sales Charts: Aggregate sales/order counts per day for the selected period (not just total for 7/30 days).
+- Product/Category Analytics: Aggregate all products/categories, not just top/least, and show both quantity and revenue.
+- Table/Session Analytics: Use table_sessions for session counts, durations, and turnover, grouped by table and period.
+- Staff Analytics: Group orders and sessions by staff/editor for performance metrics.
+- Payment/QR Analytics: Use activity_logs for QR and payment events, and join with orders for conversion and timing.
+- Data Privacy: Always filter by editor_id for all queries.
+
+Next Steps:
+- Refactor aggregation methods to use groupBy and date-based filtering for all metrics.
+- For each chart/table, ensure you’re returning arrays of data points (e.g., sales per day, product sales per product, etc.).
+- Test with the seeded editor user and large dataset to ensure all metrics and charts look correct and dynamic.
+
+---
 
 # Analytics Page Implementation: Comprehensive Metrics for Editors/Owners
 
@@ -106,3 +181,213 @@ This document lists all analytics, metrics, and visualizations that would be mos
 ---
 
 This list is intended to be exhaustive and can be prioritized or filtered based on business needs. Each metric should be scoped to the current editor/owner and respect all data isolation rules.
+
+---
+
+# Implementation Plan: Analytics Dashboard – Backend Integration & Data Aggregation
+
+## Overview
+This plan details the steps to implement a fully functional analytics dashboard in the Barmada app. The goal is to replace all static data in the analytics-dashboard Blade view with real, dynamically aggregated data from the database. The dashboard will provide sales, revenue, product/category analytics, service/operations metrics, and staff performance, with support for various time ranges and interactive charts. The implementation will use Eloquent models, optimized queries, and Livewire for real-time updates.
+
+---
+
+## Step 1: Data Requirements & Mapping
+
+### 1.1. Identify All Data Points
+- List every metric, chart, and table shown in the analytics-dashboard Blade view.
+- For each, specify:
+  - Data source (orders, order_items, products, categories, tables, table_sessions, users, activity_logs, etc.)
+  - Required aggregations (sum, count, average, group by, etc.)
+  - Supported time ranges (today, last 7 days, last 30 days, per month, custom)
+  - Any filters (by editor, by table, by staff, etc.)
+
+### 1.2. Document Data Relationships
+- Map out Eloquent relationships needed for efficient queries (e.g., Order belongsTo TableSession, TableSession belongsTo Table, OrderItem belongsTo Product, etc.).
+- Note any missing relationships and plan to add them to models.
+
+---
+
+## Step 2: Backend Data Aggregation Logic
+
+### 2.1. AnalyticsController
+- Create or update `AnalyticsController` to handle all analytics data requests.
+- Implement methods for each analytics section:
+  - getSalesAndRevenueStats($range, $editorId)
+  - getProductAnalytics($range, $editorId)
+  - getCategoryAnalytics($range, $editorId)
+  - getServiceOperationsStats($range, $editorId)
+  - getStaffPerformanceStats($range, $editorId)
+  - getTableUsageStats($range, $editorId)
+  - getQrStats($range, $editorId)
+- Each method should:
+  - Accept time range and editor/user context.
+  - Return all required metrics for the frontend in a single, structured response.
+
+### 2.2. Query Optimization
+- Use Eloquent with eager loading and aggregate functions.
+- For large datasets, use database-level aggregation (DB::raw, groupBy, selectRaw).
+- Cache expensive queries where possible (e.g., for monthly stats).
+
+### 2.3. Time Range Handling
+- Implement robust date filtering for all queries (today, last 7/30 days, per month, custom).
+- Use Carbon for date calculations.
+- Ensure all time ranges are tested for edge cases (e.g., month boundaries, leap years).
+
+---
+
+## Step 3: Livewire Component Integration
+
+### 3.1. AnalyticsDashboard Livewire Component
+- Refactor `AnalyticsDashboard.php` to:
+  - Fetch all analytics data from `AnalyticsController` or directly via Eloquent.
+  - Expose all metrics, stats, and chart data as public properties.
+  - Support dynamic updates when the user changes time ranges or filters.
+  - Emit events for chart updates and dropdown selections.
+
+### 3.2. Frontend Data Binding
+- Update the Blade view to bind all metrics, tables, and chart data to Livewire properties.
+- Remove all static data and replace with dynamic values.
+- Ensure dropdowns and controls trigger Livewire actions to reload data.
+
+---
+
+## Step 4: Chart Data Preparation
+
+### 4.1. Chart.js Data Structures
+- For each chart (sales over time, product bar chart, category doughnut, table pie chart, etc.):
+  - Prepare data in the format required by Chart.js (labels, datasets, colors).
+  - Pass chart data from Livewire to Blade as JSON.
+  - Ensure charts update when data changes (via Livewire events or Alpine.js).
+
+### 4.2. Chart Interactivity
+- Implement modal chart expansion (for detailed views).
+- Support dynamic range selection (e.g., last 7/30/90 days).
+- Handle empty data gracefully (show “No data” messages).
+
+---
+
+## Step 5: Metrics & Calculations
+
+### 5.1. Sales & Revenue
+- Total sales (sum of order totals) for each time range.
+- Order count for each time range.
+- Top product (by sales amount or quantity).
+- Average order value.
+- Peak hour (hour with most orders).
+
+### 5.2. Product & Category Analytics
+- Top/least selling products (by quantity and revenue).
+- Product sales table (product x time range matrix).
+- Category sales and order counts.
+- Category breakdown for doughnut charts.
+
+### 5.3. Service & Operations
+- Most used table (by session count).
+- Average session duration (from TableSession opened_at/closed_at).
+- Sessions today, session reopenings, table turnover rate, downtime per table.
+- QR scans and conversion rate (from activity_logs or QR scan events).
+- Average time from QR scan to order (difference between scan and first order).
+- Staff performance (orders handled per staff/editor).
+
+### 5.4. Advanced/Custom Analytics
+- Export functionality (CSV, PDF) for all analytics data.
+- Ensure export includes all visible metrics and tables.
+
+---
+
+## Step 6: Access Control & Permissions
+
+### 6.1. Editor/Admin Filtering
+- Ensure all analytics are scoped to the current editor/admin (no cross-establishment data leaks).
+- Staff users should not have access to analytics unless explicitly allowed.
+
+### 6.2. Data Privacy
+- Do not expose sensitive user data in analytics responses.
+- Aggregate data where possible.
+
+---
+
+## Step 7: Testing & Validation
+
+### 7.1. Unit & Feature Tests
+- Write tests for all analytics controller methods and Livewire component actions.
+- Test all time ranges, edge cases, and empty data scenarios.
+
+### 7.2. Manual QA
+- Verify all metrics match expected values for known test data.
+- Check all charts and tables update correctly on user interaction.
+
+---
+
+## Step 8: Documentation
+
+### 8.1. Update Documentation
+- Document all new controller methods, Livewire properties, and Blade changes.
+- Update APP_STRUCTURE_REFERENCE and APP_STRUCTURE_EXPLAINED to reflect analytics backend integration.
+- Add a section describing analytics data flow, query structure, and chart data preparation.
+
+---
+
+# Analytics Dashboard: Current Blade Structure and Data Mapping (as of May 4, 2025)
+
+## Current Analytics Dashboard Blade (resources/views/livewire/analytics-dashboard.blade.php)
+
+### Sections and Data Points
+
+#### 1. Sales & Revenue
+- Month and previous month stats (sales, orders, top product, avg. order value, peak hour)
+- Today, last 7 days, last 30 days stats (sales, orders, top product, avg. order value, peak hour)
+- Dropdowns for custom time ranges (last X days, last 12 months)
+- Line charts: salesChart, salesLastWeekChart, salesLastMonthChart
+
+#### 2. Product & Category Analytics
+- Top/least selling products (by revenue) for current month, today, last 7 days, last 30 days
+- Product sales table (product x time range: day, 7 days, 30 days)
+- Product bar chart (revenue/orders, selectable range)
+- Category cards (orders by category, sortable, toggle metric)
+- Category doughnut charts (orders and revenue)
+
+#### 3. Service & Operations Analytics
+- Most used table, average session duration, sessions today, session reopenings, table turnover, downtime
+- QR scans, QR to order conversion, avg. time QR to order
+- Staff order counts
+- Table usage pie chart (selectable range)
+
+#### 4. Advanced/Custom Analytics
+- Export buttons (CSV, PDF)
+
+### Data Mapping Notes
+- All data is currently static/hardcoded in Blade or JS.
+- All metrics and charts must be mapped to backend data sources as described in the implementation plan.
+- All dropdowns and controls are present in the UI and need to be wired to Livewire actions and backend queries.
+
+### UI/UX Features
+- Responsive card/grid layout
+- Chart.js integration for all charts
+- Modal chart expansion for detailed views
+- Category and product tables/cards with sorting and metric toggles
+
+---
+
+# Next Steps
+- Use this mapping as a reference for backend data aggregation and Livewire property binding.
+- Ensure all metrics, tables, and charts are dynamically populated from backend data, scoped per editor/admin.
+- Update this document as new sections or metrics are added to the Blade view.
+
+---
+
+# Analytics Dashboard: Static-to-Dynamic Data Refactor Plan
+
+## 1. Remove Static Data in Blade
+- Refactor previous month stats card and dropdown to use Livewire properties and backend aggregation for all months.
+- Refactor product sales table to use dynamic data from Livewire (product x time range matrix).
+
+## 2. Remove Static Data in JS
+- Refactor all chart initializations (sales line charts, product bar chart) to use data injected from Blade/Livewire as JSON.
+- Refactor dropdown stats for last 7/30 days to use dynamic data from backend/Livewire.
+- Remove all hardcoded stats objects from JS.
+
+## 3. General
+- Ensure all metrics, tables, and charts are dynamically populated from backend data, scoped per editor/admin.
+- Test all time ranges and dropdowns for correct dynamic updates.
+- Update documentation and code comments to reflect dynamic data flow.

@@ -122,6 +122,14 @@ This document provides a comprehensive overview of every file and folder in the 
   - **DatabaseSeeder.php**: Main seeder that calls other seeders.
   - **ProductSeeder.php**: Seeds the products table with sample data.
 
+## Test Data & Analytics QA
+- The database is seeded with a large, realistic dataset for analytics dashboard QA:
+    - Test editor user: editor@example.com / password (is_editor: true)
+    - 10 categories, 50 products, 15 tables (all assigned to the test editor)
+    - 90 days of data: 2–6 table sessions/day, 5–20 orders/day, 1–5 order items/order
+- All analytics metrics are sourced from: orders, order_items, products, categories, tables, table_sessions, users, activity_logs.
+- All analytics queries must be filtered by editor_id for data privacy and multi-tenant isolation.
+
 ## docs/
 - **live_refresh_options.md**: Documentation on live refresh options and how they are implemented in the app (likely for Livewire or polling features).
 - **tables-payment-system.md**: Documentation on the table payment system, including session logic, staff/editor roles, QR code flow, and session/order relationships.

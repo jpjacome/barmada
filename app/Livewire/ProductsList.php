@@ -242,6 +242,7 @@ class ProductsList extends Component
             'title' => 'Delete Product',
             'message' => "Are you sure you want to delete the product '{$product->name}'?",
             'confirmButtonText' => 'Delete',
+            'eraseAll' => false
         ]);
     }
     
@@ -306,6 +307,41 @@ class ProductsList extends Component
         $this->iconValue = '';
         $this->categoryId = null;
         $this->resetValidation();
+    }
+
+    public function eraseAllProducts()
+    {
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $count = Product::count();
+            Product::truncate();
+        } else if ($user->is_editor) {
+            $count = Product::where('editor_id', $user->id)->count();
+            Product::where('editor_id', $user->id)->delete();
+        } else {
+            $count = 0;
+        }
+        $this->status = $count . ' products deleted.';
+        $this->loadProducts();
+    }
+
+    public function confirmEraseAll()
+    {
+        $user = Auth::user();
+        $count = Product::where('editor_id', $user->id)->count();
+        $this->dispatch('showDeleteConfirmation', [
+            'message' => "Are you sure you want to erase ALL (" . $count . ") products? This action cannot be undone.",
+            'eraseAll' => 'true'
+        ]);
+    }
+
+    public function deleteAllConfirmed()
+    {
+        $user = Auth::user();
+        $count = Product::where('editor_id', $user->id)->count();
+        Product::where('editor_id', $user->id)->delete();
+        $this->status = $count . ' products deleted.';
+        $this->loadProducts();
     }
 
     public function render()

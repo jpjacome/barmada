@@ -20,33 +20,17 @@ document.addEventListener('DOMContentLoaded', function() {
         prevMonthDropdown.addEventListener('click', function(e) {
             e.stopPropagation();
             if (e.target.classList.contains('prev-month-option')) {
-                const month = e.target.getAttribute('data-month');
-                const year = e.target.getAttribute('data-year');
+                const key = e.target.getAttribute('data-key');
                 const label = e.target.textContent;
                 prevMonthLabel.textContent = label;
-                // Dummy data for demonstration
-                let stats = {
-                    '04-2025': {
-                        sales: '€2,500.00', orders: '98', top: 'Beer', avg: '€25.50', peak: '19:00-20:00'
-                    },
-                    '03-2025': {
-                        sales: '€2,200.00', orders: '90', top: 'Coke', avg: '€24.40', peak: '18:00-19:00'
-                    },
-                    '02-2025': {
-                        sales: '€2,100.00', orders: '85', top: 'Wine', avg: '€24.70', peak: '21:00-22:00'
-                    },
-                    '01-2025': {
-                        sales: '€1,900.00', orders: '80', top: 'Nachos', avg: '€23.80', peak: '20:00-21:00'
-                    }
-                };
-                let key = month + '-' + year;
-                let s = stats[key] || {sales:'N/A',orders:'N/A',top:'-',avg:'-',peak:'-'};
+                let stats = window.monthlyStatsData || {};
+                let s = stats[key] || {total_sales:'N/A',order_count:'N/A',top_product:'-',average_order_value:'-',peak_hour:'-'};
                 prevMonthStats.innerHTML = `
-                    <li>Sales for ${label}: <strong>${s.sales}</strong></li>
-                    <li>Orders for ${label}: <strong>${s.orders}</strong></li>
-                    <li>Top Product: <strong>${s.top}</strong></li>
-                    <li>Average Order Value: <strong>${s.avg}</strong></li>
-                    <li>Peak Hour: <strong>${s.peak}</strong></li>
+                    <li>Sales for ${label}: <strong>€${s.total_sales !== undefined ? Number(s.total_sales).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : 'N/A'}</strong></li>
+                    <li>Orders for ${label}: <strong>${s.order_count ?? 'N/A'}</strong></li>
+                    <li>Top Product: <strong>${s.top_product ?? '-'}</strong></li>
+                    <li>Average Order Value: <strong>€${s.average_order_value !== undefined ? Number(s.average_order_value).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : '-'}</strong></li>
+                    <li>Peak Hour: <strong>${s.peak_hour ?? '-'}</strong></li>
                 `;
                 prevMonthDropdown.style.display = 'none';
             }
@@ -54,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- Last 7/30 Days Dropdowns ---
+    // Use dynamic data injected from Blade/Livewire
     const last7Title = document.getElementById('last7DaysTitle');
     const last7Dropdown = document.getElementById('last7DaysDropdown');
     const last7Label = document.getElementById('last7DaysLabel');
@@ -71,13 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.classList.contains('last-days-option')) {
                 const days = e.target.getAttribute('data-days');
                 last7Label.textContent = `Last ${days} Days`;
-                let stats = {
-                    '2': {sales:'€2,000.00',orders:'80',top:'Beer',avg:'€25.00',peak:'20:00-21:00'},
-                    '7': {sales:'€7,890.00',orders:'312',top:'Beer',avg:'€25.30',peak:'21:00-22:00'},
-                    '14': {sales:'€15,000.00',orders:'600',top:'Nachos',avg:'€25.00',peak:'20:00-21:00'},
-                    '21': {sales:'€22,000.00',orders:'900',top:'Coke',avg:'€24.80',peak:'19:00-20:00'},
-                    '30': {sales:'€32,000.00',orders:'1,200',top:'Wine',avg:'€26.00',peak:'20:00-21:00'}
-                };
+                let stats = window.last7DaysStatsData || {};
                 let s = stats[days] || {sales:'N/A',orders:'N/A',top:'-',avg:'-',peak:'-'};
                 last7Stats.innerHTML = `
                     <li>Total Sales: <strong>${s.sales}</strong></li>
@@ -107,13 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.classList.contains('last-days-option')) {
                 const days = e.target.getAttribute('data-days');
                 last30Label.textContent = `Last ${days} Days`;
-                let stats = {
-                    '7': {sales:'€7,890.00',orders:'312',top:'Beer',avg:'€25.30',peak:'21:00-22:00'},
-                    '14': {sales:'€15,000.00',orders:'600',top:'Nachos',avg:'€25.00',peak:'20:00-21:00'},
-                    '30': {sales:'€32,450.00',orders:'1,245',top:'Nachos',avg:'€26.10',peak:'20:00-21:00'},
-                    '60': {sales:'€60,000.00',orders:'2,400',top:'Beer',avg:'€25.80',peak:'19:00-20:00'},
-                    '90': {sales:'€90,000.00',orders:'3,600',top:'Coke',avg:'€26.50',peak:'21:00-22:00'}
-                };
+                let stats = window.last30DaysStatsData || {};
                 let s = stats[days] || {sales:'N/A',orders:'N/A',top:'-',avg:'-',peak:'-'};
                 last30Stats.innerHTML = `
                     <li>Total Sales: <strong>${s.sales}</strong></li>
@@ -129,196 +102,56 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Sales & Category Charts ---
     if (window.Chart) {
-        // Sales This Week (red)
+        // Sales This Week (dynamic)
         var ctx = document.getElementById('salesChart').getContext('2d');
-        window.analyticsCharts['salesChart'] = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Sales (€)',
-                    data: [123, 234, 180, 290, 210, 340, 270],
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.15)',
-                    pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-                    pointBorderColor: '#fff',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                plugins: {
-                    title: { display: true, text: 'Sales This Week' },
-                    legend: { display: false }
-                },
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-        // Sales Last Week (blue)
+        window.analyticsCharts['salesChart'] = new Chart(ctx, window.salesChartData);
+        // Sales Last Week (dynamic)
         var ctxLastWeek = document.getElementById('salesLastWeekChart').getContext('2d');
-        window.analyticsCharts['salesLastWeekChart'] = new Chart(ctxLastWeek, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Sales (€)',
-                    data: [110, 200, 150, 260, 180, 320, 250],
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.15)',
-                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                    pointBorderColor: '#fff',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                plugins: {
-                    title: { display: true, text: 'Sales Last Week' },
-                    legend: { display: false }
-                },
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-        // Sales Last Month (yellow)
+        window.analyticsCharts['salesLastWeekChart'] = new Chart(ctxLastWeek, window.salesLastWeekChartData);
+        // Sales Last Month (dynamic)
         var ctxLastMonth = document.getElementById('salesLastMonthChart').getContext('2d');
-        window.analyticsCharts['salesLastMonthChart'] = new Chart(ctxLastMonth, {
-            type: 'line',
-            data: {
-                labels: Array.from({length: 30}, (_, i) => `Apr ${i+3}`),
-                datasets: [{
-                    label: 'Sales (€)',
-                    data: [1000, 1100, 1200, 900, 950, 1050, 1200, 1300, 1100, 1250, 1400, 1350, 1200, 1150, 1300, 1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750, 1800, 1850, 1900, 1950, 2000, 2050, 2100],
-                        borderColor: 'rgba(255, 206, 86, 1)',
-                        backgroundColor: 'rgba(255, 206, 86, 0.15)',
-                        pointBackgroundColor: 'rgba(255, 206, 86, 1)',
-                    pointBorderColor: '#fff',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                plugins: {
-                    title: { display: true, text: 'Sales Last 30 Days' },
-                    legend: { display: false }
-                },
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
-            }
+        window.analyticsCharts['salesLastMonthChart'] = new Chart(ctxLastMonth, window.salesLastMonthChartData);
+
+        // Fix chart container height for preview/scroll issues
+        [ctx.canvas, ctxLastWeek.canvas, ctxLastMonth.canvas].forEach(function(canvas) {
+            canvas.style.height = '220px';
+            canvas.style.maxHeight = '220px';
+            canvas.parentElement.style.height = '240px';
+            canvas.parentElement.style.maxHeight = '240px';
         });
-        // Product Bar Chart
-        var ctx1 = document.getElementById('productBarChart').getContext('2d');
-        var productLabels = ['Beer', 'Nachos', 'Coke', 'Whiskey', 'Gin', 'Rum', 'Vodka', 'Tequila', 'Brandy', 'Wine', 'Martini', 'Champagne', 'Absinthe', 'Mezcal', 'Vermouth', 'Port', 'Sherry', 'Grappa', 'Baileys', 'Campari'];
-        var productRevenue = [2400, 1800, 1500, 40, 60, 200, 250, 100, 40, 300, 160, 120, 20, 80, 40, 60, 40, 60, 140, 100];
-        var productOrders = [480, 320, 240, 8, 12, 40, 50, 20, 8, 60, 32, 24, 4, 16, 8, 12, 8, 12, 28, 20];
-        window.analyticsCharts['productBarChart'] = new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: productLabels,
-                datasets: [{
-                    label: 'Revenue (Last 30 Days)',
-                    data: productRevenue,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.5)',
-                        'rgba(54, 162, 235, 0.5)',
-                        'rgba(255, 206, 86, 0.5)',
-                        'rgba(75, 192, 192, 0.5)',
-                        'rgba(153, 102, 255, 0.5)',
-                        'rgba(255, 159, 64, 0.5)',
-                        'rgba(199, 199, 199, 0.5)',
-                        'rgba(83, 102, 255, 0.5)',
-                        'rgba(255, 99, 255, 0.5)',
-                        'rgba(99, 255, 132, 0.5)',
-                        'rgba(255, 140, 0, 0.5)',
-                        'rgba(255, 215, 0, 0.5)',
-                        'rgba(124, 252, 0, 0.5)',
-                        'rgba(0, 191, 255, 0.5)',
-                        'rgba(255, 20, 147, 0.5)',
-                        'rgba(210, 105, 30, 0.5)',
-                        'rgba(128, 0, 128, 0.5)',
-                        'rgba(0, 128, 128, 0.5)',
-                        'rgba(255, 69, 0, 0.5)',
-                        'rgba(0, 255, 255, 0.5)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)',
-                        'rgba(199, 199, 199, 1)',
-                        'rgba(83, 102, 255, 1)',
-                        'rgba(255, 99, 255, 1)',
-                        'rgba(99, 255, 132, 1)',
-                        'rgba(255, 140, 0, 1)',
-                        'rgba(255, 215, 0, 1)',
-                        'rgba(124, 252, 0, 1)',
-                        'rgba(0, 191, 255, 1)',
-                        'rgba(255, 20, 147, 1)',
-                        'rgba(210, 105, 30, 1)',
-                        'rgba(128, 0, 128, 1)',
-                        'rgba(0, 128, 128, 1)',
-                        'rgba(255, 69, 0, 1)',
-                        'rgba(0, 255, 255, 1)'
-                    ],
-                    borderWidth: 1,
-                    customOrders: productOrders
-                }]
-            },
-            options: {
-                plugins: {
-                    title: { display: true, text: 'All Products Revenue (Last 30 Days)' },
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                var label = context.dataset.label || '';
-                                var value = context.parsed.y !== undefined ? context.parsed.y : context.parsed;
-                                var orders = context.dataset.customOrders[context.dataIndex];
-                                return label + ': €' + value + ' (Orders: ' + orders + ')';
-                            }
-                        }
-                    }
-                },
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
+        // Force Chart.js to re-render axes
+        [window.analyticsCharts['salesChart'], window.analyticsCharts['salesLastWeekChart'], window.analyticsCharts['salesLastMonthChart']].forEach(function(chart) {
+            if (chart) {
+                chart.options.maintainAspectRatio = false;
+                chart.options.responsive = false;
+                chart.resize();
+                chart.update('none');
             }
         });
 
-        // --- Product Bar Chart Dropdown Logic ---
-        var productBarChartRange = document.getElementById('productBarChartRange');
-        // Data for each range
-        var productBarChartData = {
-            '30': {
-                labels: ['Beer', 'Nachos', 'Coke', 'Whiskey', 'Gin', 'Rum', 'Vodka', 'Tequila', 'Brandy', 'Wine', 'Martini', 'Champagne', 'Absinthe', 'Mezcal', 'Vermouth', 'Port', 'Sherry', 'Grappa', 'Baileys', 'Campari'],
-                data: [2400, 1800, 1500, 40, 60, 200, 250, 100, 40, 300, 160, 120, 20, 80, 40, 60, 40, 60, 140, 100],
-                orders: [480, 320, 240, 8, 12, 40, 50, 20, 8, 60, 32, 24, 4, 16, 8, 12, 8, 12, 28, 20]
-            },
-            '7': {
-                labels: ['Beer', 'Nachos', 'Coke', 'Whiskey', 'Gin', 'Rum', 'Vodka', 'Tequila', 'Brandy', 'Wine'],
-                data: [560, 400, 350, 10, 15, 40, 50, 20, 8, 60],
-                orders: [120, 80, 60, 2, 3, 10, 12, 5, 2, 15]
-            },
-            '1': {
-                labels: ['Beer', 'Nachos', 'Coke', 'Whiskey', 'Gin', 'Rum', 'Vodka', 'Tequila', 'Brandy', 'Wine'],
-                data: [80, 60, 50, 0, 1, 2, 3, 1, 0, 4],
-                orders: [20, 10, 8, 0, 1, 2, 3, 1, 0, 4]
+        // Product Bar Chart (dynamic, with dropdown)
+        var ctx1 = document.getElementById('productBarChart').getContext('2d');
+        var defaultRange = '30';
+        var productBarChart = new Chart(ctx1, {
+            type: 'bar',
+            data: window.productBarChartData[defaultRange],
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'All Products Revenue (Last 30 Days)' }
+                },
+                scales: { y: { beginAtZero: true } }
             }
-        };
-        var productBarChart = window.analyticsCharts['productBarChart'];
+        });
+        window.analyticsCharts['productBarChart'] = productBarChart;
+        var productBarChartRange = document.getElementById('productBarChartRange');
         if (productBarChartRange && productBarChart) {
             productBarChartRange.addEventListener('change', function() {
                 var val = productBarChartRange.value;
-                var d = productBarChartData[val];
+                var d = window.productBarChartData[val];
                 productBarChart.data.labels = d.labels;
-                productBarChart.data.datasets[0].data = d.data;
-                productBarChart.data.datasets[0].customOrders = d.orders;
+                productBarChart.data.datasets = d.datasets;
                 // Update chart title
                 var titleMap = {
                     '30': 'All Products Revenue (Last 30 Days)',
@@ -330,121 +163,136 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Category Doughnut Chart (by Orders)
-        var ctx2 = document.getElementById('categoryDoughnutChart').getContext('2d');
-        window.analyticsCharts['categoryDoughnutChart'] = new Chart(ctx2, {
-            type: 'doughnut',
-            data: {
-                labels: ['Drinks', 'Snacks', 'Food', 'Cocktails', 'Desserts', 'Coffee', 'Tea', 'Wine', 'Beer', 'Appetizers'],
-                datasets: [{
-                    data: [520, 210, 180, 100, 40, 150, 110, 75, 200, 90],
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.7)',
-                        'rgba(255, 206, 86, 0.7)',
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(153, 102, 255, 0.7)',
-                        'rgba(255, 159, 64, 0.7)',
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(199, 199, 199, 0.7)',
-                        'rgba(255, 99, 255, 0.7)',
-                        'rgba(99, 255, 132, 0.7)',
-                        'rgba(255, 140, 0, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(199, 199, 199, 1)',
-                        'rgba(255, 99, 255, 1)',
-                        'rgba(99, 255, 132, 1)',
-                        'rgba(255, 140, 0, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                plugins: {
-                    title: { display: true, text: 'Sales by Category (Number of Orders)' },
-                    legend: { display: true, position: 'bottom' }
+        // --- Dynamic Category Doughnut Chart Data Integration ---
+        // Expect window.categoryChartData to be injected as JSON from Blade/Livewire
+        if (window.Chart && window.categoryChartData) {
+            // Category Orders Doughnut Chart
+            var ctx2 = document.getElementById('categoryDoughnutChart').getContext('2d');
+            window.analyticsCharts['categoryDoughnutChart'] = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: window.categoryChartData.orders.labels,
+                    datasets: [{
+                        data: window.categoryChartData.orders.data,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(199, 199, 199, 0.7)',
+                            'rgba(255, 99, 255, 0.7)',
+                            'rgba(99, 255, 132, 0.7)',
+                            'rgba(255, 140, 0, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(199, 199, 199, 1)',
+                            'rgba(255, 99, 255, 1)',
+                            'rgba(99, 255, 132, 1)',
+                            'rgba(255, 140, 0, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
                 },
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-        // Category Revenue Doughnut Chart (by Revenue)
-        var ctx3 = document.getElementById('categoryRevenueDoughnutChart').getContext('2d');
-        window.analyticsCharts['categoryRevenueDoughnutChart'] = new Chart(ctx3, {
-            type: 'doughnut',
-            data: {
-                labels: ['Drinks', 'Snacks', 'Food', 'Cocktails', 'Desserts', 'Coffee', 'Tea', 'Wine', 'Beer', 'Appetizers'],
-                datasets: [{
-                    data: [800, 300, 134, 220, 60, 210, 120, 180, 400, 150], // Example revenue data
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.7)',
-                        'rgba(255, 206, 86, 0.7)',
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(153, 102, 255, 0.7)',
-                        'rgba(255, 159, 64, 0.7)',
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(199, 199, 199, 0.7)',
-                        'rgba(255, 99, 255, 0.7)',
-                        'rgba(99, 255, 132, 0.7)',
-                        'rgba(255, 140, 0, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(199, 199, 199, 1)',
-                        'rgba(255, 99, 255, 1)',
-                        'rgba(99, 255, 132, 1)',
-                        'rgba(255, 140, 0, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                plugins: {
-                    title: { display: true, text: 'Sales by Category (Revenue)' },
-                    legend: { display: true, position: 'bottom' }
+                options: {
+                    plugins: {
+                        title: { display: true, text: 'Sales by Category (Number of Orders)' },
+                        legend: { display: true, position: 'bottom' }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            // Category Revenue Doughnut Chart
+            var ctx3 = document.getElementById('categoryRevenueDoughnutChart').getContext('2d');
+            window.analyticsCharts['categoryRevenueDoughnutChart'] = new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: window.categoryChartData.revenue.labels,
+                    datasets: [{
+                        data: window.categoryChartData.revenue.data,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(199, 199, 199, 0.7)',
+                            'rgba(255, 99, 255, 0.7)',
+                            'rgba(99, 255, 132, 0.7)',
+                            'rgba(255, 140, 0, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(199, 199, 199, 1)',
+                            'rgba(255, 99, 255, 1)',
+                            'rgba(99, 255, 132, 1)',
+                            'rgba(255, 140, 0, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
                 },
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
+                options: {
+                    plugins: {
+                        title: { display: true, text: 'Sales by Category (Revenue)' },
+                        legend: { display: true, position: 'bottom' }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
     }
 
     // --- Table, QR, Staff Charts ---
     if (window.Chart) {
         // Table Pie Chart
         var tablePieChartElem = document.getElementById('tablePieChart');
-        if (tablePieChartElem) {
+        if (tablePieChartElem && window.tablePieChartData) {
+            var defaultRange = 'all';
             window.analyticsCharts['tablePieChart'] = new Chart(tablePieChartElem.getContext('2d'), {
                 type: 'pie',
                 data: {
-                    labels: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5'],
+                    labels: window.tablePieChartData[defaultRange].labels,
                     datasets: [{
                         label: 'Table Usage',
-                        data: [5, 8, 3, 2, 18],
+                        data: window.tablePieChartData[defaultRange].data,
                         backgroundColor: [
                             'rgba(255, 99, 132, 0.5)',
                             'rgba(54, 162, 235, 0.5)',
                             'rgba(255, 206, 86, 0.5)',
                             'rgba(75, 192, 192, 0.5)',
-                            'rgba(153, 102, 255, 0.5)'
+                            'rgba(153, 102, 255, 0.5)',
+                            'rgba(255, 159, 64, 0.5)',
+                            'rgba(199, 199, 199, 0.5)',
+                            'rgba(83, 102, 255, 0.5)',
+                            'rgba(255, 99, 255, 0.5)',
+                            'rgba(99, 255, 132, 0.5)'
                         ],
                         borderColor: [
                             'rgba(255, 99, 132, 1)',
                             'rgba(54, 162, 235, 1)',
                             'rgba(255, 206, 86, 1)',
                             'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)'
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(199, 199, 199, 1)',
+                            'rgba(83, 102, 255, 1)',
+                            'rgba(255, 99, 255, 1)',
+                            'rgba(99, 255, 132, 1)'
                         ],
                         borderWidth: 1
                     }]
@@ -463,29 +311,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // --- Table Pie Chart Dropdown Logic ---
         var tablePieChartRange = document.getElementById('tablePieChartRange');
         var tablePieChart = window.analyticsCharts['tablePieChart'];
-        // Example data for each range
-        var tablePieChartData = {
-            'all': {
-                labels: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5'],
-                data: [50, 80, 30, 20, 180]
-            },
-            'month': {
-                labels: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5'],
-                data: [20, 30, 10, 8, 60]
-            },
-            'week': {
-                labels: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5'],
-                data: [5, 8, 3, 2, 18]
-            },
-            'day': {
-                labels: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5'],
-                data: [1, 2, 0, 0, 5]
-            }
-        };
-        if (tablePieChartRange && tablePieChart) {
+        if (tablePieChartRange && tablePieChart && window.tablePieChartData) {
             tablePieChartRange.addEventListener('change', function() {
                 var val = tablePieChartRange.value;
-                var d = tablePieChartData[val];
+                var d = window.tablePieChartData[val];
                 tablePieChart.data.labels = d.labels;
                 tablePieChart.data.datasets[0].data = d.data;
                 // Update chart title

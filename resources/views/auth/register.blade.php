@@ -5,10 +5,11 @@
         <div class="auth-card">
             <div class="auth-card-header">
                 <div class="auth-logo">
-                    <x-application-logo class="w-20 h-20 fill-current" />
+                    <img src="{{ asset('images/logo-icon-dark.png') }}" class="w-20 h-20" alt="Barmada Logo">
                 </div>
                 <h2 class="auth-title">{{ __('Register') }}</h2>
                 <p class="auth-subtitle">{{ __('Create a new account to get started') }}</p>
+            
             </div>
 
             <div class="auth-card-body">

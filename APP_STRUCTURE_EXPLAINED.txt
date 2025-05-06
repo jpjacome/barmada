@@ -73,11 +73,10 @@ Barmada is built with a strong focus on security and privacy:
 - Add tests in `tests/` to cover new features.
 - Manage dependencies via Composer and NPM.
 
----
-
-## Analytics Feature Status (as of May 3, 2025)
-- The analytics dashboard is currently implemented as a front-end shell only. It displays static or random data and is not yet connected to real backend analytics or database data.
-- Next step: Develop the analytics page to work with the backend, so it displays real analytics and statistics for editors and admins.
+## Analytics QA & Test Data
+- The database is seeded with a realistic test editor user (editor@example.com / password, is_editor: true) and a large dataset (categories, products, tables, sessions, orders, order items) for analytics dashboard QA.
+- All analytics metrics are sourced from: orders, order_items, products, categories, tables, table_sessions, users, activity_logs.
+- All analytics queries are filtered by editor_id for privacy and multi-tenant isolation.
 
 ---
 

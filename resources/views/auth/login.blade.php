@@ -5,7 +5,7 @@
         <div class="auth-card">
             <div class="auth-card-header">
                 <div class="auth-logo">
-                    <img src="{{ asset('images/logo-icon-dark.svg') }}" class="w-20 h-20" alt="Barmada Logo">
+                    <img src="{{ asset('images/logo-icon-dark.png') }}" class="w-20 h-20" alt="Barmada Logo">
                 </div>
             </div>
 

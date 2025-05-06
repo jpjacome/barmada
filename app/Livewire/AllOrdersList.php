@@ -3,13 +3,17 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class AllOrdersList extends Component
 {
+    use WithPagination;
+
     public $products = [];
     public $sort = 'created_at';
     public $direction = 'desc';
@@ -21,6 +25,7 @@ class AllOrdersList extends Component
     public $lastPendingOrdersHash = '';
     public $lastUpdated;
     public $orderDetails = [];
+    public $perPage = 15;
 
     public function mount()
     {
@@ -51,11 +56,11 @@ class AllOrdersList extends Component
     public function loadPendingOrders()
     {
         $user = Auth::user();
-        $query = Order::where('status', 'pending')->with('table');
+        $query = Order::where('status', 'pending')->with(['table', 'items.product']);
         if (!$user->is_admin) {
             $query->where('editor_id', $user->id);
         }
-        $this->pendingOrders = $query->orderBy('created_at', 'desc')->get()->toArray();
+        $this->pendingOrders = $query->orderBy('created_at', 'desc')->limit(100)->get()->toArray();
     }
 
     protected function initializeOrderDetails()
@@ -418,11 +423,14 @@ class AllOrdersList extends Component
     public function render()
     {
         $user = Auth::user();
-        $query = Order::with('table');
+        $query = Order::with(['table', 'items.product']);
 
         if (!$user->is_admin) {
             $query->where('editor_id', $user->id);
         }
+
+        // Only show orders from the last 2 days
+        $query->where('created_at', '>=', Carbon::now()->subDays(1)->startOfDay());
 
         if ($this->sort === 'table_id') {
             $query->join('tables', 'orders.table_id', '=', 'tables.id')
@@ -432,7 +440,7 @@ class AllOrdersList extends Component
             $query->orderBy($this->sort, $this->direction);
         }
 
-        $allOrders = $query->get();
+        $allOrders = $query->paginate($this->perPage);
 
         $this->sorting = false;
 

@@ -34,5 +34,6 @@ class DatabaseSeeder extends Seeder
         // Store the editor ID in config for use in ProductSeeder
         config(['barmada.default_editor_id' => $editor->id]);
         $this->call(ProductSeeder::class);
+        $this->call(AnalyticsTestSeeder::class);
     }
 }

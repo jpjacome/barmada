@@ -166,8 +166,23 @@
                             </tr>
                         </thead>
                         <tbody class="orders-table-body">
+                            @php use Carbon\Carbon; @endphp
                             @forelse($allOrders as $order)
-                                <tr class="orders-table-row">
+                                @php
+                                    $isToday = $order->created_at->isSameDay(Carbon::today());
+                                    // Group items by product for this order
+                                    $groupedItems = [];
+                                    foreach ($order->items as $item) {
+                                        if (!isset($groupedItems[$item->product_id])) {
+                                            $groupedItems[$item->product_id] = [
+                                                'product' => $item->product,
+                                                'quantity' => 0
+                                            ];
+                                        }
+                                        $groupedItems[$item->product_id]['quantity'] += $item->quantity;
+                                    }
+                                @endphp
+                                <tr class="orders-table-row{{ $isToday ? '' : ' orders-table-row-previous-day' }}">
                                     <td class="orders-table-cell">{{ $order->id }}</td>
                                     <td class="orders-table-cell">Table {{ $order->table->table_number ?? $order->table->id }}</td>
                                     <td class="orders-table-cell">
@@ -183,21 +198,17 @@
                                         <div class="orders-product-list">
                                             @php
                                                 $productList = [];
-                                                $order = \App\Models\Order::with('items.product')->find($order->id);
-                                                foreach ($order->items as $item) {
-                                                    $icon = $item->product->icon_value ?? 'bi-box';
-                                                    $iconType = $item->product->icon_type ?? 'bootstrap';
-                                                    
+                                                foreach ($groupedItems as $item) {
+                                                    $icon = $item['product']->icon_value ?? 'bi-box';
+                                                    $iconType = $item['product']->icon_type ?? 'bootstrap';
                                                     if ($iconType === 'bootstrap') {
                                                         $iconHtml = "<i class='{$icon}'></i>";
                                                     } else {
                                                         $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='order-product-icon'>";
                                                     }
-                                                    
-                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item->product->name}</span>: {$item->quantity}</span>";
+                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item['product']->name}</span>: {$item['quantity']}</span>";
                                                 }
                                             @endphp
-                                            
                                             @if(count($productList) > 0)
                                                 {!! implode(', ', $productList) !!}
                                             @else
@@ -232,6 +243,9 @@
                             @endforelse
                         </tbody>
                     </table>
+                    <div class="orders-pagination">
+                        {{ $allOrders->links() }}
+                    </div>
                 </div>
             </div>
         </div>

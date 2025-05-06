@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ asset('css/homepage.css') }}">
 <div class="homepage-hero-2col">
     <div class="hero-col hero-col-image">
-        <img src="/images/logo1.svg" alt="Barmada Logo" class="hero-logo">
+        <img src="./images/logo1.png" alt="Barmada Logo" class="hero-logo">
     </div>
     <div class="hero-col hero-col-text">
         <div class="container">
@@ -146,10 +146,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <div class="contact-wrapper">
     <div class="contact-logo">
-        <img src="/images/logo-light.svg" alt="Barmada Logo">
-        <div class="company-footer-info">
-            support@barmada.com<br>
-            &copy; 2025 Barmada. All rights reserved.
+        <img src="../images/logo-light.svg" alt="Barmada Logo">
+        <div class="company-footer-info">2025 Barmada. All rights reserved.
         </div>
     </div>
     <div class="whatsapp-container">
@@ -159,4 +157,13 @@ document.addEventListener('DOMContentLoaded', function () {
         </a>
     </div>
 </div>
+            <footer class="app-footer">
+                <div class="app-footer-content">
+                    <a href="https://github.com/jpjacome/barmada" target="_blank" rel="noopener noreferrer">
+                        <i class="bi bi-github app-footer-icon"></i>GitHub
+                    </a>
+                    <span class="app-footer-separator">|</span>
+                    <span>created by <a href="http://drpixel.it.nf" target="_blank" rel="noopener noreferrer">Dr. Pixel</a></span>
+                </div>
+            </footer>
 @endsection

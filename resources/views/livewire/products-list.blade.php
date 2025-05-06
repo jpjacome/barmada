@@ -91,8 +91,16 @@
             >
                 <i class="bi bi-plus-circle product-button-icon"></i> Add Product
             </button>
+            @if(count($products) > 0)
+            <button 
+                id="erase-all-products-btn"
+                class="products-erase-all-button"
+                style="margin-left: 1rem; background: var(--color-danger); color: #fff; border-radius: 6px; padding: 0.5em 1.2em; border: none; font-weight: bold; cursor: pointer;"
+            >
+                <i class="bi bi-trash"></i> Erase All
+            </button>
+            @endif
         </div>
-    </div>
     
 
 
@@ -293,9 +301,22 @@
 
     <!-- Delete Confirmation - uses JS -->
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var eraseBtn = document.getElementById('erase-all-products-btn');
+            if (eraseBtn) {
+                eraseBtn.addEventListener('click', function() {
+                    var msg = 'Are you sure you want to erase all products? This action cannot be undone.';
+                    if (confirm(msg)) {
+                        @this.call('deleteAllConfirmed');
+                    }
+                });
+            }
+        });
+
         document.addEventListener('livewire:initialized', () => {
             @this.on('showDeleteConfirmation', (event) => {
-                if (confirm(event.message)) {
+                var msg = event.message || 'Are you sure you want to delete this product?';
+                if (confirm(msg)) {
                     @this.dispatch('deleteConfirmed');
                 }
             });
