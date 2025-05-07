@@ -18,6 +18,10 @@ class AnalyticsTestSeeder extends Seeder
     {
         // Create a test editor user
         $editor = User::factory()->create([
+            'username' => 'editor_test',
+            'first_name' => 'Test',
+            'last_name' => 'Editor',
+            'name' => 'Test Editor',
             'is_editor' => true,
             'email' => 'editor@example.com',
             'password' => Hash::make('password'),

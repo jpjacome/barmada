@@ -1,0 +1,380 @@
+User Reference: Luis Smith (editor@example.com)
+===============================================
+
+User Info:
+----------
+- id: 3
+- name: Luis Smith
+- email: editor@example.com
+- is_admin: 0
+- is_editor: 1
+- is_staff: 0
+- business_name: (to be set)
+- contact_phone: (to be set)
+- contact_email: (to be set)
+- preferences: {"theme": "light"}
+
+Tables (15):
+------------
+1. Table 1
+2. Table 2
+3. Table 3
+4. Table 4
+5. Table 5
+6. Table 6
+7. Table 7
+8. Table 8
+9. Table 9
+10. Table 10
+11. Table 11
+12. Table 12
+13. Table 13
+14. Table 14
+15. Table 15
+
+Categories (8):
+---------------
+1. Starters
+2. Main Courses
+3. Desserts
+4. Beverages
+5. Cocktails
+6. Beer
+7. Non-Alcoholic
+8. Promotions
+
+Products (30):
+--------------
+# Starters
+1. Nachos
+2. Chicken Wings
+3. French Fries
+4. Mozzarella Sticks
+
+# Main Courses
+5. Cheeseburger
+6. Grilled Chicken Sandwich
+7. Veggie Burger
+8. BBQ Ribs
+9. Caesar Salad
+10. Fish & Chips
+
+# Desserts
+11. Chocolate Cake
+12. Cheesecake
+13. Ice Cream Sundae
+
+# Beverages
+14. Coca Cola
+15. Sprite
+16. Orange Juice
+17. Mineral Water
+
+# Cocktails
+18. Mojito
+19. Margarita
+20. Piña Colada
+21. Gin Tonic
+
+# Beer
+22. Lager Beer
+23. IPA Beer
+24. Wheat Beer
+
+# Non-Alcoholic
+25. Lemonade
+26. Iced Tea
+27. Virgin Mojito
+
+# Promotions
+28. Nachos + Beer Combo
+29. Burger + Soft Drink Combo
+30. 2x1 Cocktails (Happy Hour)
+
+# Orders will be added later.
+
+---
+
+## Implementation Plan: Populating User 3 (Luis Smith) with Tables, Categories, and Products (with Icons)
+
+This section provides a step-by-step, command-by-command plan to populate the database for user Luis Smith (editor@example.com, id: 3) with:
+- 15 tables
+- 8 categories (including 'Promotions')
+- 30 products distributed across realistic bar/restaurant categories, each with a relevant Bootstrap icon
+
+### 1. Preparation
+- Ensure you are in the project root directory.
+- Open Laravel Tinker for interactive commands:
+  ```sh
+  php artisan tinker
+  ```
+
+### 2. Create Tables (15)
+```php
+for ($i = 1; $i <= 15; $i++) {
+    \App\Models\Table::create([
+        'table_number' => $i,
+        'orders' => 0,
+        'editor_id' => 3,
+        'status' => 'closed',
+    ]);
+}
+```
+
+### 3. Create Categories (8)
+```php
+$categories = [
+    'Starters', 'Main Courses', 'Desserts', 'Beverages', 'Cocktails', 'Beer', 'Non-Alcoholic', 'Promotions'
+];
+$categoryIds = [];
+foreach ($categories as $cat) {
+    $categoryIds[$cat] = \App\Models\Category::create([
+        'name' => $cat,
+        'editor_id' => 3,
+    ])->id;
+}
+```
+
+### 4. Create Products (30, with Bootstrap Icons)
+```php
+$products = [
+    // Starters
+    ['Nachos', 'Starters', 'bi-egg-fried'],
+    ['Chicken Wings', 'Starters', 'bi-archive'], // closest: archive (box)
+    ['French Fries', 'Starters', 'bi-bar-chart'], // closest: bar-chart (sticks)
+    ['Mozzarella Sticks', 'Starters', 'bi-bar-chart-fill'], // closest: bar-chart-fill
+    // Main Courses
+    ['Cheeseburger', 'Main Courses', 'bi-square'], // closest: square (patty)
+    ['Grilled Chicken Sandwich', 'Main Courses', 'bi-square-fill'], // closest: square-fill
+    ['Veggie Burger', 'Main Courses', 'bi-circle'], // closest: circle (patty)
+    ['BBQ Ribs', 'Main Courses', 'bi-dash'], // closest: dash (bone)
+    ['Caesar Salad', 'Main Courses', 'bi-circle-fill'], // closest: circle-fill (bowl)
+    ['Fish & Chips', 'Main Courses', 'bi-triangle'], // closest: triangle (fish)
+    // Desserts
+    ['Chocolate Cake', 'Desserts', 'bi-square-half'], // closest: square-half (slice)
+    ['Cheesecake', 'Desserts', 'bi-square-fill'], // closest: square-fill
+    ['Ice Cream Sundae', 'Desserts', 'bi-circle-half'], // closest: circle-half (scoop)
+    // Beverages
+    ['Coca Cola', 'Beverages', 'bi-cup'], // closest: cup
+    ['Sprite', 'Beverages', 'bi-cup'],
+    ['Orange Juice', 'Beverages', 'bi-cup'],
+    ['Mineral Water', 'Beverages', 'bi-cup'],
+    // Cocktails
+    ['Mojito', 'Cocktails', 'bi-cup'],
+    ['Margarita', 'Cocktails', 'bi-cup'],
+    ['Piña Colada', 'Cocktails', 'bi-cup'],
+    ['Gin Tonic', 'Cocktails', 'bi-cup'],
+    // Beer
+    ['Lager Beer', 'Beer', 'bi-cup'],
+    ['IPA Beer', 'Beer', 'bi-cup'],
+    ['Wheat Beer', 'Beer', 'bi-cup'],
+    // Non-Alcoholic
+    ['Lemonade', 'Non-Alcoholic', 'bi-cup'],
+    ['Iced Tea', 'Non-Alcoholic', 'bi-cup'],
+    ['Virgin Mojito', 'Non-Alcoholic', 'bi-cup'],
+    // Promotions
+    ['Nachos + Beer Combo', 'Promotions', 'bi-egg-fried'],
+    ['Burger + Soft Drink Combo', 'Promotions', 'bi-square'],
+    ['2x1 Cocktails (Happy Hour)', 'Promotions', 'bi-cup'],
+];
+foreach ($products as [$name, $cat, $icon]) {
+    \App\Models\Product::create([
+        'name' => $name,
+        'price' => rand(3, 18), // Set realistic prices
+        'category_id' => $categoryIds[$cat],
+        'editor_id' => 3,
+        'icon_type' => 'bootstrap',
+        'icon_value' => $icon,
+    ]);
+}
+```
+
+### 5. (Later) Create Orders
+- Orders will be created in a separate step, simulating real bar/restaurant activity.
+
+---
+
+## 6. Example Week of Orders for User 3 (Luis Smith)
+
+### Bar/Restaurant Schedule and Order Patterns
+- **Open Days:** Tuesday to Saturday (closed Sunday & Monday)
+- **Top Hours:**
+  - Tuesday–Thursday: 18:00–22:00 (dinner/evening)
+  - Friday–Saturday: 18:00–00:00 (dinner, late night)
+- **Order Volume:**
+  - Tuesday: Low (8–12 orders)
+  - Wednesday: Low-Mid (10–15 orders)
+  - Thursday: Mid (15–20 orders)
+  - Friday: High (25–35 orders)
+  - Saturday: Highest (30–40 orders)
+
+### Example Variables for Each Day
+- **Order times** are distributed in top hours, with a few at opening and closing.
+- **Tables**: Orders are spread across all 15 tables, but some tables (e.g., 1–5) are more popular.
+- **Products**: Each order contains 1–4 products, with a mix of food and drinks. Combos and promotions are more common on weekends.
+- **Order Status**: Most are 'delivered', a few 'pending' or 'open'.
+
+### Example Orders Data Structure (for seeding or reference)
+
+```php
+$ordersByDay = [
+    // Format: 'Y-m-d' => [ [table_number, [product_names], hour, minute], ... ]
+    '2025-04-29' => [ // Tuesday (7 days ago)
+        [1, ['Cheeseburger', 'Coca Cola'], 18, 15],
+        [2, ['Nachos', 'Lager Beer'], 18, 45],
+        [3, ['Chicken Wings', 'IPA Beer'], 19, 10],
+        [4, ['Caesar Salad', 'Mineral Water'], 19, 30],
+        [5, ['Mojito'], 20, 00],
+        [1, ['Fish & Chips', 'Sprite'], 20, 20],
+        [6, ['Cheesecake', 'Coca Cola'], 21, 00],
+        [2, ['BBQ Ribs', 'Wheat Beer'], 21, 30],
+        [7, ['Burger + Soft Drink Combo'], 22, 00],
+    ],
+    '2025-04-30' => [ // Wednesday
+        [1, ['Nachos', 'Lager Beer'], 18, 10],
+        [2, ['Chicken Wings', 'IPA Beer'], 18, 40],
+        [3, ['Cheeseburger', 'Coca Cola'], 19, 00],
+        [4, ['Caesar Salad', 'Mineral Water'], 19, 20],
+        [5, ['Mojito'], 19, 50],
+        [6, ['Fish & Chips', 'Sprite'], 20, 10],
+        [7, ['Cheesecake', 'Coca Cola'], 20, 40],
+        [8, ['BBQ Ribs', 'Wheat Beer'], 21, 00],
+        [9, ['Burger + Soft Drink Combo'], 21, 30],
+        [10, ['French Fries', 'Orange Juice'], 22, 00],
+        [11, ['Ice Cream Sundae'], 22, 20],
+    ],
+    '2025-05-01' => [ // Thursday
+        [1, ['Nachos', 'Lager Beer'], 18, 00],
+        [2, ['Chicken Wings', 'IPA Beer'], 18, 30],
+        [3, ['Cheeseburger', 'Coca Cola'], 19, 00],
+        [4, ['Caesar Salad', 'Mineral Water'], 19, 20],
+        [5, ['Mojito'], 19, 50],
+        [6, ['Fish & Chips', 'Sprite'], 20, 10],
+        [7, ['Cheesecake', 'Coca Cola'], 20, 40],
+        [8, ['BBQ Ribs', 'Wheat Beer'], 21, 00],
+        [9, ['Burger + Soft Drink Combo'], 21, 30],
+        [10, ['French Fries', 'Orange Juice'], 22, 00],
+        [11, ['Ice Cream Sundae'], 22, 20],
+        [12, ['2x1 Cocktails (Happy Hour)'], 21, 45],
+        [13, ['Veggie Burger', 'Lemonade'], 20, 30],
+        [14, ['Mozzarella Sticks', 'Mineral Water'], 19, 15],
+        [15, ['Nachos + Beer Combo'], 22, 30],
+    ],
+    '2025-05-02' => [ // Friday
+        [1, ['Nachos', 'Lager Beer'], 18, 00],
+        [2, ['Chicken Wings', 'IPA Beer'], 18, 20],
+        [3, ['Cheeseburger', 'Coca Cola'], 18, 40],
+        [4, ['Caesar Salad', 'Mineral Water'], 19, 00],
+        [5, ['Mojito'], 19, 20],
+        [6, ['Fish & Chips', 'Sprite'], 19, 40],
+        [7, ['Cheesecake', 'Coca Cola'], 20, 00],
+        [8, ['BBQ Ribs', 'Wheat Beer'], 20, 20],
+        [9, ['Burger + Soft Drink Combo'], 20, 40],
+        [10, ['French Fries', 'Orange Juice'], 21, 00],
+        [11, ['Ice Cream Sundae'], 21, 20],
+        [12, ['2x1 Cocktails (Happy Hour)'], 21, 40],
+        [13, ['Veggie Burger', 'Lemonade'], 22, 00],
+        [14, ['Mozzarella Sticks', 'Mineral Water'], 22, 20],
+        [15, ['Nachos + Beer Combo'], 22, 40],
+        [1, ['BBQ Ribs', 'IPA Beer'], 23, 00],
+        [2, ['Burger + Soft Drink Combo'], 23, 20],
+        [3, ['2x1 Cocktails (Happy Hour)'], 23, 40],
+        [4, ['Nachos', 'Lager Beer'], 23, 50],
+        [5, ['Chicken Wings', 'IPA Beer'], 23, 55],
+        [6, ['Cheeseburger', 'Coca Cola'], 23, 59],
+    ],
+    '2025-05-03' => [ // Saturday
+        [1, ['Nachos', 'Lager Beer'], 18, 00],
+        [2, ['Chicken Wings', 'IPA Beer'], 18, 20],
+        [3, ['Cheeseburger', 'Coca Cola'], 18, 40],
+        [4, ['Caesar Salad', 'Mineral Water'], 19, 00],
+        [5, ['Mojito'], 19, 20],
+        [6, ['Fish & Chips', 'Sprite'], 19, 40],
+        [7, ['Cheesecake', 'Coca Cola'], 20, 00],
+        [8, ['BBQ Ribs', 'Wheat Beer'], 20, 20],
+        [9, ['Burger + Soft Drink Combo'], 20, 40],
+        [10, ['French Fries', 'Orange Juice'], 21, 00],
+        [11, ['Ice Cream Sundae'], 21, 20],
+        [12, ['2x1 Cocktails (Happy Hour)'], 21, 40],
+        [13, ['Veggie Burger', 'Lemonade'], 22, 00],
+        [14, ['Mozzarella Sticks', 'Mineral Water'], 22, 20],
+        [15, ['Nachos + Beer Combo'], 22, 40],
+        [1, ['BBQ Ribs', 'IPA Beer'], 23, 00],
+        [2, ['Burger + Soft Drink Combo'], 23, 20],
+        [3, ['2x1 Cocktails (Happy Hour)'], 23, 40],
+        [4, ['Nachos', 'Lager Beer'], 23, 50],
+        [5, ['Chicken Wings', 'IPA Beer'], 23, 55],
+        [6, ['Cheeseburger', 'Coca Cola'], 23, 59],
+        [7, ['Nachos', 'Lager Beer'], 20, 10],
+        [8, ['Chicken Wings', 'IPA Beer'], 20, 30],
+        [9, ['Cheeseburger', 'Coca Cola'], 20, 50],
+        [10, ['Caesar Salad', 'Mineral Water'], 21, 10],
+        [11, ['Mojito'], 21, 30],
+        [12, ['Fish & Chips', 'Sprite'], 21, 50],
+        [13, ['Cheesecake', 'Coca Cola'], 22, 10],
+        [14, ['BBQ Ribs', 'Wheat Beer'], 22, 30],
+        [15, ['Burger + Soft Drink Combo'], 22, 50],
+    ],
+    '2025-05-06' => [ // Today, Tuesday
+        [1, ['Cheeseburger', 'Coca Cola'], 18, 15],
+        [2, ['Nachos', 'Lager Beer'], 18, 45],
+        [3, ['Chicken Wings', 'IPA Beer'], 19, 10],
+        [4, ['Caesar Salad', 'Mineral Water'], 19, 30],
+        [5, ['Mojito'], 20, 00],
+        [1, ['Fish & Chips', 'Sprite'], 20, 20],
+        [6, ['Cheesecake', 'Coca Cola'], 21, 00],
+        [2, ['BBQ Ribs', 'Wheat Beer'], 21, 30],
+        [7, ['Burger + Soft Drink Combo'], 22, 00],
+    ],
+];
+```
+
+### 6.1. Tinker Command to Insert Orders with Correct Dates
+
+**Before running the command, make sure to run:**
+```php
+use Carbon\Carbon;
+```
+
+**Then run:**
+```php
+$ordersByDay = [
+    // ... (orders array as above) ...
+];
+foreach ($ordersByDay as $date => $orders) {
+    foreach ($orders as [$tableNumber, $productNames, $hour, $minute]) {
+        $table = \App\Models\Table::where('editor_id', 3)->where('table_number', $tableNumber)->first();
+        $order = \App\Models\Order::create([
+            'editor_id' => 3,
+            'table_id' => $table->id,
+            'status' => 'delivered',
+            'total_amount' => 0,
+            'amount_paid' => 0,
+            'amount_left' => 0,
+            'is_grouped' => false,
+        ]);
+        $orderDate = Carbon::createFromFormat('Y-m-d H:i', $date . ' ' . sprintf('%02d:%02d', $hour, $minute));
+        $order->created_at = $orderDate;
+        $order->updated_at = $orderDate;
+        $total = 0;
+        foreach ($productNames as $productName) {
+            $product = \App\Models\Product::where('editor_id', 3)->where('name', $productName)->first();
+            if ($product) {
+                \App\Models\OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $product->id,
+                    'quantity' => 1,
+                    'price' => $product->price,
+                    'is_paid' => true,
+                    'item_index' => 0,
+                ]);
+                $total += $product->price;
+            }
+        }
+        $order->total_amount = $total;
+        $order->amount_paid = $total;
+        $order->amount_left = 0;
+        $order->save();
+    }
+}
+```

@@ -3,6 +3,11 @@
 @section('content')
 <link href="{{ asset('css/create-order.css') }}" rel="stylesheet">
 
+@php
+    // Use the currentEditorId passed from the controller, fallback to the first product's editor_id if needed
+    $currentEditorId = $currentEditorId ?? ($products->first()->editor_id ?? null);
+@endphp
+
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="order-container">
@@ -42,13 +47,22 @@
                     <h3 class="products-title">Seleccionar Productos</h3>
                     
                     @php
-                        // Agrupar productos por categoría y ordenar categorías por sort_order
-                        $groupedProducts = $products->groupBy(function ($product) {
+                        $filteredProducts = $products;
+                        $groupedProducts = $filteredProducts->groupBy(function ($product) {
                             return $product->category->name ?? 'Sin Categoría';
                         });
+                        $sortedCategories = $currentEditorId
+                            ? \App\Models\Category::where('editor_id', $currentEditorId)->orderBy('sort_order')->get()
+                            : collect();
 
-                        // Obtener categorías y ordenarlas por sort_order
-                        $sortedCategories = \App\Models\Category::orderBy('sort_order')->get();
+                        // Only include products whose category belongs to the current editor or is uncategorized
+                        $categoryIds = $sortedCategories->pluck('id')->all();
+                        $filteredProducts = $products->filter(function ($product) use ($categoryIds) {
+                            return is_null($product->category_id) || in_array($product->category_id, $categoryIds);
+                        });
+                        $groupedProducts = $filteredProducts->groupBy(function ($product) {
+                            return $product->category->name ?? 'Sin Categoría';
+                        });
                     @endphp
 
                     @foreach ($sortedCategories as $category)
@@ -66,6 +80,16 @@
                                                     @else
                                                         <img src="{{ asset('storage/' . $product->icon_value) }}" alt="{{ $product->name }}">
                                                     @endif
+                                                    <!-- Info Button -->
+                                                    <button type="button" class="product-info-btn"
+                                                        onclick="showProductInfoModal(
+                                                            @js($product->name),
+                                                            @js($product->photo ? asset('storage/' . $product->photo) : asset('images/logo-light.png')),
+                                                            @js($product->description ?: 'photo not available')
+                                                        )"
+                                                        title="Ver detalles">
+                                                        <i class="bi bi-info-circle"></i>
+                                                    </button>
                                                 </div>
                                                 <div class="product-info">
                                                     <label for="product_{{ $product->id }}" class="product-name">{{ $product->name }}</label>
@@ -111,6 +135,16 @@
     </div>
 </div>
 
+<!-- Product Info Modal -->
+<div id="product-info-modal" class="product-info-modal">
+    <div class="product-info-modal-content">
+        <button onclick="closeProductInfoModal()" class="product-info-modal-close"><i class="bi bi-x"></i></button>
+        <h2 id="modal-product-name"></h2>
+        <img id="modal-product-image" src="" alt="Product Image" />
+        <div id="modal-product-description"></div>
+    </div>
+</div>
+
 <script>
     function incrementQuantity(id) {
         const input = document.getElementById(id);
@@ -127,5 +161,50 @@
     function validateQuantity(input) {
         if (input.value < 0) input.value = 0;
     }
+
+    function showProductInfoModal(name, photo, description) {
+        document.getElementById('modal-product-name').textContent = name;
+        var img = document.getElementById('modal-product-image');
+        if(photo) {
+            img.src = photo;
+            img.style.display = 'block';
+        } else {
+            img.src = "{{ asset('images/logo1.png') }}";
+            img.style.display = 'block';
+        }
+        document.getElementById('modal-product-description').textContent = description || 'Photo not available';
+        document.getElementById('product-info-modal').classList.add('active');
+    }
+
+    function closeProductInfoModal() {
+        document.getElementById('product-info-modal').classList.remove('active');
+    }
+
+    // Close modal on click or touch outside modal content
+    function handleOutsideModal(e) {
+        var modal = document.getElementById('product-info-modal');
+        var modalContent = document.querySelector('.product-info-modal-content');
+        if (modal.classList.contains('active')) {
+            if (!modalContent.contains(e.target)) {
+                closeProductInfoModal();
+            }
+        }
+    }
+    window.addEventListener('click', handleOutsideModal);
+    window.addEventListener('touchstart', handleOutsideModal);
+
+    // Add this to prevent modal from closing immediately after opening
+    const infoButtons = document.querySelectorAll('.product-info-btn');
+    infoButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
+
+    // Ensure close button does not propagate event
+    document.querySelector('.product-info-modal-close').addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeProductInfoModal();
+    });
 </script>
 @endsection

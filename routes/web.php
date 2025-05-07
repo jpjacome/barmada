@@ -14,6 +14,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\AnalyticsPdfController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,6 +92,9 @@ Route::middleware(['auth', 'editor'])->group(function () {
     Route::get('/analytics/sales-stats', [\App\Http\Controllers\AnalyticsController::class, 'getSalesAndRevenueStats'])->name('analytics.sales-stats');
     Route::get('/analytics/product-category-stats', [\App\Http\Controllers\AnalyticsController::class, 'getProductCategoryAnalytics'])->name('analytics.product-category-stats');
     Route::get('/analytics/service-ops-stats', [\App\Http\Controllers\AnalyticsController::class, 'getServiceOperationsStats'])->name('analytics.service-ops-stats');
+    Route::get('/analytics/pdf', [AnalyticsPdfController::class, 'export'])->name('analytics.pdf.export');
+    Route::post('/analytics/pdf-with-charts', [\App\Http\Controllers\AnalyticsPdfController::class, 'exportWithCharts'])->name('analytics.pdf.export.withcharts');
+    Route::get('/analytics/csv', [\App\Http\Controllers\AnalyticsPdfController::class, 'exportCsv'])->name('analytics.csv.export');
 });
 
 // Remove unused Number routes
@@ -113,7 +117,7 @@ Route::get('/numbers/livewire', function() {
 
 // Guest-accessible routes
 Route::get('/order', [OrderController::class, 'orderEntry'])->middleware(['auth'])->name('orders.create');
-Route::post('/order', [OrderController::class, 'store'])->middleware(['auth'])->name('orders.store');
+Route::post('/order', [OrderController::class, 'store'])->name('orders.store');
 Route::get('/order/confirmation', [OrderController::class, 'confirmation'])->name('orders.confirmation');
 
 // Add a route to handle redirection based on the unique token
@@ -138,8 +142,10 @@ Route::middleware('auth')->group(function () {
     // Settings routes
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/logo', [SettingsController::class, 'updateLogo'])->name('settings.update-logo');
-    Route::post('/settings/toggle-theme', [SettingsController::class, 'toggleTheme'])->name('settings.toggle-theme');
 });
+
+// Make theme toggle available to all (guests and users)
+Route::post('/settings/toggle-theme', [SettingsController::class, 'toggleTheme'])->name('settings.toggle-theme');
 
 // API proxy for numbers - kept for numbers creation functionality
 Route::get('/api-numbers', function (Request $request) {

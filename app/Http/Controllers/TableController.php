@@ -23,6 +23,8 @@ class TableController extends Controller
             $tables = Table::all();
         } else if ($user->is_editor) {
             $tables = Table::where('editor_id', $user->id)->get();
+        } else if ($user->is_staff) {
+            $tables = Table::where('editor_id', $user->editor_id)->get();
         } else {
             abort(403);
         }
@@ -74,7 +76,7 @@ class TableController extends Controller
     public function show(Table $table)
     {
         $user = Auth::user();
-        if ($user->is_admin || ($user->is_editor && $table->editor_id == $user->id)) {
+        if ($user->is_admin || ($user->is_editor && $table->editor_id == $user->id) || ($user->is_staff && $user->editor_id == $table->editor_id)) {
             return view('tables.show', compact('table'));
         }
         abort(403);
@@ -151,7 +153,7 @@ class TableController extends Controller
             abort(403);
         }
         $editor = $table->editor;
-        $orderLink = url('/qr-entry/' . rawurlencode($editor->name) . '/' . $table->table_number);
+        $orderLink = url('/qr-entry/' . rawurlencode($editor->username) . '/' . $table->table_number);
         $logoPath = public_path('images/logo-light.png');
         $result = Builder::create()
             ->writer(new PngWriter())

@@ -80,4 +80,448 @@ Barmada is built with a strong focus on security and privacy:
 
 ---
 
+## 5. UI Rendering Logic and Field Usage (Detailed Examples)
+
+This section documents how specific fields from the database/models are used in Blade templates and UI components, including the logic for generating dynamic titles, labels, and other elements.
+
+### Table Number Display in Tables Page
+- **Location:** `resources/views/livewire/tables-list.blade.php`
+- **Logic:**
+  - Each table card displays the table number using:
+    ```blade
+    Table {{ $table->table_number ?? $table->id }}
+    ```
+  - This ensures that tables are always numbered from 1 upwards for each establishment, filling any gaps if tables are deleted. The `table_number` field is managed in the backend to always provide a contiguous sequence per editor.
+  - If `table_number` is not set, it falls back to the table's database `id`.
+
+### Table Number in Order Creation Page
+- **Location:** `resources/views/orders/create.blade.php`
+- **Logic:**
+  - The table selection dropdown displays:
+    ```blade
+    <option value="{{ $table->id }}">Mesa {{ $table->table_number }}</option>
+    ```
+  - This ensures the number after "Mesa" matches the table card number in the tables page, providing a consistent user experience.
+
+### General Pattern
+- For all UI elements that display a table number, always use the `table_number` field for user-facing numbering, not the database `id`.
+- This pattern is followed in all relevant Blade templates and Livewire components to ensure consistency across the application.
+
+---
+
+## 6. User Model, Roles, and UI Rendering Logic
+
+This section documents how user model fields and roles are used in Blade templates and UI components, and how user-specific UI is rendered throughout the application.
+
+### User Model Fields
+- **Key fields:**
+  - `name`, `email`: Displayed in profile, dashboard, and navigation UI.
+  - `is_admin`, `is_editor`, `is_staff`: Used to determine user role and permissions.
+  - `preferences`: Used for user-specific settings (e.g., theme).
+  - `editor_id`: Used to link staff to their editor (owner/manager).
+
+### Role-Based UI Rendering
+- **Admin:**
+  - Has access to all data and management features (all editors, all tables, all orders, all analytics).
+  - Admin-only menus and dashboard sections are shown if `auth()->user()->is_admin` is true.
+- **Editor:**
+  - Sees only their own business data (tables, products, categories, orders, staff, analytics).
+  - UI is filtered by `editor_id` to ensure isolation.
+  - Can manage staff accounts (users with `is_staff` and `editor_id` matching the editor's id).
+- **Staff:**
+  - Limited access, typically to order and table management only.
+  - UI hides admin/editor-only features if `auth()->user()->is_staff` is true.
+
+### UI Examples
+- **Navigation Bar:**
+  - Shows user name and role (e.g., "Admin", "Editor", "Staff").
+  - Menu items are conditionally rendered based on user role.
+- **Profile/Settings:**
+  - Displays and allows editing of `name`, `email`, and `preferences`.
+- **Staff Management:**
+  - Editors see a staff management panel (Livewire component) listing all users with `is_staff` and their `editor_id`.
+- **Data Filtering:**
+  - All analytics, tables, products, categories, and orders are filtered by `editor_id` for editors and staff.
+  - Admins see all data; editors and staff see only their own.
+
+### Example Blade Usage
+```blade
+@if(auth()->user()->is_admin)
+    <a href="/admin">Admin Dashboard</a>
+@endif
+@if(auth()->user()->is_editor)
+    <a href="/analytics">My Analytics</a>
+@endif
+@if(auth()->user()->is_staff)
+    <a href="/orders">Staff Orders</a>
+@endif
+<span>{{ auth()->user()->name }}</span>
+```
+
+---
+
+## 7. Model Factories (database/factories)
+
+Laravel model factories are used to generate fake but realistic data for development and testing. Each factory defines the default attributes for a model and is used in seeders and tests to quickly populate the database with relationally correct data.
+
+### Factories Overview
+- **UserFactory.php**: Generates users with fake name, email, password, and verification fields. Used for seeding admins, editors, and staff. Example fields: `name`, `email`, `email_verified_at`, `password`, `remember_token`.
+- **TableFactory.php**: Creates tables with a unique `table_number`, `orders` count, optional `reference`, and links to an editor (`editor_id`).
+- **ProductFactory.php**: Creates products with a `name`, `description`, `price`, `category_id`, and `editor_id`.
+- **OrderFactory.php**: Creates orders with `editor_id`, `table_id`, `status`, `total_amount`, `amount_paid`, `amount_left`, `is_grouped`, and timestamps.
+- **OrderItemFactory.php**: Creates order items with `order_id`, `product_id`, `quantity`, `price`, `is_paid`, and `item_index`.
+- **CategoryFactory.php**: Creates categories with a `name` and `editor_id`.
+- **TableSessionFactory.php**: Creates table sessions with `table_id`, `editor_id`, `session_number`, `date`, `unique_token`, `opened_at`, `closed_at`, `opened_by`, `closed_by`, and `status`.
+
+These factories ensure that all models have realistic, relationally correct data for development, testing, and analytics QA. They are essential for seeding the database and running automated tests.
+
+---
+
+## 8. Bootstrap Icons for Products
+
+Bootstrap Icons are used throughout the application to visually represent products, categories, and actions. Each product can be assigned an icon by setting its `icon_type` to `'bootstrap'` and its `icon_value` to the desired icon class (e.g., `bi-alarm`).
+
+Below is a list of Bootstrap icon class names (v1.0.0-alpha2) that are available for use with products. Only these class names are valid:
+
+### Bootstrap Icon Class Names (v1.0.0-alpha2)
+- bi-x-octagon-fill
+- bi-x-square
+- bi-x-square-fill
+- bi-alarm
+- bi-alarm-fill
+- bi-alert-circle
+- bi-alert-circle-fill
+- bi-alert-octagon
+- bi-alert-octagon-fill
+- bi-alert-square
+- bi-alert-square-fill
+- bi-alert-triangle
+- bi-alert-triangle-fill
+- bi-archive
+- bi-archive-fill
+- bi-arrow-bar-bottom
+- bi-arrow-bar-left
+- bi-arrow-bar-right
+- bi-arrow-bar-up
+- bi-arrow-clockwise
+- bi-arrow-counterclockwise
+- bi-arrow-down
+- bi-arrow-down-left
+- bi-arrow-down-right
+- bi-arrow-down-short
+- bi-arrow-left
+- bi-arrow-left-right
+- bi-arrow-left-short
+- bi-arrow-repeat
+- bi-arrow-right
+- bi-arrow-right-short
+- bi-arrows-angle-contract
+- bi-arrows-angle-expand
+- bi-arrows-collapse
+- bi-arrows-expand
+- bi-arrows-fullscreen
+- bi-arrow-up
+- bi-arrow-up-down
+- bi-arrow-up-left
+- bi-arrow-up-right
+- bi-arrow-up-short
+- bi-at
+- bi-award
+- bi-backspace
+- bi-backspace-fill
+- bi-backspace-reverse
+- bi-backspace-reverse-fill
+- bi-bar-chart
+- bi-bar-chart-fill
+- bi-battery
+- bi-battery-charging
+- bi-battery-full
+- bi-bell
+- bi-bell-fill
+- bi-blockquote-left
+- bi-blockquote-right
+- bi-book
+- bi-book-half-fill
+- bi-bookmark
+- bi-bookmark-fill
+- bi-bootstrap
+- bi-bootstrap-fill
+- bi-bootstrap-reboot
+- bi-box-arrow-bottom-left
+- bi-box-arrow-bottom-right
+- bi-box-arrow-down
+- bi-box-arrow-left
+- bi-box-arrow-right
+- bi-box-arrow-up
+- bi-box-arrow-up-left
+- bi-box-arrow-up-right
+- bi-braces
+- bi-brightness-fill-high
+- bi-brightness-fill-low
+- bi-brightness-high
+- bi-brightness-low
+- bi-brush
+- bi-bucket
+- bi-bucket-fill
+- bi-building
+- bi-bullseye
+- bi-calendar
+- bi-calendar-fill
+- bi-camera
+- bi-camera-video
+- bi-camera-video-fill
+- bi-capslock
+- bi-capslock-fill
+- bi-chat
+- bi-chat-fill
+- bi-check
+- bi-check-box
+- bi-check-circle
+- bi-chevron-compact-down
+- bi-chevron-compact-left
+- bi-chevron-compact-right
+- bi-chevron-compact-up
+- bi-chevron-down
+- bi-chevron-left
+- bi-chevron-right
+- bi-chevron-up
+- bi-circle
+- bi-circle-fill
+- bi-circle-half
+- bi-circle-slash
+- bi-clock
+- bi-clock-fill
+- bi-cloud
+- bi-cloud-download
+- bi-cloud-fill
+- bi-cloud-upload
+- bi-code
+- bi-code-slash
+- bi-columns
+- bi-columns-gutters
+- bi-command
+- bi-compass
+- bi-cone
+- bi-cone-striped
+- bi-controller
+- bi-credit-card
+- bi-cursor
+- bi-cursor-fill
+- bi-dash
+- bi-diamond
+- bi-diamond-half
+- bi-display
+- bi-display-fill
+- bi-document
+- bi-document-code
+- bi-document-diff
+- bi-document-richtext
+- bi-documents
+- bi-documents-alt
+- bi-document-spreadsheet
+- bi-document-text
+- bi-dot
+- bi-download
+- bi-egg-fried
+- bi-eject
+- bi-eject-fill
+- bi-envelope
+- bi-envelope-fill
+- bi-envelope-open
+- bi-envelope-open-fill
+- bi-eye
+- bi-eye-fill
+- bi-eye-slash
+- bi-eye-slash-fill
+- bi-filter
+- bi-flag
+- bi-flag-fill
+- bi-folder
+- bi-folder-fill
+- bi-folder-symlink
+- bi-folder-symlink-fill
+- bi-fonts
+- bi-forward
+- bi-forward-fill
+- bi-gear
+- bi-gear-fill
+- bi-gear-wide
+- bi-gear-wide-connected
+- bi-geo
+- bi-graph-down
+- bi-graph-up
+- bi-grid
+- bi-grid-fill
+- bi-hammer
+- bi-hash
+- bi-heart
+- bi-heart-fill
+- bi-house
+- bi-house-fill
+- bi-image
+- bi-image-alt
+- bi-image-fill
+- bi-images
+- bi-inbox
+- bi-inboxes
+- bi-inboxes-fill
+- bi-inbox-fill
+- bi-info
+- bi-info-fill
+- bi-info-square
+- bi-info-square-fill
+- bi-justify
+- bi-justify-left
+- bi-justify-right
+- bi-kanban
+- bi-kanban-fill
+- bi-laptop
+- bi-layout-sidebar
+- bi-layout-sidebar-reverse
+- bi-layout-split
+- bi-list
+- bi-list-check
+- bi-list-ol
+- bi-list-task
+- bi-list-ul
+- bi-lock
+- bi-lock-fill
+- bi-map
+- bi-mic
+- bi-moon
+- bi-music-player
+- bi-music-player-fill
+- bi-option
+- bi-outlet
+- bi-pause
+- bi-pause-fill
+- bi-pen
+- bi-pencil
+- bi-people
+- bi-people-fill
+- bi-person
+- bi-person-fill
+- bi-phone
+- bi-phone-landscape
+- bi-pie-chart
+- bi-pie-chart-fill
+- bi-play
+- bi-play-fill
+- bi-plug
+- bi-plus
+- bi-power
+- bi-question
+- bi-question-fill
+- bi-question-square
+- bi-question-square-fill
+- bi-reply
+- bi-reply-all
+- bi-reply-all-fill
+- bi-reply-fill
+- bi-screwdriver
+- bi-search
+- bi-shield
+- bi-shield-fill
+- bi-shield-lock
+- bi-shield-lock-fill
+- bi-shield-shaded
+- bi-shift
+- bi-shift-fill
+- bi-skip-backward
+- bi-skip-backward-fill
+- bi-skip-end
+- bi-skip-end-fill
+- bi-skip-forward
+- bi-skip-forward-fill
+- bi-skip-start
+- bi-skip-start-fill
+- bi-speaker
+- bi-square
+- bi-square-fill
+- bi-square-half
+- bi-star
+- bi-star-fill
+- bi-star-half
+- bi-stop
+- bi-stop-fill
+- bi-stopwatch
+- bi-stopwatch-fill
+- bi-sun
+- bi-table
+- bi-tablet
+- bi-tablet-landscape
+- bi-tag
+- bi-tag-fill
+- bi-terminal
+- bi-terminal-fill
+- bi-text-center
+- bi-text-indent-left
+- bi-text-indent-right
+- bi-text-left
+- bi-text-right
+- bi-three-dots
+- bi-three-dots-vertical
+- bi-toggle-off
+- bi-toggle-on
+- bi-toggles
+- bi-tools
+- bi-trash
+- bi-trash-fill
+- bi-triangle
+- bi-triangle-fill
+- bi-triangle-half
+- bi-trophy
+- bi-tv
+- bi-tv-fill
+- bi-type
+- bi-type-bold
+- bi-type-h1
+- bi-type-h2
+- bi-type-h3
+- bi-type-italic
+- bi-type-strikethrough
+- bi-type-underline
+- bi-unlock
+- bi-unlock-fill
+- bi-upload
+- bi-volume-down
+- bi-volume-down-fill
+- bi-volume-mute
+- bi-volume-mute-fill
+- bi-volume-up
+- bi-volume-up-fill
+- bi-wallet
+- bi-watch
+- bi-wifi
+- bi-window
+- bi-wrench
+- bi-x
+- bi-x-circle
+- bi-x-circle-fill
+- bi-x-octagon
+
+(For a complete and current list, see the Bootstrap Icons documentation.)
+
+---
+
+## 9. User Registration, Username, and Dashboard URLs
+
+### Username Field and Unique URLs
+- The `users` table now includes a `username` field (unique, no spaces, lowercase, used for URLs and QR codes).
+- The registration form requires a `username`, `first_name`, and `last_name`.
+- `username` is used for all dashboard URLs, QR links, and table links (e.g., `/dashboard/{username}` or `/qr-entry/{username}/{table_number}`).
+- `first_name` and `last_name` are used for display in the UI (navigation, profile, emails, etc.).
+- The old `name` field is retained for backward compatibility but will be deprecated in favor of `first_name` and `last_name`.
+
+### Registration and Validation
+- Registration form and validation require `username` (unique, no spaces), `first_name`, `last_name`, `email`, and `password`.
+- The `username` is validated to ensure it is a single word, contains only allowed characters, and is unique.
+
+### Code Usage
+- All code that generates dashboard URLs, QR links, and table links now uses `username` instead of `name`.
+- All display logic (profile, navigation, emails) uses `first_name` and `last_name`.
+- Migration and model updates ensure `username` is unique and indexed.
+
+---
+
 This document is a high-level map of how everything fits together. For file-by-file details, see the APP_STRUCTURE_REFERENCE files.

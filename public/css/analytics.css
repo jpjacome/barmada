@@ -661,3 +661,27 @@
     min-width: 0;
   }
 }
+
+@media print {
+    nav, .navbar, .sidebar, .btn, .export-buttons, .chart-modal-overlay, .chart-modal-content, .product-sales-table-resize-handle {
+        display: none !important;
+    }
+    body {
+        background: #fff !important;
+    }
+    .analytics-dashboard-container {
+        box-shadow: none !important;
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+    .analytics-section {
+        box-shadow: none !important;
+        border: none !important;
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 0 2rem 0 !important;
+    }
+    /* Hide any other elements you don't want in the PDF here */
+}

@@ -263,7 +263,7 @@
                                 <div class="product-file-preview">
                                     <img src="{{ $svgFile->temporaryUrl() }}" alt="Preview" class="product-file-preview-image">
                                 </div>
-                            @elseif($iconValue && $iconType === 'svg' && $editMode)
+                            @elseif($iconValue)
                                 <div class="product-file-preview">
                                     <img src="{{ asset('storage/' . $iconValue) }}" alt="Current Icon" class="product-file-preview-image">
                                     <span class="product-file-preview-label">Current icon</span>
@@ -278,8 +278,72 @@
                         </div>
                     </div>
                     @endif
+
+                    <!-- Product Description -->
+                    <div class="product-form-group">
+                        <label for="description" class="product-form-label">
+                            Description
+                        </label>
+                        <textarea
+                            id="description"
+                            wire:model.defer="description"
+                            class="product-form-input"
+                            placeholder="Enter product description (optional)"
+                            rows="3"
+                        ></textarea>
+                        @error('description')
+                            <span class="product-form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <!-- Product Photo Preview -->
+                    @if($photoFile)
+                        <div class="product-file-preview">
+                            <img src="{{ $photoFile->temporaryUrl() }}" alt="Preview" class="product-file-preview-image">
+                        </div>
+                    @elseif($photo)
+                        <div class="product-file-preview">
+                            <img src="{{ asset('storage/' . $photo) }}" alt="Current Photo" class="product-file-preview-image">
+                            
+                        </div>
+                    @endif
+
+                    <!-- Product Photo Upload -->
+                    <div class="product-form-group">
+                        <label for="photoFile" class="product-form-label">
+                            Product Photo
+                        </label>
+                        <div x-data="{ isUploading: false, progress: 0 }"
+                             x-on:livewire-upload-start="isUploading = true"
+                             x-on:livewire-upload-finish="isUploading = false"
+                             x-on:livewire-upload-error="isUploading = false"
+                             x-on:livewire-upload-progress="progress = $event.detail.progress"
+                             class="product-file-upload">
+                            <label class="product-file-upload-label">
+                                <span class="product-visually-hidden">Choose file</span>
+                                <input
+                                    type="file"
+                                    id="photoFile"
+                                    wire:model="photoFile"
+                                    class="product-file-upload-input"
+                                    accept=".jpg,.jpeg,.png,.webp"
+                                >
+                            </label>
+                            <div x-show="isUploading" class="product-upload-progress-container">
+                                <div class="product-upload-progress-bar">
+                                    <div class="product-upload-progress-value" x-bind:style="'width: ' + progress + '%'"/>
+                                </div>
+                            </div>
+                            <small class="product-file-upload-help">
+                                Upload JPG, PNG, or WebP (max 1MB). Square images work best.
+                            </small>
+                            @error('photoFile')
+                                <span class="product-form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
-                <div class="product-modal-footer">
+                <div class="product-modal-footer fixed-modal-footer">
                     <button 
                         type="button" 
                         wire:click="closeModal" 

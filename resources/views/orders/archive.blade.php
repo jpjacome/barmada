@@ -121,7 +121,7 @@
                 <div class="archive-header">
                     <div>
                         <h2 class="archive-title">
-                            <i class="bi bi-archive archive-icon"></i>
+                            <i class="bi bi-person archive-icon"></i>
                             Orders XML Archives
                         </h2>
                         <p class="archive-description">

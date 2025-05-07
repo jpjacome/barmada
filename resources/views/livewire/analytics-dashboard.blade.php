@@ -331,12 +331,26 @@
         <!-- Advanced/Custom Analytics -->
         <section class="analytics-section analytics-section-advanced">
             <div class="analytics-cards">
-                <div class="analytics-card">Export: <button>CSV</button> <button>PDF</button></div>
+                <div class="analytics-card">
+                    <div class="section-title" style="font-size: 1.1em; margin-bottom: 0.5em;">Export:</div>
+                    <form id="pdf-export-form" method="POST" action="{{ route('analytics.pdf.export.withcharts') }}" style="display:inline;">
+                        @csrf
+                        <input type="hidden" name="sales_chart" id="sales_chart_input">
+                        <input type="hidden" name="sales_last_week_chart" id="sales_last_week_chart_input">
+                        <input type="hidden" name="sales_last_month_chart" id="sales_last_month_chart_input">
+                        <input type="hidden" name="product_bar_chart" id="product_bar_chart_input">
+                        <input type="hidden" name="category_doughnut_chart" id="category_doughnut_chart_input">
+                        <input type="hidden" name="category_revenue_doughnut_chart" id="category_revenue_doughnut_chart_input">
+                        <input type="hidden" name="table_pie_chart" id="table_pie_chart_input">
+                        <button type="submit" class="btn btn-primary">PDF</button>
+                    </form>
+                </div>
             </div>
         </section>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 @php
     $tablePieData = [
         'all' => [
@@ -365,6 +379,19 @@
     window.categoryChartData = @json($this->getCategoryChartData('month'));
     window.tablePieChartData = @json($tablePieData);
     window.monthlyStatsData = @json($monthlyStats);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('pdf-export-form').addEventListener('submit', function(e) {
+            var charts = window.analyticsCharts || {};
+            document.getElementById('sales_chart_input').value = charts['salesChart']?.toBase64Image() || '';
+            document.getElementById('sales_last_week_chart_input').value = charts['salesLastWeekChart']?.toBase64Image() || '';
+            document.getElementById('sales_last_month_chart_input').value = charts['salesLastMonthChart']?.toBase64Image() || '';
+            document.getElementById('product_bar_chart_input').value = charts['productBarChart']?.toBase64Image() || '';
+            document.getElementById('category_doughnut_chart_input').value = charts['categoryDoughnutChart']?.toBase64Image() || '';
+            document.getElementById('category_revenue_doughnut_chart_input').value = charts['categoryRevenueDoughnutChart']?.toBase64Image() || '';
+            document.getElementById('table_pie_chart_input').value = charts['tablePieChart']?.toBase64Image() || '';
+        });
+    });
 </script>
 <script src="{{ asset('js/analytics-dashboard.js') }}"></script>
 @endsection

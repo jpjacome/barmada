@@ -61,8 +61,8 @@
 
             <div class="auth-card-footer">
                 <p class="auth-footer-text">
-                    {{ __("Don't have an account?") }}
-                    <a href="{{ route('register') }}" class="auth-footer-link">{{ __('Sign up') }}</a>
+                    Are you a bar or restaurant owner?<br>
+                    <a href="{{ route('register') }}" class="auth-footer-link">Register for free to use Barmada</a>
                 </p>
             </div>
         </div>

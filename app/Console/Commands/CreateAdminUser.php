@@ -18,7 +18,10 @@ class CreateAdminUser extends Command
         $name = $this->argument('name') ?? 'Admin User';
 
         $user = User::create([
-            'name' => $name,
+            'username' => strtolower(preg_replace('/\s+/', '', $name)) . rand(1000, 9999),
+            'first_name' => $name,
+            'last_name' => 'Admin',
+            'name' => $name . ' Admin',
             'email' => $email,
             'password' => Hash::make($password),
             'is_admin' => true,
@@ -28,4 +31,4 @@ class CreateAdminUser extends Command
         $this->info('Name: ' . $name);
         $this->info('Email: ' . $email);
     }
-} 
+}

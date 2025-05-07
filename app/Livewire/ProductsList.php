@@ -47,9 +47,13 @@ class ProductsList extends Component
 
     public $iconValue = '';
     public $categoryName = '';
+    public $description = '';
+    #[Rule('nullable|file|max:1024')]
+    public $photoFile;
+    public $photo = '';
     
     // Protected listeners for Livewire events
-    protected $listeners = ['deleteConfirmed' => 'deleteConfirmed'];
+    protected $listeners = ['deleteConfirmed' => 'deleteConfirmed', 'categoryAdded' => 'loadCategories'];
 
     public function mount()
     {
@@ -137,6 +141,13 @@ class ProductsList extends Component
             }
         }
         
+        // Handle photo upload
+        if ($this->photoFile) {
+            $photoPath = $this->photoFile->store('product-photos', 'public');
+        } else {
+            $photoPath = $this->photo;
+        }
+
         if ($this->editMode) {
             $product = Product::findOrFail($this->productId);
             if (!$user->is_admin && !($user->is_editor && $product->editor_id == $user->id)) {
@@ -148,6 +159,8 @@ class ProductsList extends Component
                 'icon_type' => $this->iconType,
                 'icon_value' => $iconValue,
                 'category_id' => $this->categoryId,
+                'description' => $this->description,
+                'photo' => $photoPath,
             ]);
             $this->status = "Product '{$this->name}' updated successfully!";
         } else {
@@ -157,6 +170,8 @@ class ProductsList extends Component
                 'icon_type' => $this->iconType,
                 'icon_value' => $iconValue,
                 'category_id' => $this->categoryId,
+                'description' => $this->description,
+                'photo' => $photoPath,
             ];
             if ($user->is_admin) {
                 $data['editor_id'] = $user->id; // Optionally allow admin to set another editor_id if needed
@@ -229,6 +244,8 @@ class ProductsList extends Component
         }
         
         $this->categoryId = $product->category_id;
+        $this->description = $product->description;
+        $this->photo = $product->photo;
         $this->showProductModal = true;
     }
     
@@ -306,6 +323,9 @@ class ProductsList extends Component
         $this->svgFile = null;
         $this->iconValue = '';
         $this->categoryId = null;
+        $this->description = '';
+        $this->photoFile = null;
+        $this->photo = '';
         $this->resetValidation();
     }
 

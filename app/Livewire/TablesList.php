@@ -60,6 +60,8 @@ class TablesList extends Component
             $this->tables = Table::orderBy('table_number')->get();
         } else if ($user->is_editor) {
             $this->tables = Table::where('editor_id', $user->id)->orderBy('table_number')->get();
+        } else if ($user->is_staff) {
+            $this->tables = Table::where('editor_id', $user->editor_id)->orderBy('table_number')->get();
         } else {
             $this->tables = collect();
         }
@@ -107,18 +109,19 @@ class TablesList extends Component
     public function addTable()
     {
         $user = Auth::user();
-        if (!$user->is_admin && !$user->is_editor) {
+        if (!$user->is_admin && !$user->is_editor && !$user->is_staff) {
             abort(403);
         }
-        // Find the lowest available table_number for this editor
-        $existingNumbers = Table::where('editor_id', $user->id)->pluck('table_number')->toArray();
+        // For staff, use their editor_id for table ownership
+        $editorId = $user->is_admin || $user->is_editor ? $user->id : $user->editor_id;
+        $existingNumbers = Table::where('editor_id', $editorId)->pluck('table_number')->toArray();
         $nextTableNumber = 1;
         while (in_array($nextTableNumber, $existingNumbers)) {
             $nextTableNumber++;
         }
         $data = [
             'orders' => 0,
-            'editor_id' => $user->id,
+            'editor_id' => $editorId,
             'table_number' => $nextTableNumber,
         ];
         Table::create($data);
@@ -131,7 +134,7 @@ class TablesList extends Component
     {
         $user = Auth::user();
         $table = Table::findOrFail($tableId);
-        if (!$user->is_admin && !($user->is_editor && $table->editor_id == $user->id)) {
+        if (!$user->is_admin && !($user->is_editor && $table->editor_id == $user->id) && !($user->is_staff && $user->editor_id == $table->editor_id)) {
             abort(403);
         }
         // Check if the table has any active orders
@@ -439,7 +442,7 @@ class TablesList extends Component
     public function render()
     {
         $user = Auth::user();
-        $editorName = $user->name; // Or use a slug if available/preferred
+        $editorName = $user->username; // Use username for QR links
         return view('livewire.tables-list', [
             'editorName' => $editorName
         ]);

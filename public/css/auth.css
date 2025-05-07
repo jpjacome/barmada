@@ -236,7 +236,7 @@
 
 .auth-footer-text {
     color: var(--color-accents);
-    font-size: var(--text-sm);
+    font-size: var(--text-xl);
 }
 
 .auth-footer-link {

@@ -36,6 +36,7 @@
                 </div>
             </div>
         </div>
+        @if(auth()->user() && auth()->user()->is_admin)
         <div class="settings-section">
             <h3 class="settings-section-title">Logo Settings</h3>
             <div class="settings-card">
@@ -127,6 +128,7 @@
                 </form>
             </div>
         </div>
+        @endif
     </div>
 </div>
 @endsection

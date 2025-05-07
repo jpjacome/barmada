@@ -3,15 +3,15 @@
 @section('content')
 <div class="container page-container">
     <div class="content-card content-card-body text-center" style="max-width: 500px; margin: 4rem auto;">
-        <h1 class="page-title" style="color: var(--color-primary);">Table Request Pending</h1>
+        <h1 class="page-title" style="color: var(--color-primary);">Solicitud de Mesa Pendiente</h1>
         <p style="color: var(--color-accents); font-size: var(--text-lg);">
             @if(isset($table) && $table)
-                Thank you for choosing our service.<br>
-                Your request to open <strong>Table #{{ $table->table_number ?? $table->id }}</strong> has been received.<br>
-                Please wait a moment while our staff prepares your table.<br>
-                You will be redirected to the order page as soon as your table is ready.
+                Gracias por elegir nuestro servicio.<br>
+                Su solicitud para abrir la <strong>Mesa #{{ $table->table_number ?? $table->id }}</strong> ha sido recibida.<br>
+                Por favor, espere un momento mientras nuestro personal prepara su mesa.<br>
+                Será redirigido a la página de pedidos tan pronto como su mesa esté lista.
             @else
-                This table is not available.
+                Esta mesa no está disponible.
             @endif
         </p>
     </div>

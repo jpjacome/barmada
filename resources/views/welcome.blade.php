@@ -4,7 +4,8 @@
 <link rel="stylesheet" href="{{ asset('css/homepage.css') }}">
 <div class="homepage-hero-2col">
     <div class="hero-col hero-col-image">
-        <img src="./images/logo1.png" alt="Barmada Logo" class="hero-logo">
+        <img src="{{ asset('images/logo1.png') }}" alt="Barmada Logo" class="hero-logo d-light" style="display: {{ session('theme', 'light') === 'dark' ? 'none' : 'block' }};">
+        <img src="{{ asset('images/logo1-dark.png') }}" alt="Barmada Logo" class="hero-logo d-dark" style="display: {{ session('theme', 'light') === 'dark' ? 'block' : 'none' }};">
     </div>
     <div class="hero-col hero-col-text">
         <div class="container">
@@ -146,7 +147,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <div class="contact-wrapper">
     <div class="contact-logo">
-        <img src="../images/logo-light.svg" alt="Barmada Logo">
+        <img src="{{ asset('images/logo-light.svg') }}" alt="Barmada Logo" class="footer-logo d-light" style="display: {{ session('theme', 'light') === 'dark' ? 'none' : 'block' }};">
+        <img src="{{ asset('images/logo-dark.svg') }}" alt="Barmada Logo" class="footer-logo d-dark" style="display: {{ session('theme', 'light') === 'dark' ? 'block' : 'none' }};">
         <div class="company-footer-info">2025 Barmada. All rights reserved.
         </div>
     </div>

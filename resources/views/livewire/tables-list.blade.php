@@ -88,7 +88,7 @@
                         >
                             <i class="bi bi-qr-code"></i>
                         </button>
-                        <a href="{{ url('/qr-entry/' . rawurlencode($editorName) . '/' . $table->table_number) }}" class="table-card-button" target="_blank">
+                        <a href="{{ url('/qr-entry/' . rawurlencode($table->editor->username) . '/' . $table->table_number) }}" class="table-card-button" target="_blank">
                             <i class="bi bi-plus-circle"></i> New Order
                         </a>
                     </div>
@@ -110,28 +110,13 @@
     
     <!-- Add Table Button -->
     <div class="tables-add-button-container">
-        <button wire:click="toggleAddForm" class="tables-add-button">
+        <button wire:click="addTable" class="tables-add-button">
             <svg xmlns="http://www.w3.org/2000/svg" class="tables-add-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            {{ $showAddForm ? 'Cancel' : 'Add New Table' }}
+            Add New Table
         </button>
     </div>
-    
-    <!-- Add Table Form -->
-    @if($showAddForm)
-    <div class="tables-add-form">
-        <h4 class="tables-add-form-title">Add New Table</h4>
-        <div class="tables-add-form-description">
-            Click "Create Table" to add a new table to your venue.
-        </div>
-        <div class="tables-add-form-actions">
-            <button wire:click="addTable" class="tables-add-form-button">
-                Create Table
-            </button>
-        </div>
-    </div>
-    @endif
     
     <!-- Error Modal -->
     @if($showErrorModal)

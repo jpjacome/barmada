@@ -49,7 +49,7 @@ This document provides a comprehensive overview of every file and folder in the 
 - **OrdersList.php**: Livewire component for listing and editing orders (per-table or per-user view).
 - **OrderTimer.php**: Livewire component for order timing/countdown features.
 - **ProductsList.php**: Livewire component for product CRUD, category management, and icon uploads.
-- **TablesList.php**: Livewire component for table management, order viewing, payment tracking, and status toggling.
+- **TablesList.php**: Livewire component for table management, order viewing, payment tracking, and status toggling. As of May 2025, staff users can now add and delete tables for their establishment (tables are assigned to their editor's account). The "Add New Table" button immediately adds a table without a confirmation form.
 - **StaffList.php**: Livewire component for staff management. Editors and admins can view, add, and delete staff members linked to their establishment. Staff users have limited permissions compared to editors. UI is accessible to both editors and admins.
 - **AnalyticsDashboard.php**: Livewire component for displaying analytics dashboards (charts, stats, etc.) for editors/admins. Integrates with analytics JS and controller. Added May 2025.
 

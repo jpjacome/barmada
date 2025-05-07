@@ -16,7 +16,10 @@ class DatabaseSeeder extends Seeder
         // Create admin user if it doesn't exist
         if (!User::where('email', 'admin@golems.bar')->exists()) {
             User::factory()->create([
-                'name' => 'Admin',
+                'username' => 'admin',
+                'first_name' => 'Admin',
+                'last_name' => 'User',
+                'name' => 'Admin User',
                 'email' => 'admin@golems.bar',
             ]);
         }
@@ -25,6 +28,9 @@ class DatabaseSeeder extends Seeder
         $editor = User::firstOrCreate(
             ['email' => 'editor@golems.bar'],
             [
+                'username' => 'editor',
+                'first_name' => 'Default',
+                'last_name' => 'Editor',
                 'name' => 'Default Editor',
                 'password' => bcrypt('password'),
                 'is_editor' => true,

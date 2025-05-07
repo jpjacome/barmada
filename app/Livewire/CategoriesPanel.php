@@ -44,6 +44,7 @@ class CategoriesPanel extends Component
         $this->newCategoryName = '';
         $this->status = 'Category added successfully!';
         $this->loadCategories();
+        $this->dispatch('categoryAdded');
     }
 
     public function deleteCategory($id)
@@ -55,45 +56,72 @@ class CategoriesPanel extends Component
         }
         $category->delete();
         $this->status = 'Category deleted successfully!';
-        $this->loadCategories();
+        $this->resequenceSortOrder();
     }
 
     public function moveUp($id)
     {
         $category = Category::find($id);
         if (!$category) return;
-        $prev = Category::where('editor_id', $category->editor_id)
-            ->where('sort_order', '<', $category->sort_order)
-            ->orderBy('sort_order', 'desc')
-            ->first();
-        if ($prev) {
-            $tmp = $category->sort_order;
-            $category->sort_order = $prev->sort_order;
-            $prev->sort_order = $tmp;
-            $category->save();
-            $prev->save();
-            $this->status = 'Category moved up.';
-            $this->loadCategories();
-        }
+        $user = Auth::user();
+        $query = $user->is_admin
+            ? Category::query()
+            : Category::where('editor_id', $category->editor_id);
+        $categories = $query->orderBy('sort_order')->get();
+        $count = $categories->count();
+        $index = $categories->search(fn($c) => $c->id == $category->id);
+        if ($index === false) return;
+        $swapIndex = $index === 0 ? $count - 1 : $index - 1;
+        $swapCategory = $categories[$swapIndex];
+        $tmp = $category->sort_order;
+        $category->sort_order = $swapCategory->sort_order;
+        $swapCategory->sort_order = $tmp;
+        $category->save();
+        $swapCategory->save();
+        $this->resequenceSortOrder();
     }
 
     public function moveDown($id)
     {
         $category = Category::find($id);
         if (!$category) return;
-        $next = Category::where('editor_id', $category->editor_id)
-            ->where('sort_order', '>', $category->sort_order)
-            ->orderBy('sort_order', 'asc')
-            ->first();
-        if ($next) {
-            $tmp = $category->sort_order;
-            $category->sort_order = $next->sort_order;
-            $next->sort_order = $tmp;
-            $category->save();
-            $next->save();
-            $this->status = 'Category moved down.';
-            $this->loadCategories();
+        $user = Auth::user();
+        $query = $user->is_admin
+            ? Category::query()
+            : Category::where('editor_id', $category->editor_id);
+        $categories = $query->orderBy('sort_order')->get();
+        $count = $categories->count();
+        $index = $categories->search(fn($c) => $c->id == $category->id);
+        if ($index === false) return;
+        $swapIndex = $index === $count - 1 ? 0 : $index + 1;
+        $swapCategory = $categories[$swapIndex];
+        $tmp = $category->sort_order;
+        $category->sort_order = $swapCategory->sort_order;
+        $swapCategory->sort_order = $tmp;
+        $category->save();
+        $swapCategory->save();
+        $this->resequenceSortOrder();
+    }
+
+    /**
+     * Ensure all categories for the current editor have sequential sort_order values (1, 2, 3, ...)
+     */
+    public function resequenceSortOrder()
+    {
+        $user = Auth::user();
+        $query = $user->is_admin
+            ? Category::query()
+            : Category::where('editor_id', $user->id);
+        $categories = $query->orderBy('sort_order')->get();
+        $i = 1;
+        foreach ($categories as $category) {
+            if ($category->sort_order != $i) {
+                $category->sort_order = $i;
+                $category->save();
+            }
+            $i++;
         }
+        $this->loadCategories();
     }
 
     public function render()

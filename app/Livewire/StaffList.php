@@ -56,7 +56,10 @@ class StaffList extends Component
             $user->save();
         } else {
             User::create([
-                'name' => $this->name,
+                'username' => strtolower(preg_replace('/\s+/', '', $this->name)) . rand(1000, 9999),
+                'first_name' => $this->name,
+                'last_name' => 'Staff',
+                'name' => $this->name . ' Staff',
                 'email' => $this->email,
                 'password' => Hash::make($this->password),
                 'is_staff' => true,

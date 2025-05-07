@@ -101,7 +101,8 @@ class SettingsController extends Controller
                 'theme' => $newTheme
             ]);
         }
-        
+        // For guests, just set the session (already done above)
+        // Redirect back to previous page
         return redirect()->back()->with('success', 'Theme updated successfully');
     }
-} 
+}

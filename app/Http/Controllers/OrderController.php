@@ -62,8 +62,15 @@ class OrderController extends Controller
     public function create()
     {
         $user = Auth::user();
-        $products = $user->is_admin ? Product::orderBy('name')->get() : Product::where('editor_id', $user->id)->orderBy('name')->get();
-        $tables = $user->is_admin ? Table::all() : Table::where('editor_id', $user->id)->get();
+        if ($user->is_editor) {
+            $editorId = $user->id;
+        } elseif ($user->is_staff) {
+            $editorId = $user->editor_id;
+        } else {
+            $editorId = $user->id;
+        }
+        $products = Product::where('editor_id', $editorId)->orderBy('name')->get();
+        $tables = Table::where('editor_id', $editorId)->orderBy('table_number')->get();
         
         // Get the table ID from the query parameter
         $selectedTableId = request()->query('table');
@@ -71,12 +78,13 @@ class OrderController extends Controller
         // Validate the table ID if provided
         if ($selectedTableId) {
             $table = Table::find($selectedTableId);
-            if (!$table || ($user->is_editor && $table->editor_id != $user->id)) {
+            if (!$table || $table->editor_id != $editorId) {
                 return redirect()->route('orders.create')->with('error', 'Invalid table selected.');
             }
         }
         
-        return view('orders.create', compact('products', 'tables', 'selectedTableId'));
+        $currentEditorId = $editorId;
+        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'currentEditorId'));
     }
 
     /**
@@ -84,16 +92,24 @@ class OrderController extends Controller
      */
     public function orderEntry(Request $request)
     {
+        $user = Auth::user();
         $tableId = $request->query('table');
         if ($tableId) {
             // If table param is present, use the redirection logic
             return $this->handleTableLink($request);
         }
-        // Otherwise, show the generic order creation page
-        $products = Product::orderBy('name')->get();
-        $tables = Table::all();
+        if ($user->is_editor) {
+            $editorId = $user->id;
+        } elseif ($user->is_staff) {
+            $editorId = $user->editor_id;
+        } else {
+            $editorId = $user->id;
+        }
+        $products = Product::where('editor_id', $editorId)->orderBy('name')->get();
+        $tables = Table::where('editor_id', $editorId)->orderBy('table_number')->get();
         $selectedTableId = null;
-        return view('orders.create', compact('products', 'tables', 'selectedTableId'));
+        $currentEditorId = $editorId;
+        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'currentEditorId'));
     }
 
     /**
@@ -389,8 +405,8 @@ class OrderController extends Controller
      */
     public function qrEntry($editorname, $table_number)
     {
-        // Find the editor by name (or slug if you switch to that)
-        $editor = User::where('name', $editorname)->first();
+        // Find the editor by username (or slug if you switch to that)
+        $editor = User::where('username', $editorname)->first();
         if (!$editor) {
             abort(404, 'Editor not found.');
         }

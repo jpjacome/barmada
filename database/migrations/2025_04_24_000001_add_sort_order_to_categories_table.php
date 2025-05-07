@@ -13,10 +13,12 @@ class AddSortOrderToCategoriesTable extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
-        Schema::table('categories', function (Blueprint $table) {
-            $table->dropColumn('sort_order');
-        });
+        if (Schema::hasColumn('categories', 'sort_order')) {
+            Schema::table('categories', function (Blueprint $table) {
+                $table->dropColumn('sort_order');
+            });
+        }
     }
 }

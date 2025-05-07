@@ -1,0 +1,187 @@
+.reg-form-outer {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-secondary);
+    padding: 2rem 0;
+}
+
+.reg-form-card {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    background: var(--color-secondary);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.reg-form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.reg-form-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.reg-form-logo-img {
+    width: 92px;
+    height: 92px;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
+}
+
+.reg-form-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.reg-form-subtitle {
+    font-size: 1rem;
+    color: var(--color-accents);
+    margin-bottom: 0.5rem;
+}
+
+.reg-form-body {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+}
+#form-flex{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.reg-form-group {
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.reg-form-label {
+    display: block;
+    font-weight: 500;
+    color: var(--color-accents);
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.reg-form-input {
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-primary);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    color: var(--color-accents);
+    background: var(--color-secondary);
+    transition: border-color 0.2s;
+}
+
+.reg-form-input:focus {
+    border-color: var(--color-success);
+    outline: none;
+}
+
+.reg-form-error {
+    color: var(--color-danger);
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+
+.reg-form-btn-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.reg-form-btn {
+    background: var(--color-primary);
+    color: var(--color-secondary);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    margin: 0.5rem 0.25rem;
+}
+
+.reg-form-btn:hover {
+    background: var(--color-success);
+    color: var(--color-secondary);
+}
+
+.reg-form-footer {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.reg-form-footer-text {
+    color: var(--color-accents);
+    font-size: 1rem;
+}
+
+.reg-form-footer-link {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: underline;
+    margin-left: 0.5rem;
+    transition: color 0.2s;
+}
+
+.reg-form-footer-link:hover {
+    color: var(--color-success);
+}
+
+.reg-form-table-count-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.reg-form-table-count-input {
+    max-width: 80px;
+    text-align: center;
+}
+.reg-form-table-count-btn {
+    padding: 0.5rem 1rem;
+    min-width: 2.5rem;
+}
+
+@media (max-width: 600px) {
+    .reg-form-card {
+        padding: 1.2rem 0.5rem;
+        max-width: 98vw;
+    }
+    .reg-form-outer {
+        padding: 0.5rem 0;
+    }
+    .reg-form-title {
+        font-size: 1.3rem;
+    }
+    .reg-form-subtitle {
+        font-size: 1rem;
+    }
+    .reg-form-input {
+        font-size: 0.95rem;
+    }
+    .reg-form-btn {
+        font-size: 1rem;
+        padding: 0.6rem 1.2rem;
+    }
+}

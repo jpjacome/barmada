@@ -16,6 +16,16 @@
 
             <!-- Settings Dropdown -->
             <div class="navigation-right">
+                <!-- Theme Toggle Switch (always visible) -->
+                <div class="theme-toggle">
+                    <form action="{{ route('settings.toggle-theme') }}" method="POST">
+                        @csrf
+                        <label class="theme-switch">
+                            <input type="checkbox" onchange="this.form.submit()" {{ session('theme', 'light') === 'dark' ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </form>
+                </div>
                 <!-- Navigation Links -->
                 <div class="navigation-links">
                     @if(Auth::check() && Auth::user()->is_admin)
@@ -41,18 +51,17 @@
                         <a href="{{ route('orders.create') }}" class="nav-new-order-button">
                             <span class="nav-button-text">New Order</span>
                         </a>
+                    @elseif(Auth::check() && Auth::user()->is_staff)
+                        <x-nav-link :href="route('tables.index')" :active="request()->routeIs('tables.*')">
+                            {{ __('Tables') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('all-orders')" :active="request()->routeIs('all-orders')">
+                            {{ __('Orders') }}
+                        </x-nav-link>
+                        <a href="{{ route('orders.create') }}" class="nav-new-order-button">
+                            <span class="nav-button-text">New Order</span>
+                        </a>
                     @endif
-                </div>
-                
-                <!-- Theme Toggle Switch -->
-                <div class="theme-toggle">
-                    <form action="{{ route('settings.toggle-theme') }}" method="POST">
-                        @csrf
-                        <label class="theme-switch">
-                            <input type="checkbox" onchange="this.form.submit()" {{ session('theme', 'light') === 'dark' ? 'checked' : '' }}>
-                            <span class="slider"></span>
-                        </label>
-                    </form>
                 </div>
                 
                 @auth
@@ -100,8 +109,8 @@
                 </x-dropdown>
                 @else
                 {{-- Guests: simple Log in button (desktop) --}}
-                <a href="{{ route('login') }}" class="nav-link">
-                    {{ __('Log in') }}
+                <a href="{{ route('login') }}" class="dropdown-trigger" title="Login/Register">
+                    <i class="bi bi-person" style="font-size: 2rem;"></i>
                 </a>
                 @endauth
 
@@ -155,6 +164,16 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('staff.index')" :active="request()->routeIs('staff.index')">
                     <i class="bi bi-person"></i>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('orders.create')" class="responsive-new-order">
+                    {{ __('New Order') }}
+                </x-responsive-nav-link>
+            @elseif(Auth::check() && Auth::user()->is_staff)
+                <x-responsive-nav-link :href="route('tables.index')" :active="request()->routeIs('tables.*')">
+                    {{ __('Tables') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('all-orders')" :active="request()->routeIs('all-orders')">
+                    {{ __('Orders') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('orders.create')" class="responsive-new-order">
                     {{ __('New Order') }}

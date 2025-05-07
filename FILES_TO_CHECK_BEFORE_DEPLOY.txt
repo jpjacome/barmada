@@ -1,0 +1,77 @@
+# Files Likely to Differ Between Local and Production Environments
+
+This file lists the files and folders in a typical Laravel app that are most likely to differ between your local (development) and production (online) environments. Use this as a checklist when preparing to deploy or compare environments.
+
+---
+
+## 1. Environment-Specific Files
+
+- **.env**
+  - Contains environment variables (database credentials, APP_URL, mail settings, etc.).
+  - Should always be different between local and production.
+
+## 2. Web Server/Hosting Files
+
+- **public/.htaccess**
+  - May contain server-specific rewrites or settings.
+  - Check for hardcoded URLs, redirects, or custom rules.
+
+- **public/index.php**
+  - Should be the same, but check if any customizations were made for the server path or environment.
+
+## 3. Storage and Cache (Should Not Be Synced)
+
+- **storage/**
+  - Contains logs, cache, sessions, compiled views, and user uploads.
+  - Do not copy between environments. Only sync user-uploaded files if needed (e.g., storage/app/public/product-icons/).
+
+- **bootstrap/cache/**
+  - Contains cached config and services. Should be regenerated per environment.
+
+## 4. Vendor and Node Modules (Should Not Be Synced)
+
+- **vendor/**
+  - Composer dependencies. Should be generated with `composer install` per environment.
+
+- **node_modules/**
+  - NPM dependencies. Should be generated with `npm install` per environment.
+
+## 5. Compiled Assets
+
+- **public/build/**, **public/css/**, **public/js/**
+  - Compiled CSS/JS assets. Should be rebuilt per environment, but source files in `resources/` should be the same.
+
+## 6. Config Files (Should Be the Same)
+
+- **config/**
+  - Should be identical between environments. Only change if you have a specific reason.
+
+## 7. Source Code and Resources (Should Be the Same)
+
+- **app/**, **routes/**, **resources/**, **database/**, **tests/**
+  - All source code, migrations, seeders, factories, and tests should be the same.
+
+## 8. Other Files to Check
+
+- **composer.json**, **composer.lock**
+- **package.json**, **package-lock.json** or **yarn.lock**
+- **phpunit.xml**
+- **README.md**
+
+---
+
+# Suggested Process to Compare Environments
+
+1. **Compare .env files manually** (never sync local to production directly).
+2. **Check public/.htaccess** for server-specific rules or hardcoded URLs.
+3. **Do not sync storage/, bootstrap/cache/, vendor/, or node_modules/** between environments.
+4. **Ensure all source code and config files are identical** (except for .env and .htaccess as noted).
+5. **Rebuild assets and dependencies** on each environment:
+   - Run `composer install --no-dev` and `npm install && npm run build` on production.
+6. **If you use symlinked storage (public/storage)**, re-run `php artisan storage:link` on production after deployment.
+7. **Check for hardcoded URLs** in Blade templates, JS, or config files.
+8. **Update third-party service settings** (OAuth, payment gateways, etc.) to use the correct domain.
+
+---
+
+This checklist will help you avoid common pitfalls when deploying or comparing Laravel apps between local and production environments.

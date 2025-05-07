@@ -9,11 +9,10 @@
                 <span>{{ session('error') }}</span>
             </div>
         @endif
+        @php $user = Auth::user(); @endphp
         <div class="dashboard-container">
             <div class="dashboard-header">
-                <a href="{{ route('dashboard') }}">
-                    <x-application-logo class="dashboard-logo" alt="Barmada Logo" />
-                </a>
+                <h1 class="dashboard-title">Hello, {{ $user->username }}</h1>
             </div>
             <!-- Recent Activity Section -->
             <div class="recent-activity">
@@ -23,7 +22,6 @@
                 </h3>
                 <ul class="activity-list">
                     @php
-                        $user = Auth::user();
                         $orderActivities = $user->is_admin
                             ? App\Models\Order::latest()->take(3)->get()
                             : App\Models\Order::where('editor_id', $user->id)->latest()->take(3)->get();
