@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class CategoriesPanel extends Component
 {
@@ -33,7 +34,14 @@ class CategoriesPanel extends Component
     {
         $user = Auth::user();
         $this->validate([
-            'newCategoryName' => 'required|min:3|max:255|unique:categories,name',
+            'newCategoryName' => [
+                'required',
+                'min:3',
+                'max:255',
+                Rule::unique('categories', 'name')->where(function ($query) use ($user) {
+                    return $query->where('editor_id', $user->id);
+                }),
+            ],
         ]);
         $maxOrder = Category::where('editor_id', $user->id)->max('sort_order') ?? 0;
         Category::create([

@@ -524,4 +524,53 @@ Below is a list of Bootstrap icon class names (v1.0.0-alpha2) that are available
 
 ---
 
+## 10. Multi-Editor Support and Per-Editor Data Isolation (May 2025)
+
+### Database & Migrations
+- All major tables (categories, products, tables, orders, activity_logs, table_sessions) now include an `editor_id` column (foreign key to users.id) to support multi-tenant data isolation.
+- Categories table unique constraint updated: now uses a composite unique index on (`name`, `editor_id`) so different editors can have categories with the same name.
+- Migration best practices: Always use minimal, clean migration files (no extra whitespace, comments, or BOM) to avoid Laravel class discovery issues, especially on production Linux servers.
+- Migration troubleshooting: If you encounter `Class not found` errors, check for encoding, whitespace, and class/file name mismatches. Creating migration files directly on the server with minimal content is the most reliable fix.
+
+### Validation & Business Logic
+- All category creation and update logic (controllers, Livewire components) now validates category name uniqueness per editor using Laravel's `Rule::unique(...)->where('editor_id', ...)`.
+- Product, table, and order queries are always filtered by `editor_id` for editors and staff. Admins see all data.
+- Staff users are supported, linked to their editor via `editor_id` and limited to their establishment's data.
+
+### UI & Blade Templates
+- All category, product, and table lists are filtered by `editor_id` for editors and staff.
+- Table numbers in the UI always use the `table_number` field, not the database `id`, for user-facing consistency.
+- Category creation in the UI now allows duplicate names for different editors, matching backend validation and DB constraints.
+
+### User Model & Registration
+- User registration now requires a unique `username` (used for URLs and QR codes), `first_name`, and `last_name`.
+- The `name` field is retained for backward compatibility but is being phased out in favor of `first_name` and `last_name`.
+- All dashboard, QR, and table URLs use `username`.
+
+### Troubleshooting & Deployment Notes
+- Always run `composer dump-autoload` and clear Laravel caches after adding or editing migration files.
+- On production (Linux), ensure migration files have no BOM, no whitespace before `<?php`, and class names match exactly (case-sensitive).
+- If migration errors persist, create the migration file directly on the server using a text editor (nano/vim) with minimal content.
+- When rolling back migrations that change NOT NULL constraints, always update NULL values before altering the column to avoid SQL errors.
+
+---
+
+## Table Sessions, Unique Tokens, and Order Links (May 2025 Update)
+
+### Table Session Lifecycle
+- When a table is opened (by staff or editor), a new TableSession is created and a new unique token (UUID) is generated.
+- The unique token is assigned to both the Table and the TableSession, and is used for all QR/order links for that session.
+- When a table is closed, the TableSession is marked as closed and the unique token is cleared from the Table (invalidating the QR/order link).
+- Only one open TableSession can exist per table at a time. Reopening a table creates a new session and a new unique token.
+- All orders created during a session are linked to the TableSession via table_session_id.
+
+### QR and Order Link Flow
+- The QR code for each table encodes a link using the current unique token: `/order/{unique_token}`.
+- The same unique token link is used for both customer and staff/admin order creation flows.
+- The "New Order" button in the tables list should use the current session's unique token in its link, and only be shown if the table is open and has a valid token.
+- The backend ensures that only open tables with a valid unique token can be used for order creation.
+- This guarantees that all orders are always linked to the correct session and editor, and that QR links are always valid for the current session only.
+
+---
+
 This document is a high-level map of how everything fits together. For file-by-file details, see the APP_STRUCTURE_REFERENCE files.

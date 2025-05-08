@@ -134,11 +134,13 @@ class TableController extends Controller
         if (!$table || $table->status !== 'open') {
             return response()->view('orders.table-closed', ['table' => $table]);
         }
-        $products = Product::orderBy('name')->get();
-        $tables = Table::all();
+        // Only load products and tables for the correct editor
+        $products = Product::where('editor_id', $table->editor_id)->orderBy('name')->get();
+        $tables = Table::where('editor_id', $table->editor_id)->orderBy('table_number')->get();
         $selectedTableId = $table->id;
-        // Render the order creation view with the table preselected
-        return view('orders.create', compact('products', 'tables', 'selectedTableId'));
+        $currentEditorId = $table->editor_id;
+        // Render the order creation view with the table preselected and correct editor context
+        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'unique_token', 'currentEditorId'));
     }
 
     /**
@@ -165,5 +167,60 @@ class TableController extends Controller
             ->build();
         return response($result->getString())
             ->header('Content-Type', $result->getMimeType());
+    }
+
+    /**
+     * Store a guest order using the unique token.
+     */
+    public function storeGuestOrder(Request $request, $unique_token)
+    {
+        $table = Table::where('unique_token', $unique_token)->first();
+        if (!$table || $table->status !== 'open') {
+            return redirect()->route('orders.waiting-approval')->withErrors(['error' => 'Table is not open or does not exist.']);
+        }
+
+        $validated = $request->validate([
+            'products' => 'required|array',
+            'products.*' => 'integer|min:1',
+        ]);
+
+        // Find the current open TableSession for this table
+        $currentSession = \App\Models\TableSession::where('table_id', $table->id)
+            ->whereIn('status', ['open', 'reopened'])
+            ->latest('opened_at')
+            ->first();
+
+        if (!$currentSession) {
+            return redirect()->route('orders.waiting-approval')->withErrors(['error' => 'No open session for this table.']);
+        }
+
+        // Create the order
+        $order = \App\Models\Order::create([
+            'table_id' => $table->id,
+            'table_session_id' => $currentSession->id,
+            'status' => 'pending',
+            'total_amount' => 0, // Calculate total based on products
+            'editor_id' => $table->editor_id, // Assign the editor_id from the table
+        ]);
+
+        $totalAmount = 0;
+        $itemIndex = 0; // Initialize item index
+        foreach ($validated['products'] as $productId => $quantity) {
+            $product = \App\Models\Product::find($productId);
+            for ($i = 0; $i < $quantity; $i++) {
+                $order->items()->create([
+                    'product_id' => $productId,
+                    'quantity' => 1,
+                    'price' => $product->price,
+                    'item_index' => $itemIndex++, // Increment item index for each item
+                ]);
+                $totalAmount += $product->price;
+            }
+        }
+
+        $order->update(['total_amount' => $totalAmount]);
+
+        // Redirect to the confirmation page
+        return redirect()->route('orders.confirmation')->with('success', 'Your order has been submitted!');
     }
 }

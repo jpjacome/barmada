@@ -7,6 +7,8 @@ use Livewire\WithPagination;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
+use App\Models\TableSessionRequest;
+use App\Models\TableSession;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -21,6 +23,7 @@ class AllOrdersList extends Component
     public $showStatusModal = false;
     public $editingOrder = null;
     public $tables = [];
+    public $activeTables = [];
     public $pendingOrders = [];
     public $lastPendingOrdersHash = '';
     public $lastUpdated;
@@ -45,7 +48,46 @@ class AllOrdersList extends Component
 
     public function loadTables()
     {
-        $this->tables = Table::all();
+        $user = Auth::user();
+        // Only show tables for the current editor (or all if admin)
+        if ($user->is_admin) {
+            $this->tables = Table::whereIn('status', ['pending_approval', 'open'])->get();
+        } else if ($user->is_editor) {
+            $this->tables = Table::where('editor_id', $user->id)
+                ->whereIn('status', ['pending_approval', 'open'])
+                ->get();
+        } else if ($user->is_staff) {
+            $this->tables = Table::where('editor_id', $user->editor_id)
+                ->whereIn('status', ['pending_approval', 'open'])
+                ->get();
+        } else {
+            $this->tables = collect();
+        }
+        $this->activeTables = $this->tables->map(function ($table) {
+            // For open tables, get the current session
+            $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
+            $approvedClients = 0;
+            $pendingClients = collect();
+            if ($table->status === 'open' && $currentSession) {
+                $approvedClients = $currentSession->sessionRequests()->where('status', 'approved')->count();
+                $pendingClients = $currentSession->sessionRequests()
+                    ->where('status', 'pending')
+                    ->get();
+            } else {
+                // For pending_approval, get requests not linked to a session
+                $pendingClients = TableSessionRequest::whereNull('table_session_id')
+                    ->where('status', 'pending')
+                    ->whereDate('created_at', now()->toDateString())
+                    ->get();
+            }
+            return [
+                'id' => $table->id,
+                'table_number' => $table->table_number,
+                'status' => $table->status,
+                'approved_clients' => $approvedClients,
+                'pending_clients' => $pendingClients,
+            ];
+        });
     }
 
     public function loadOrders()
@@ -326,33 +368,34 @@ class AllOrdersList extends Component
 
     public function exportOrdersToXml()
     {
-        // Create archive directory if it doesn't exist
-        $archiveDir = storage_path('app/public/archive');
+        $user = Auth::user();
+        $editorId = $user->is_admin ? null : $user->id;
+        if (!$editorId) {
+            // Optionally, block admin from exporting or export all data to a separate admin folder
+            session()->flash('message', 'Only editors can export their own orders.');
+            return;
+        }
+        // Create per-editor archive directory if it doesn't exist
+        $archiveDir = storage_path('app/public/archive/' . $editorId);
         if (!file_exists($archiveDir)) {
             mkdir($archiveDir, 0755, true);
         }
-        
-        // Generate filename with current date and time
-        $filename = 'orders_' . now()->format('Y-m-d_H-i-s') . '.xml';
+        // Generate filename with current date and time, including editor_id
+        $filename = 'orders_' . $editorId . '_' . now()->format('Y-m-d_H-i-s') . '.xml';
         $filepath = $archiveDir . '/' . $filename;
-        
-        // Fetch all orders with relationships
-        $orders = Order::with(['table', 'items.product'])->get();
-        
+        // Fetch all orders for this editor with relationships
+        $orders = Order::with(['table', 'items.product'])->where('editor_id', $editorId)->get();
         // Create XML document
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><orders></orders>');
-        
         foreach ($orders as $order) {
             $orderXml = $xml->addChild('order');
             $orderXml->addAttribute('id', $order->id);
             $orderXml->addChild('status', $order->status);
             $orderXml->addChild('created_at', $order->created_at);
             $orderXml->addChild('updated_at', $order->updated_at);
-            
             // Add table information
             $tableXml = $orderXml->addChild('table');
             $tableXml->addAttribute('id', $order->table->id);
-            
             // Add products
             $productsXml = $orderXml->addChild('products');
             foreach ($order->items as $item) {
@@ -364,13 +407,11 @@ class AllOrdersList extends Component
                 $productXml->addChild('is_paid', $item->is_paid ? 'true' : 'false');
             }
         }
-        
         // Save XML to file
         $xml->asXML($filepath);
-        
         // Show success message with storage location
-        $relativePath = 'storage/archive/' . $filename;
-        session()->flash('message', "Orders exported to XML file: {$filename}. Stored in the archive folder.");
+        $relativePath = 'storage/archive/' . $editorId . '/' . $filename;
+        session()->flash('message', "Orders exported to XML file: {$filename}. Stored in your archive folder.");
     }
 
     /**
@@ -411,6 +452,43 @@ class AllOrdersList extends Component
             // Optionally: notify the customer (they will be redirected by polling)
         }
         // Optionally: refresh the admin view
+        $this->loadTables();
+    }
+
+    public function approveTableAndFirstClient($tableId)
+    {
+        $table = Table::find($tableId);
+        if ($table && $table->status === 'pending_approval') {
+            // Open the table
+            $table->status = 'open';
+            $table->save();
+
+            // Approve the first pending TableSessionRequest for this table
+            $pendingRequest = TableSessionRequest::whereHas('tableSession', function ($query) use ($table) {
+                $query->where('table_id', $table->id);
+            })
+            ->whereNull('table_session_id')
+            ->where('status', 'pending')
+            ->orderBy('created_at')
+            ->first();
+
+            if ($pendingRequest) {
+                $pendingRequest->status = 'approved';
+                $pendingRequest->approved_at = now();
+                $pendingRequest->save();
+            }
+        }
+        $this->loadTables();
+    }
+
+    public function approveClientRequest($requestId)
+    {
+        $request = TableSessionRequest::find($requestId);
+        if ($request && $request->status === 'pending' && $request->table_session_id) {
+            $request->status = 'approved';
+            $request->approved_at = now();
+            $request->save();
+        }
         $this->loadTables();
     }
 

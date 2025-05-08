@@ -46,4 +46,9 @@ class TableSession extends Model
     {
         return $this->belongsTo(User::class, 'closed_by');
     }
+
+    public function sessionRequests()
+    {
+        return $this->hasMany(TableSessionRequest::class);
+    }
 }

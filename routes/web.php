@@ -59,7 +59,19 @@ Route::get('/products', [NumberController::class, 'livewire'])->middleware(['aut
 // Orders routes (accessible to both admins and editors)
 Route::get('/orders', [OrderController::class, 'index'])->middleware(['auth'])->name('orders.index');
 Route::patch('/orders/{order}', [OrderController::class, 'update'])->middleware(['auth'])->name('orders.update');
-Route::get('/orders/archive', [OrderController::class, 'archive'])->middleware(['auth'])->name('orders.archive');
+Route::get('/orders/archive', [OrderController::class, 'archive'])->middleware(['auth', 'editor'])->name('orders.archive');
+Route::get('/orders/create', [OrderController::class, 'create'])->middleware(['auth'])->name('orders.create');
+
+// Editor/Admin order creation (NO ip.approved middleware)
+Route::get('/order', [OrderController::class, 'orderEntry'])->middleware(['auth'])->name('orders.create');
+Route::post('/order', [OrderController::class, 'store'])->middleware(['auth'])->name('orders.store');
+Route::get('/order/confirmation', [OrderController::class, 'confirmation'])->name('orders.confirmation');
+
+// Guest-accessible (QR/unique token) order flows (with ip.approved)
+Route::get('/orders/waiting-approval', function () {
+    return view('orders.waiting-approval');
+})->middleware(['ip.approved'])->name('orders.waiting-approval');
+Route::post('/order/{unique_token}', [TableController::class, 'storeGuestOrder'])->withoutMiddleware(['web'])->name('order.guest.store');
 
 // Admin-only routes
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -114,11 +126,6 @@ Route::get('/numbers/live', function() {
 Route::get('/numbers/livewire', function() {
     return redirect()->route('products.index');
 })->name('numbers.livewire');
-
-// Guest-accessible routes
-Route::get('/order', [OrderController::class, 'orderEntry'])->middleware(['auth'])->name('orders.create');
-Route::post('/order', [OrderController::class, 'store'])->name('orders.store');
-Route::get('/order/confirmation', [OrderController::class, 'confirmation'])->name('orders.confirmation');
 
 // Add a route to handle redirection based on the unique token
 Route::get('/order/{unique_token}', [TableController::class, 'redirectToOrder'])->name('order.redirect');

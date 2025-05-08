@@ -1,29 +1,39 @@
 <div class="orders-container">
     <link href="{{ asset('css/all-orders.css') }}" rel="stylesheet">
-    
-    <!-- Compact Pending Table Requests Panel -->
-    <div class="orders-panel compact-pending-orders" style="margin-bottom: var(--spacing-8);">
-        <h3 class="orders-panel-title">Pending Table Requests</h3>
+     
+
+    <!-- Active Tables Panel -->
+    <div class="orders-panel compact-pending-orders">
+        <h3 class="orders-panel-title">Active Tables</h3>
         <div class="orders-panel-content" wire:poll.5s="loadTables">
-            <div class="orders-scroll-container" style="display: flex; flex-wrap: wrap; gap: var(--spacing-4);">
-                @php
-                    $pendingTables = collect($tables)->filter(fn($t) => $t['status'] === 'pending_approval');
-                @endphp
-                @if($pendingTables->count() > 0)
-                    @foreach($pendingTables as $pendingTable)
-                        <div class="pending-order-card" style="display: flex; align-items: center; gap: var(--spacing-4); padding: var(--spacing-3) var(--spacing-4); background: var(--color-secondary); border: 1px solid var(--color-primary); border-radius: var(--border-radius-md); min-width: 0;">
-                            <span class="pending-order-table" style="font-weight: var(--font-weight-bold); font-size: var(--text-lg); color: var(--color-primary);">Table {{ $pendingTable['table_number'] ?? $pendingTable['id'] }}</span>
-                            <button 
-                                wire:click="acceptTableRequest({{ $pendingTable['id'] }})"
-                                class="pending-order-accept-btn"
-                                style="background: var(--color-success); color: var(--color-secondary); font-weight: var(--font-weight-semibold); padding: var(--spacing-2) var(--spacing-4); border-radius: var(--border-radius-md); border: none; cursor: pointer;"
-                            >
-                                Accept
-                            </button>
+            <div class="orders-scroll-container">
+                @if($activeTables->count() > 0)
+                    @foreach($activeTables as $table)
+                        <div class="pending-order-card active-table-card @if(($table['status'] === 'pending_approval') || ($table['status'] === 'open' && $table['pending_clients']->count() > 0)) order-card-warning @endif">
+                            <span class="pending-order-table active-table-number">Table {{ $table['table_number'] }}</span>
+                            <span class="active-table-clients">Clients: {{ $table['approved_clients'] }}</span>
+                            @if($table['status'] === 'pending_approval')
+                                <button wire:click="approveTableAndFirstClient({{ $table['id'] }})" class="pending-order-accept-btn active-table-approve-btn">
+                                    Approve
+                                </button>
+                                @if($table['pending_clients']->count() > 0)
+                                    <div class="active-table-pending-clients">Pending clients: {{ $table['pending_clients']->count() }}</div>
+                                @endif
+                            @elseif($table['status'] === 'open' && $table['pending_clients']->count() > 0)
+                                <div class="active-table-pending-list">
+                                    <div class="active-table-pending-label">Pending clients:</div>
+                                    @foreach($table['pending_clients'] as $client)
+                                        <div class="active-table-client-row">
+                                            <span class="active-table-client-ip">{{ $client->ip_address }}</span>
+                                            <button wire:click="approveClientRequest({{ $client->id }})" class="pending-order-accept-btn active-table-client-approve-btn">Approve</button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 @else
-                    <p class="no-orders-message" style="margin: 0;">No pending table requests.</p>
+                    <p class="no-orders-message">No active tables.</p>
                 @endif
             </div>
         </div>

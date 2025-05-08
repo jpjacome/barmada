@@ -23,7 +23,7 @@
                 </div>
             @endif
             
-            <form method="POST" action="{{ route('orders.store') }}" class="order-form">
+            <form method="POST" action="{{ isset($unique_token) ? route('order.guest.store', ['unique_token' => $unique_token]) : route('orders.store') }}" class="order-form">
                 @csrf
                 
                 <!-- Selección de Mesa -->

@@ -34,6 +34,9 @@
                 </div>
                 
                 <div class="table-card-info" wire:key="info-{{ $table->id }}">
+                    <button class="table-qr-button" title="Table info" style="margin-right: 8px;" wire:click="openClientInfoModal({{ $table->id }})">
+                        <i class="bi bi-info-circle"></i>
+                    </button>
                     @if($editingReference === $table->id)
                         <div class="reference-edit-form">
                             <input
@@ -41,8 +44,8 @@
                                 wire:model="referenceText"
                                 class="reference-input"
                                 placeholder="Enter table reference..."
-                                @keydown.enter="$wire.saveReference({{ $table->id }})"
-                                @keydown.escape="$wire.cancelEditingReference()"
+                                @keydown.enter.prevent="null"
+                                @keydown.escape.prevent="null"
                                 x-init="$nextTick(() => $el.focus())"
                             >
                             <div class="reference-actions">
@@ -88,8 +91,8 @@
                         >
                             <i class="bi bi-qr-code"></i>
                         </button>
-                        <a href="{{ url('/qr-entry/' . rawurlencode($table->editor->username) . '/' . $table->table_number) }}" class="table-card-button" target="_blank">
-                            <i class="bi bi-plus-circle"></i> New Order
+                        <a href="{{ url('/qr-entry/' . $table->editor->username . '/' . $table->table_number) }}" class="table-card-button" target="_blank">
+                            New Order
                         </a>
                     </div>
                     
@@ -145,7 +148,6 @@
     <div class="modal-wrapper">
         <div 
             class="modal-backdrop" 
-            wire:poll="refreshModal"
             wire:click="closeOrdersModal"
         >
             <div class="modal" wire:click.stop>
@@ -226,7 +228,7 @@
                                                     return $item['is_paid'];
                                                 });
                                             @endphp
-                                            {{ $allPaid ? 'Mark as Unpaid' : 'Mark as Paid' }}
+                                            Mark as Paid
                                         </button>
                                     </div>
                                 </div>
@@ -268,16 +270,10 @@
                         <div class="footer-actions">
                             <button 
                                 class="modal-button"
-                                wire:click="toggleAllTableItems"
+                                wire:click="payAndCloseTable"
+                                onclick="return confirm('Are you sure you want to mark all items as paid and close this table?')"
                             >
-                                @php
-                                    $allPaid = collect($tableOrders)->every(function ($order) {
-                                        return collect($order['items'])->every(function ($item) {
-                                            return $item['is_paid'];
-                                        });
-                                    });
-                                @endphp
-                                {{ $allPaid ? 'Mark All as Unpaid' : 'Mark All as Paid' }}
+                                Mark All as Paid & Close Table
                             </button>
                             <button wire:click="closeOrdersModal" class="modal-button">
                                 Close
@@ -308,5 +304,52 @@
                 </div>
             </div>
         </div>
+    @endif
+
+    <!-- Client Info Modal -->
+    @if($showClientInfoModal)
+    <div class="modal-wrapper">
+        <div class="modal-backdrop" wire:click="closeClientInfoModal">
+            <div class="modal" wire:click.stop>
+                <div class="modal-header">
+                    <h3 class="modal-title">Client Information</h3>
+                    <button wire:click="closeClientInfoModal" class="modal-close">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4" style="font-size: 1em; color: #666;">
+                        <strong>If the client requests a tax-deductible invoice, please fill out the following information:</strong>
+                    </div>
+                    <form>
+                        <div class="mb-3">
+                            <label class="block font-semibold mb-1">Full Name or Business Name (Razón Social)</label>
+                            <input type="text" class="reference-input w-full" placeholder="Full Name or Business Name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block font-semibold mb-1">Tax Identification Number (TIN, VAT, RUC, CIF, NIF, National ID, etc.)</label>
+                            <input type="text" class="reference-input w-full" placeholder="Tax ID or National ID">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block font-semibold mb-1">Address</label>
+                            <input type="text" class="reference-input w-full" placeholder="Address">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block font-semibold mb-1">Email Address (to send the electronic invoice)</label>
+                            <input type="email" class="reference-input w-full" placeholder="Email">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block font-semibold mb-1">Phone Number (optional)</label>
+                            <input type="tel" class="reference-input w-full" placeholder="Phone">
+                        </div>
+                        <div class="reference-actions">
+                            <button type="button" class="reference-save" wire:click="closeClientInfoModal">Close</button>
+                            <button type="button" class="reference-save">Save (no action)</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     @endif
 </div>

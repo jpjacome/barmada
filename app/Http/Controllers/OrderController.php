@@ -323,46 +323,47 @@ class OrderController extends Controller
     
     /**
      * Display order archives page with XML files.
+     *
+     * Implementation plan:
+     * - Only allow access to editors (abort 403 otherwise)
+     * - Only show files belonging to the current editor (by folder or filename)
+     * - Files should be stored as: storage/app/public/archive/{editor_id}/orders_{editor_id}_YYYY-MM-DD_HH-ii-ss.xml
+     * - If not, filter by filename: orders_{editor_id}_*.xml
      */
     public function archive()
     {
-        $archiveDir = storage_path('app/public/archive');
+        $user = Auth::user();
+        if (!$user->is_editor) {
+            abort(403);
+        }
+        $editorId = $user->id;
+        $archiveDir = storage_path('app/public/archive/' . $editorId);
         $files = [];
-        
         if (file_exists($archiveDir)) {
-            // Get all XML files from the archive directory
-            $xmlFiles = glob($archiveDir . '/*.xml');
-            
-            // Format file information
+            $xmlFiles = glob($archiveDir . '/orders_' . $editorId . '_*.xml');
             foreach ($xmlFiles as $file) {
                 $filename = basename($file);
                 $size = filesize($file);
                 $lastModified = filemtime($file);
-                
-                // Parse the date from the filename (format: orders_YYYY-MM-DD_HH-ii-ss.xml)
-                preg_match('/orders_(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})\.xml/', $filename, $matches);
+                preg_match('/orders_\\d{1,}_([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{2}-[0-9]{2}-[0-9]{2})\\.xml/', $filename, $matches);
                 $date = isset($matches[1]) ? $matches[1] : '';
                 $time = isset($matches[2]) ? str_replace('-', ':', $matches[2]) : '';
-                
                 $files[] = [
                     'name' => $filename,
-                    'path' => 'storage/archive/' . $filename,
+                    'path' => 'storage/archive/' . $editorId . '/' . $filename,
                     'size' => $this->formatFileSize($size),
                     'last_modified' => date('Y-m-d H:i:s', $lastModified),
                     'date' => $date,
                     'time' => $time
                 ];
             }
-            
-            // Sort files by last modified time (newest first)
             usort($files, function($a, $b) {
                 return strtotime($b['last_modified']) - strtotime($a['last_modified']);
             });
         }
-        
         return view('orders.archive', compact('files'));
     }
-    
+
     /**
      * Format file size in human-readable format.
      */
@@ -405,26 +406,46 @@ class OrderController extends Controller
      */
     public function qrEntry($editorname, $table_number)
     {
-        // Find the editor by username (or slug if you switch to that)
         $editor = User::where('username', $editorname)->first();
         if (!$editor) {
             abort(404, 'Editor not found.');
         }
-        // Find the table by editor_id and table_number
         $table = Table::where('editor_id', $editor->id)
             ->where('table_number', $table_number)
             ->first();
         if (!$table) {
             abort(404, 'Table not found.');
         }
+        $ip = request()->ip();
+        // If table is open and has a unique token, handle session request
         if ($table->status === 'open' && $table->unique_token) {
-            // Table is already open, redirect to order page
-            return redirect()->route('order.redirect', ['unique_token' => $table->unique_token]);
+            $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
+            if ($currentSession) {
+                // Check if this IP is already pending or approved
+                $existingRequest = $currentSession->sessionRequests()->where('ip_address', $ip)->whereIn('status', ['pending', 'approved'])->first();
+                if (!$existingRequest) {
+                    \App\Models\TableSessionRequest::create([
+                        'table_session_id' => $currentSession->id,
+                        'ip_address' => $ip,
+                        'status' => 'pending',
+                        'requested_at' => now(),
+                    ]);
+                }
+                // If already approved, redirect to order page
+                $approved = $currentSession->sessionRequests()->where('ip_address', $ip)->where('status', 'approved')->exists();
+                if ($approved) {
+                    return redirect()->route('order.redirect', ['unique_token' => $table->unique_token]);
+                }
+            }
+            // If not approved, show waiting page
+            return view('orders.waiting-approval', ['table' => $table]);
         }
+        // If table is closed or pending, set to pending_approval if not already
         if ($table->status !== 'pending_approval') {
             $table->status = 'pending_approval';
             $table->save();
         }
+        // Do NOT create a TableSessionRequest until the table is open and a session exists
         return view('orders.waiting-approval', ['table' => $table]);
     }
 
@@ -443,10 +464,29 @@ class OrderController extends Controller
             if (!$table->unique_token) {
                 $table->generateUniqueToken();
             }
-            return response()->json([
-                'status' => 'open',
-                'redirect_url' => route('order.redirect', ['unique_token' => $table->unique_token])
-            ]);
+            $user = Auth::user();
+            if ($user && ($user->is_admin || $user->is_editor || $user->is_staff)) {
+                // Authenticated users: allow immediate access
+                return response()->json([
+                    'status' => 'open',
+                    'redirect_url' => route('order.redirect', ['unique_token' => $table->unique_token])
+                ]);
+            } else {
+                // Guest: require IP approval
+                $ip = request()->ip();
+                $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
+                if ($currentSession) {
+                    $approved = $currentSession->sessionRequests()->where('ip_address', $ip)->where('status', 'approved')->exists();
+                    if ($approved) {
+                        return response()->json([
+                            'status' => 'open',
+                            'redirect_url' => route('order.redirect', ['unique_token' => $table->unique_token])
+                        ]);
+                    }
+                }
+                // Not approved: keep waiting
+                return response()->json(['status' => 'waiting_ip_approval']);
+            }
         }
         
         return response()->json(['status' => $table->status]);

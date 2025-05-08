@@ -10,7 +10,7 @@
         </button>
         
         <div 
-            wire:poll.{{ $refreshInterval }}s="refreshNumbers"
+            wire:poll.7s="refreshNumbers"
             class="space-y-2 mt-4"
         >
             @foreach ($numbers as $number)

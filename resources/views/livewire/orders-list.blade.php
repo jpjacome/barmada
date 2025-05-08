@@ -1,4 +1,3 @@
-
 <div class="orders-container">
     <!-- Link to the external CSS file -->
     <link href="{{ asset('css/orders.css') }}" rel="stylesheet">
@@ -15,7 +14,7 @@
         </div>
         
         <div 
-            wire:poll.{{ $refreshInterval }}s="refreshOrders"
+            wire:poll.7s="refreshOrders"
             class="orders-data mt-4"
         >
             <!-- Latest Orders Display -->
@@ -302,4 +301,4 @@
             </form>
         </div>
     </div>
-</div> 
+</div>

@@ -15,17 +15,20 @@ class CategoryController extends Controller
             abort(403);
         }
 
+        $editorId = $user->is_admin ? $request->input('editor_id', null) : $user->id;
         $validated = $request->validate([
-            'name' => 'required|string|unique:categories,name|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('categories')->where(function ($query) use ($editorId) {
+                    return $query->where('editor_id', $editorId);
+                }),
+            ],
         ]);
 
         $data = $validated;
-
-        if ($user->is_admin) {
-            $data['editor_id'] = $request->input('editor_id', null); // Admin can set or leave null
-        } else {
-            $data['editor_id'] = $user->id;
-        }
+        $data['editor_id'] = $editorId;
 
         $category = Category::create($data);
 

@@ -1,67 +1,33 @@
-class OrderTimer {
-    constructor(element) {
-        this.element = element;
-        this.createdAt = new Date(element.dataset.createdAt);
-        this.status = element.dataset.status;
-        this.updateInterval = null;
-        this.start();
-    }
+// JavaScript Order Chronometer and Warning Logic
+// Updates all .chronometer elements every second, adds/removes warning classes as needed
 
-    update() {
-        if (this.status === 'pending') {
-            const now = new Date();
-            const diff = Math.floor((now - this.createdAt) / 1000);
-            const minutes = Math.floor(diff / 60);
-            const seconds = diff % 60;
-            
-            this.element.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            // Add warning class if more than 5 minutes
-            if (diff >= 300) {
-                this.element.classList.add('chronometer-warning');
+document.addEventListener('DOMContentLoaded', function () {
+    function updateChronometers() {
+        const now = new Date();
+        document.querySelectorAll('.chronometer[data-created-at]').forEach(function (el) {
+            const createdAt = new Date(el.getAttribute('data-created-at'));
+            const status = el.getAttribute('data-status');
+            const card = el.closest('.order-card');
+            if (status === 'pending') {
+                const diffMs = now - createdAt;
+                const h = String(Math.floor(diffMs / 3600000)).padStart(2, '0');
+                const m = String(Math.floor((diffMs % 3600000) / 60000)).padStart(2, '0');
+                const s = String(Math.floor((diffMs % 60000) / 1000)).padStart(2, '0');
+                el.textContent = `${h}:${m}:${s}`;
+                if ((Math.floor(diffMs / 60000)) >= 5) {
+                    el.classList.add('chronometer-warning');
+                    if (card) card.classList.add('order-card-warning');
+                } else {
+                    el.classList.remove('chronometer-warning');
+                    if (card) card.classList.remove('order-card-warning');
+                }
+            } else {
+                el.textContent = '00:00:00';
+                el.classList.remove('chronometer-warning');
+                if (card) card.classList.remove('order-card-warning');
             }
-        } else {
-            this.element.textContent = '';
-            this.element.classList.remove('chronometer-warning');
-        }
+        });
     }
-
-    start() {
-        this.update();
-        this.updateInterval = setInterval(() => this.update(), 1000);
-    }
-
-    stop() {
-        if (this.updateInterval) {
-            clearInterval(this.updateInterval);
-        }
-    }
-}
-
-// Initialize all timers on the page
-document.addEventListener('DOMContentLoaded', () => {
-    initializeTimers();
+    setInterval(updateChronometers, 1000);
+    updateChronometers();
 });
-
-// Handle dynamic content updates
-document.addEventListener('livewire:initialized', () => {
-    initializeTimers();
-});
-
-// Handle Livewire updates
-document.addEventListener('livewire:update', () => {
-    initializeTimers();
-});
-
-function initializeTimers() {
-    // Stop all existing timers
-    if (window.orderTimers) {
-        window.orderTimers.forEach(timer => timer.stop());
-    }
-    
-    // Initialize new timers
-    const timerElements = document.querySelectorAll('[data-timer]');
-    window.orderTimers = Array.from(timerElements).map(element => {
-        return new OrderTimer(element);
-    });
-} 

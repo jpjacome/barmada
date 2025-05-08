@@ -1,0 +1,125 @@
+# QR Table IP Approval Flow: Execution Plan
+
+## Overview
+Implement per-session, per-IP approval for QR table access. When a user scans a QR code for a closed table, their IP is recorded and marked as "pending approval." Staff/admin must approve each IP before that user can access the session and place orders. Only approved IPs can interact with the session for its duration. When the session closes, access is revoked.
+
+---
+
+## Step 1: Database Migration
+- Create a new table: `table_session_requests`
+  - `id` (PK)
+  - `table_session_id` (FK to table_sessions)
+  - `ip_address` (string)
+  - `status` (enum: pending, approved, denied)
+  - `requested_at` (timestamp)
+  - `approved_at` (timestamp, nullable)
+  - `denied_at` (timestamp, nullable)
+  - `created_at`, `updated_at`
+
+## Step 2: Model
+- Create `TableSessionRequest` Eloquent model.
+- Add relationships:
+  - TableSession hasMany TableSessionRequests
+  - TableSessionRequest belongsTo TableSession
+
+## Step 3: Controller Logic
+- When a user accesses the QR link for a closed table:
+  - Create a `table_session_request` with their IP and status `pending`.
+  - Show a "pending approval" page.
+- Staff/admin UI:
+  - List all pending requests for open/closed sessions.
+  - Approve/deny requests (set status, timestamps).
+- When a user with an approved IP accesses the session:
+  - Allow order placement if session is open and IP is approved.
+  - Deny access otherwise.
+
+## Step 4: Middleware
+- Create middleware to check if the user's IP is approved for the current session before allowing order actions.
+
+## Step 5: Blade/UI
+- Show pending/approved/denied status to users.
+- Staff/admin: UI to approve/deny requests per session.
+
+## Step 6: Testing
+- Test all flows: request, approval, denial, session close, re-request.
+
+---
+
+# Panel Redesign: Active Tables Panel
+
+## Requirements
+- The panel is renamed to "Active Tables" and always displays all tables with status `pending_approval` or `open`.
+- Each table card displays:
+  - The number of approved clients (e.g., "Clients: 2").
+  - A button to accept new client requests for that table (if there are pending requests).
+- When a table is closed and a user scans the QR, a request is created for both opening the table and approving that user as a client.
+- The table must be approved (opened) before any client can be approved for ordering.
+- Button logic:
+  - If the table is in `pending_approval` and there are pending client requests, show a single button to approve both the table and the first client.
+  - Once the table is open, show a button for each new pending client request to approve them individually.
+  - If there are no pending client requests, just show the table card with the current client count.
+- When a table is closed, it is removed from the panel.
+
+## Implementation Steps
+1. Update the Livewire component to always load tables with status `pending_approval` or `open`.
+2. For each table, load and display the number of approved clients and any pending client requests.
+3. Implement button logic as described above.
+4. Update the Blade view to reflect the new panel name and card structure.
+5. Test the flow for table opening, client approval, and panel updates.
+
+---
+
+## Plan Update (May 7, 2025)
+- TableSession is created only when a table is approved (opened) by staff/editor.
+- When a user scans the QR for a closed table, the table status is set to 'pending_approval' and a user request is created (not linked to a TableSession yet).
+- When the table is approved/opened, a TableSession is created and the first user's request is approved and linked to the new TableSession.
+- Any further user requests while the table is open are linked to the current TableSession and can be approved individually.
+
+---
+
+# Improvements and Finalization (May 7, 2025)
+
+## Finalized Plan Updates
+
+1. **Real-Time Updates**
+   - Livewire polling is sufficient for real-time UI updates. No need for WebSockets.
+
+2. **Audit Logging**
+   - All approval/denial actions (who, when, for which IP/table/session) will be logged for traceability.
+
+3. **Security/Abuse Prevention**
+   - Add rate limiting for QR requests and client approvals.
+   - Limit the number of approved users per session to 50.
+
+4. **UX Details**
+   - UI will handle edge cases: IP changes, session expiry, denied requests, and user feedback for all states.
+
+5. **Testing**
+   - Expand testing to include automated feature tests (Livewire, HTTP, and database tests) and a manual QA checklist for all flows.
+
+6. **Documentation**
+   - No additional user/admin documentation steps required at this time.
+
+7. **Performance**
+   - No special indexing or performance changes needed for the expected scale.
+
+---
+
+## This plan is now considered 100% production-ready for your use case as of May 7, 2025.
+
+## Log
+- [2025-05-07] Plan created. Awaiting migration and model implementation.
+- [2025-05-07] Migration for table_session_requests created and ready. Next: implement Eloquent model and relationships.
+- [TODO] Model and relationships implemented.
+- [2025-05-07] Controller logic updated: TableSessionRequest is created for user IP when a table is pending_approval, and only linked to a session when the table is opened. Only approved IPs can access the order link for open tables. Next: implement table approval logic and user request approval in admin/staff UI.
+- [2025-05-07] Decided to centralize TableSession creation/closure: whenever a table status changes from closed/pending to open, a new TableSession is created and linked; when a table is closed, the session is closed and unlinked. Implementation started in Table model for automatic enforcement.
+- [2025-05-07] Livewire AllOrdersList and Blade view updated: Active Tables panel now displays approved client count and allows per-table and per-client approval as per new flow. Next: test and refine UI/logic as needed.
+- [2025-05-07] Button text for pending tables in Active Tables panel changed to 'Approve' for clarity and consistency.
+- [2025-05-07] Middleware EnsureIpIsApprovedForTableSession created to restrict order/session access to approved IPs only. Next: register and apply middleware to relevant routes.
+- [2025-05-07] Middleware registered as 'ip.approved' in HTTP kernel for use on protected routes. Next: apply to order/session routes.
+- [2025-05-07] Updated Active Tables panel logic: approveTableAndFirstClient now only sets table status to open, relying on Table model to handle TableSession creation automatically. No more manual session creation in UI or Livewire.
+- [TODO] Middleware for IP check added.
+- [TODO] UI for staff/admin and user status added.
+- [TODO] All flows tested and verified.
+- [2025-05-07] Plan finalized with all improvements and safeguards. Ready for implementation.
+- [2025-05-07] Plan updated: TableSession creation clarified. User requests for closed tables are not linked to a session until table is opened. Proceeding to implement controller logic for this flow.

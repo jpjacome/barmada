@@ -1,77 +1,75 @@
-# Files Likely to Differ Between Local and Production Environments
+# Domain Name Change Checklist (Already Deployed App)
 
-This file lists the files and folders in a typical Laravel app that are most likely to differ between your local (development) and production (online) environments. Use this as a checklist when preparing to deploy or compare environments.
+Your app is already deployed and running at https://orustravel.org/barmada (code in root/public_html/barmada on your server) and works perfectly locally. The following checklist is for applying a new domain name that points directly to this app. This is not a full deployment checklist, but a focused guide for updating the domain name and ensuring all references are correct.
 
 ---
 
-## 1. Environment-Specific Files
+## 1. Update Environment Variables
 
 - **.env**
-  - Contains environment variables (database credentials, APP_URL, mail settings, etc.).
-  - Should always be different between local and production.
+  - Set APP_URL to the new domain (e.g., https://newdomain.com or https://newdomain.com/barmada if using a subfolder).
+  - If using SSL, ensure APP_URL uses https.
+  - Update any third-party service URLs (OAuth, payment, analytics, etc.) to use the new domain.
 
-## 2. Web Server/Hosting Files
+## 2. Web Server/Hosting Config
 
-- **public/.htaccess**
-  - May contain server-specific rewrites or settings.
-  - Check for hardcoded URLs, redirects, or custom rules.
+- Ensure your new domain points to the correct server and folder (root/public_html/barmada).
+- Update .htaccess or web server config for redirects, rewrites, and canonical URLs to use the new domain.
+- Ensure SSL is working for the new domain.
 
-- **public/index.php**
-  - Should be the same, but check if any customizations were made for the server path or environment.
+## 3. Application Code and Assets
 
-## 3. Storage and Cache (Should Not Be Synced)
+- Search for and update any hardcoded URLs or domain names in:
+  - Blade templates (resources/views/)
+  - JavaScript files (resources/js/, public/js/)
+  - Config files (config/)
+  - PHP code (app/)
+- Update QR code generation logic, analytics, and dashboard links if they reference the domain.
+- Test all user-facing links, QR codes, and analytics dashboards to ensure they use the new domain.
 
-- **storage/**
-  - Contains logs, cache, sessions, compiled views, and user uploads.
-  - Do not copy between environments. Only sync user-uploaded files if needed (e.g., storage/app/public/product-icons/).
+## 4. Documentation and Legal Files
 
-- **bootstrap/cache/**
-  - Contains cached config and services. Should be regenerated per environment.
+- Update README.md, EULA.txt, and any other documentation to reflect the new domain.
 
-## 4. Vendor and Node Modules (Should Not Be Synced)
+## 5. Clear and Cache Configurations
 
-- **vendor/**
-  - Composer dependencies. Should be generated with `composer install` per environment.
+- Run php artisan config:cache, route:cache, and view:cache after updating .env or config files.
 
-- **node_modules/**
-  - NPM dependencies. Should be generated with `npm install` per environment.
+## 6. Test Thoroughly
 
-## 5. Compiled Assets
-
-- **public/build/**, **public/css/**, **public/js/**
-  - Compiled CSS/JS assets. Should be rebuilt per environment, but source files in `resources/` should be the same.
-
-## 6. Config Files (Should Be the Same)
-
-- **config/**
-  - Should be identical between environments. Only change if you have a specific reason.
-
-## 7. Source Code and Resources (Should Be the Same)
-
-- **app/**, **routes/**, **resources/**, **database/**, **tests/**
-  - All source code, migrations, seeders, factories, and tests should be the same.
-
-## 8. Other Files to Check
-
-- **composer.json**, **composer.lock**
-- **package.json**, **package-lock.json** or **yarn.lock**
-- **phpunit.xml**
-- **README.md**
+- Visit the new domain and test all major flows (login, registration, orders, analytics, QR codes, etc.).
+- Check for broken links, asset loading, and correct domain usage everywhere.
 
 ---
 
-# Suggested Process to Compare Environments
+# Summary
 
-1. **Compare .env files manually** (never sync local to production directly).
-2. **Check public/.htaccess** for server-specific rules or hardcoded URLs.
-3. **Do not sync storage/, bootstrap/cache/, vendor/, or node_modules/** between environments.
-4. **Ensure all source code and config files are identical** (except for .env and .htaccess as noted).
-5. **Rebuild assets and dependencies** on each environment:
-   - Run `composer install --no-dev` and `npm install && npm run build` on production.
-6. **If you use symlinked storage (public/storage)**, re-run `php artisan storage:link` on production after deployment.
-7. **Check for hardcoded URLs** in Blade templates, JS, or config files.
-8. **Update third-party service settings** (OAuth, payment gateways, etc.) to use the correct domain.
+Since the app is already deployed and running, you only need to update the domain name in configs, code, and documentation, and verify everything works with the new domain. No full redeployment or migration is needed unless you are moving the app to a different server or folder.
 
 ---
 
-This checklist will help you avoid common pitfalls when deploying or comparing Laravel apps between local and production environments.
+# Progress Log: File Consistency Review (Local vs Online)
+
+This section is for logging each step and progress made while reviewing files that should be identical between local and online environments. Update this log as you check or verify each file or folder.
+
+---
+
+## Example Log Entries
+- [ ] 2025-05-07: Started review of config/ files for consistency.
+- [ ] 2025-05-07: Compared app/Controllers and app/Models between local and online.
+- [ ] 2025-05-07: Verified resources/views/ Blade templates are up-to-date.
+- [ ] 2025-05-07: Checked composer.json and package.json for dependency changes.
+- [ ] 2025-05-07: Confirmed README.md and EULA.txt match production documentation.
+
+---
+
+## Log Entries for Domain Name Change Readiness
+- [x] 2025-05-07: Reviewed config/ files (app.php, mail.php, services.php, etc.) for hardcoded URLs. All use APP_URL or env variables; ensure .env is updated for new domain.
+- [x] 2025-05-07: Checked Blade templates (layouts, dashboard, welcome, analytics-dashboard, navigation) for hardcoded URLs. Most use asset() and route(); no hardcoded domain found, but verify any direct links if present.
+- [x] 2025-05-07: Reviewed JavaScript files (resources/js/app.js, public/js/app.js, public/js/analytics-dashboard.js). All use relative URLs or expect data from backend; no hardcoded domain found.
+- [x] 2025-05-07: Checked PHP code (app/Providers/AppServiceProvider.php, app/Http/Controllers/TableController.php, etc.) for hardcoded URLs. All use url() or config('app.url'); will follow APP_URL.
+- [x] 2025-05-07: Reviewed routes (web.php, auth.php). All use Laravel helpers and will adapt to new domain.
+- [x] 2025-05-07: Checked README.md and EULA.txt for domain/branding references. Update if new domain should be mentioned.
+- [x] 2025-05-07: Verified QR code and analytics dashboard logic use dynamic URLs based on APP_URL.
+
+Add new entries below as you make progress.

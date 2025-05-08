@@ -105,7 +105,7 @@
         @stack('scripts')
         
         <!-- Application Scripts -->
-        
+        <script src="{{ asset('js/order-timer.js') }}"></script>
         
         @fixedLivewireScripts   {{-- our new directive from AppServiceProvider --}}
     </body>

@@ -8,7 +8,7 @@
             @if(isset($table) && $table)
                 Gracias por elegir nuestro servicio.<br>
                 Su solicitud para abrir la <strong>Mesa #{{ $table->table_number ?? $table->id }}</strong> ha sido recibida.<br>
-                Por favor, espere un momento mientras nuestro personal prepara su mesa.<br>
+                Por favor, espere un momento.<br>
                 Será redirigido a la página de pedidos tan pronto como su mesa esté lista.
             @else
                 Esta mesa no está disponible.

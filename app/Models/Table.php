@@ -114,4 +114,46 @@ class Table extends Model
     {
         return $this->editor ? $this->editor->name : null;
     }
+
+    /**
+     * Handle model events for Table.
+     */
+    protected static function booted()
+    {
+        static::updating(function (Table $table) {
+            $original = $table->getOriginal('status');
+            $new = $table->status;
+            // If status changes from closed or pending_approval to open, create a new TableSession
+            if (in_array($original, ['closed', 'pending_approval']) && $new === 'open') {
+                $today = now()->toDateString();
+                $maxSessionNumber = $table->sessions()->where('date', $today)->max('session_number');
+                $sessionNumber = $maxSessionNumber ? $maxSessionNumber + 1 : 1;
+                $token = (string) Str::uuid();
+                $table->unique_token = $token;
+                $table->saveQuietly(); // Avoid recursion
+                \App\Models\TableSession::create([
+                    'table_id' => $table->id,
+                    'session_number' => $sessionNumber,
+                    'date' => $today,
+                    'unique_token' => $token,
+                    'status' => 'open',
+                    'opened_at' => now(),
+                    'opened_by' => auth()->id() ?? 1, // fallback to 1 if not authenticated
+                    'editor_id' => $table->editor_id,
+                ]);
+            }
+            // If status changes from open to closed, close the current TableSession
+            if ($original === 'open' && $new === 'closed') {
+                $openSession = $table->sessions()->where('status', 'open')->latest('opened_at')->first();
+                if ($openSession) {
+                    $openSession->status = 'closed';
+                    $openSession->closed_at = now();
+                    $openSession->closed_by = auth()->id() ?? 1;
+                    $openSession->save();
+                }
+                $table->unique_token = null;
+                $table->saveQuietly();
+            }
+        });
+    }
 }

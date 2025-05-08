@@ -42,6 +42,9 @@ class TablesList extends Component
     public $qrTableId = null;
     public $qrTableNumber = null;
 
+    public $showClientInfoModal = false;
+    public $clientInfoTableId = null;
+
     protected $listeners = [
         'openQrModal',
         'closeQrModal',
@@ -267,6 +270,15 @@ class TablesList extends Component
                 ],
                 'editor_id' => $editorId,
             ]);
+
+            // Check if all items in the order are paid, and update order status
+            $order = Order::with('items')->find($orderId);
+            if ($order && $order->items->every(function ($item) { return $item->is_paid; })) {
+                $order->status = 'delivered';
+                $order->save();
+            }
+            // Do not revert to pending if not all items are paid
+
             $this->updateTableStatus($this->selectedTable);
             $this->refreshTableOrders();
         }
@@ -293,20 +305,20 @@ class TablesList extends Component
     {
         $order = Order::findOrFail($orderId);
         $items = $order->items;
-        
-        // Check if all items are currently paid
-        $allPaid = $items->every(function ($item) {
-            return $item->is_paid;
-        });
-        
-        // Toggle all items to the opposite state
+        // Always mark all items as paid
         $totalAmount = 0;
-        $items->each(function ($item) use ($allPaid, &$totalAmount) {
-            $item->is_paid = !$allPaid;
+        $items->each(function ($item) use (&$totalAmount) {
+            $item->is_paid = true;
             $item->save();
             $totalAmount += $item->price;
         });
-        
+        // Update order's status and payment fields
+        $order->amount_paid = $items->sum('price');
+        $order->amount_left = 0;
+        if ($items->count() > 0) {
+            $order->status = 'delivered';
+        }
+        $order->save();
         // Log the bulk payment activity
         $table = Table::find($this->selectedTable);
         $editorId = $table ? $table->editor_id : null;
@@ -315,18 +327,13 @@ class TablesList extends Component
             'table_id' => $this->selectedTable,
             'order_id' => $orderId,
             'amount' => $totalAmount,
-            'description' => !$allPaid 
-                ? "All items in Order #{$orderId} marked as paid for Table #{$this->selectedTable}"
-                : "All items in Order #{$orderId} marked as unpaid for Table #{$this->selectedTable}",
+            'description' => "All items in Order #{$orderId} marked as paid for Table #{$this->selectedTable}",
             'metadata' => [
                 'items_count' => $items->count(),
-                'action' => !$allPaid ? 'paid' : 'unpaid'
+                'action' => 'paid'
             ],
             'editor_id' => $editorId,
         ]);
-        
-        // Refresh the order data
-        $this->updateTableStatus($this->selectedTable);
         $this->refreshTableOrders();
     }
 
@@ -334,20 +341,23 @@ class TablesList extends Component
     {
         $orders = Order::where('table_id', $this->selectedTable)->get();
         $allItems = OrderItem::whereIn('order_id', $orders->pluck('id'))->get();
-        
-        // Check if all items are currently paid
-        $allPaid = $allItems->every(function ($item) {
-            return $item->is_paid;
-        });
-        
-        // Toggle all items to the opposite state
+        // Always mark all items as paid
         $totalAmount = 0;
-        $allItems->each(function ($item) use ($allPaid, &$totalAmount) {
-            $item->is_paid = !$allPaid;
+        $allItems->each(function ($item) use (&$totalAmount) {
+            $item->is_paid = true;
             $item->save();
             $totalAmount += $item->price;
         });
-        
+        // After marking as paid, update each order's status and payment fields
+        foreach ($orders as $order) {
+            $items = $order->items;
+            $order->amount_paid = $items->sum('price');
+            $order->amount_left = 0;
+            if ($items->count() > 0) {
+                $order->status = 'delivered';
+            }
+            $order->save();
+        }
         // Log the table-wide payment activity
         $table = Table::find($this->selectedTable);
         $editorId = $table ? $table->editor_id : null;
@@ -355,18 +365,14 @@ class TablesList extends Component
             'type' => 'payment',
             'table_id' => $this->selectedTable,
             'amount' => $totalAmount,
-            'description' => !$allPaid 
-                ? "All items for Table #{$this->selectedTable} marked as paid"
-                : "All items for Table #{$this->selectedTable} marked as unpaid",
+            'description' => "All items for Table #{$this->selectedTable} marked as paid",
             'metadata' => [
                 'orders_count' => $orders->count(),
                 'items_count' => $allItems->count(),
-                'action' => !$allPaid ? 'paid' : 'unpaid'
+                'action' => 'paid'
             ],
             'editor_id' => $editorId,
         ]);
-        
-        // Refresh the order data
         $this->updateTableStatus($this->selectedTable);
         $this->refreshTableOrders();
     }
@@ -439,6 +445,18 @@ class TablesList extends Component
         $this->qrTableNumber = null;
     }
 
+    public function openClientInfoModal($tableId)
+    {
+        $this->showClientInfoModal = true;
+        $this->clientInfoTableId = $tableId;
+    }
+
+    public function closeClientInfoModal()
+    {
+        $this->showClientInfoModal = false;
+        $this->clientInfoTableId = null;
+    }
+
     public function render()
     {
         $user = Auth::user();
@@ -452,16 +470,20 @@ class TablesList extends Component
     {
         $table = Table::find($tableId);
         if (!$table) return;
-
         $orders = Order::where('table_id', $tableId)->get();
-        $totalLeft = $orders->sum(function ($order) {
-            return $order->items->sum(function ($item) {
-                return $item->is_paid ? 0 : $item->price;
-            });
-        });
-
+        $totalLeft = 0;
+        foreach ($orders as $order) {
+            $order->refresh();
+            foreach ($order->items as $item) {
+                $item->refresh();
+                if (!$item->is_paid) {
+                    $totalLeft += $item->price;
+                }
+            }
+        }
         $table->status = $totalLeft === 0 ? 'closed' : 'open';
         $table->save();
+        $this->loadTables(); // Ensure UI and state are refreshed
     }
 
     public function toggleTableStatus($tableId)
@@ -472,41 +494,32 @@ class TablesList extends Component
         $user = Auth::user();
         $today = now()->toDateString();
 
-        // Only allow opening if not already open for today
         if ($table->status === 'closed' || $table->status === 'pending_approval') {
-            // Check for existing open session for today
-            $existingSession = $table->sessions()
-                ->where('date', $today)
-                ->whereIn('status', ['open', 'reopened'])
-                ->first();
-            if ($existingSession) {
-                // Prevent duplicate open sessions
-                $table->status = 'open';
-                $table->unique_token = $existingSession->unique_token;
-                $table->save();
-                $this->loadTables();
-                return;
-            }
-            // Get next session number for today
+            // Always create a new session with a new unique token
             $maxSessionNumber = $table->sessions()->where('date', $today)->max('session_number');
             $sessionNumber = $maxSessionNumber ? $maxSessionNumber + 1 : 1;
-            $uniqueToken = (string) \Illuminate\Support\Str::uuid();
-            // Create new TableSession
-            $session = \App\Models\TableSession::create([
+            $newToken = (string) \Illuminate\Support\Str::uuid();
+            $table->unique_token = $newToken;
+            $table->status = 'open';
+            $table->save();
+            \App\Models\TableSession::create([
                 'table_id' => $table->id,
                 'session_number' => $sessionNumber,
                 'date' => $today,
-                'unique_token' => $uniqueToken,
+                'unique_token' => $newToken,
                 'status' => 'open',
                 'opened_at' => now(),
                 'opened_by' => $user->id,
                 'editor_id' => $table->editor_id,
             ]);
-            $table->status = 'open';
-            $table->unique_token = $uniqueToken;
-            $table->save();
         } elseif ($table->status === 'open') {
-            // Close the table and session
+            // Prevent closing if there are unpaid items
+            if (!$this->isTableFullyPaid($tableId)) {
+                $this->errorMessage = 'Cannot close table until all items are paid.';
+                $this->showErrorModal = true;
+                return;
+            }
+            // Close the table and the current open session
             $openSession = $table->sessions()
                 ->whereIn('status', ['open', 'reopened'])
                 ->latest('opened_at')
@@ -522,5 +535,18 @@ class TablesList extends Component
             $table->save();
         }
         $this->loadTables();
+    }
+
+    public function payAndCloseTable()
+    {
+        // Mark all items as paid
+        $this->toggleAllTableItems();
+        // Directly close the table after marking all items as paid
+        $table = Table::find($this->selectedTable);
+        if ($table && $table->status === 'open') {
+            $table->status = 'closed';
+            $table->save();
+        }
+        $this->loadTables(); // Refresh UI
     }
 }

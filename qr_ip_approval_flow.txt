@@ -1,0 +1,20 @@
+GitHub Copilot
+
+Yes, your solution makes sense and is a good approach for extra security and control:
+
+When a user accesses the QR link for a closed table, you record their IP and mark their request as “pending approval.”
+Staff or admin must approve each individual IP (or request) before that user can access the session and place orders.
+Once approved, you associate that IP with the session, allowing only that IP to interact with the session for its duration.
+If the session closes, the IP loses access and must request approval again for a new session.
+
+Benefits:
+- Prevents random users from joining an open session unless approved.
+- Allows staff to control exactly who can place orders at a table.
+- Adds a layer of traceability and accountability.
+
+Implementation notes:
+- You’ll need a table (e.g., table_session_requests) to store: table_session_id, ip_address, status (pending/approved/denied), and timestamps.
+- On each request to the order/session page, check if the user’s IP is approved for the current session.
+- Only allow order placement if the IP is approved and the session is open.
+
+Let me know if you want help with the migration, model, and controller changes for this!

@@ -1,0 +1,73 @@
+# Barmada Optimization Plan
+
+Summary Table of Files to Review
+Area	Example Files/Dirs	Why Review?
+Livewire Components	app/Livewire/*.php	Polling, real-time logic
+Blade Views	resources/views/livewire/*.blade.php, orders views	Polling, Livewire directives
+Controllers	OrderController.php, TableController.php	Polling endpoints, query efficiency
+Middleware	app/Http/Middleware/*	Request processing overhead
+JS Assets	js, inline scripts	AJAX/polling frequency
+Queue/Cron	Kernel.php, app/Jobs/	Background process usage
+
+
+This document will collect all findings and suggestions for optimizing the application, with a focus on reducing server entry process usage and improving efficiency.
+
+---
+
+## 1. Livewire Component Polling Intervals
+
+### AllOrdersList
+- Used in: Admin all-orders view
+- Polling: `wire:poll.5s` for both active tables and pending orders panels
+- Custom JS: Chronometer timer updates every second (client-side only)
+
+### OrdersList
+- Used in: Orders management view
+- Polling: `wire:poll.7s` for refreshing orders (recently increased from 5s)
+
+### NumbersList
+- Used in: Real-time numbers view
+- Polling: `wire:poll.7s` for refreshing numbers (recently increased from 3s)
+
+### ProductsList
+- Used in: Product management view
+- Polling: `wire:poll.10s` (default) for refreshing products
+
+### TablesList
+- Used in: Table management view
+- Polling: `wire:poll.10s` (default) for refreshing tables
+- Modal: Table orders modal **no longer polls live**. It now loads data only once when opened, with no polling while open. This reduces server load and entry process usage.
+
+### OrderTimer
+- Used in: Order cards (chronometer)
+- Polling: **REMOVED** (was `wire:poll.1s`). Now handled 100% in frontend JavaScript for zero server load. The JS also updates the card warning color after 5 minutes, matching previous Livewire behavior.
+
+### CategoriesPanel, StaffList, AnalyticsDashboard
+- No polling or auto-refresh logic found
+
+---
+
+## 2. Controller and Endpoint Review
+- OrderController: Polling endpoints (`pollTableStatus`, `pollOrderStatus`) are efficient and use single-row lookups. No N+1 issues. No further optimization needed unless traffic is extremely high (consider caching if so).
+- TableController: No polling endpoints. All methods are efficient and use Eloquent best practices.
+
+---
+
+## Recommendations (Updated)
+- **Reduce polling frequency** for NumbersList and OrdersList if possible (now set to 7s).
+- **Avoid polling with no interval** (as in TablesList modal) or set a reasonable interval (e.g., 5–10s). [DONE for TablesList modal]
+- **Batch updates** or use event-driven updates (Livewire events, broadcasting) where possible instead of frequent polling.
+- **OrderTimer optimization complete:** All chronometer and card warning logic is now handled in JavaScript, eliminating all server polling for timers.
+- **TablesList modal optimization complete:** Modal now loads data only once per open, not live.
+- **Controllers reviewed:** No further optimization needed for polling endpoints.
+- **Monitor**: Use server logs to identify which polling endpoints are most active.
+- **Consider WebSockets** for true real-time needs to avoid repeated HTTP requests.
+
+---
+
+## Next Areas to Review
+- JavaScript assets (for custom polling, AJAX, or setInterval usage)
+- Middleware (for heavy logic on every request)
+- Queue/cron jobs (for background process usage)
+
+(Continue to add findings as each component and area is reviewed.)

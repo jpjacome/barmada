@@ -29,6 +29,7 @@ This document provides a comprehensive overview of every file and folder in the 
   - **Controller.php**: Base controller, extended by all others.
   - **NumberController.php**: Handles number management and broadcasting events.
   - **OrderController.php**: Handles order CRUD, order creation, updates, and special flows (QR, polling, archive export).
+    - As of May 2025, the QR table flow includes a two-step guest approval system: guests (not logged in) are only redirected to the order page if the table is open and their IP is approved for the current session. Authenticated users (admin, editor, staff) are redirected as soon as the table is open, with no IP approval required. The waiting-approval page for guests will keep polling until both conditions are met.
   - **ProfileController.php**: User profile view, update, and deletion.
   - **SettingsController.php**: Handles app settings (if implemented).
   - **TableController.php**: Handles table CRUD, QR/unique token logic, and table-related order flows.

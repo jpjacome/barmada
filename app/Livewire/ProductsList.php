@@ -6,9 +6,9 @@ use Livewire\Component;
 use App\Models\Product;
 use App\Models\Category;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Rule;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ProductsList extends Component
 {
@@ -190,7 +190,14 @@ class ProductsList extends Component
     {
         $user = Auth::user();
         $this->validate([
-            'categoryName' => 'required|min:3|max:255|unique:categories,name',
+            'categoryName' => [
+                'required',
+                'min:3',
+                'max:255',
+                Rule::unique('categories', 'name')->where(function ($query) use ($user) {
+                    return $query->where('editor_id', $user->id);
+                }),
+            ],
         ]);
 
         Category::create([
