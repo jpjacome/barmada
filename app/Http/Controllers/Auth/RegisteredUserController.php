@@ -43,10 +43,13 @@ class RegisteredUserController extends Controller
             'name' => $request->business_name, // Use business_name for required name field
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'is_editor' => true, // Ensure every new user is an editor
         ]);
-        $user->editor_id = $user->id;
-        $user->save();
+        // Role flag and tenant id are not mass-assignable; set them explicitly
+        // (never from request input) so registration cannot be escalated.
+        $user->forceFill([
+            'is_editor' => true,
+            'editor_id' => $user->id,
+        ])->save();
 
         // Create tables for the new editor
         $tableCount = min((int)$request->input('table_count'), 50);

@@ -169,7 +169,9 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Default to HTTPS-only cookies; production forces HTTPS (see
+    // AppServiceProvider). Local HTTP development can set SESSION_SECURE_COOKIE=false.
+    'secure' => env('SESSION_SECURE_COOKIE', true),
 
     /*
     |--------------------------------------------------------------------------

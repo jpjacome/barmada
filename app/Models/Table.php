@@ -18,7 +18,7 @@ class Table extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'id',
+        // 'id' intentionally omitted: the primary key must not be client-settable.
         'orders',
         'status',
         'reference',

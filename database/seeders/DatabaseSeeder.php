@@ -33,9 +33,10 @@ class DatabaseSeeder extends Seeder
                 'last_name' => 'Editor',
                 'name' => 'Default Editor',
                 'password' => bcrypt('password'),
-                'is_editor' => true,
             ]
         );
+        // Role flag is not mass-assignable; set it explicitly.
+        $editor->forceFill(['is_editor' => true])->save();
 
         // Store the editor ID in config for use in ProductSeeder
         config(['barmada.default_editor_id' => $editor->id]);

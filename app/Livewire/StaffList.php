@@ -65,16 +65,17 @@ class StaffList extends Component
         } else {
             $this->authorize('createStaff', User::class);
 
-            User::create([
+            $staff = User::create([
                 'username' => strtolower(preg_replace('/\s+/', '', $this->name)) . rand(1000, 9999),
                 'first_name' => $this->name,
                 'last_name' => 'Staff',
                 'name' => $this->name . ' Staff',
                 'email' => $this->email,
                 'password' => Hash::make($this->password),
-                'is_staff' => true,
                 'editor_id' => $editor->id,
             ]);
+            // Role flag is not mass-assignable; set it explicitly.
+            $staff->forceFill(['is_staff' => true])->save();
         }
 
         $this->closeModal();

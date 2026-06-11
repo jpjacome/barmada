@@ -17,6 +17,13 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    /*
+     * Privilege and role flags (is_admin, is_editor, is_staff) are deliberately
+     * NOT mass-assignable: they must never be settable from request input. The
+     * trusted code paths that create privileged/staff accounts set them
+     * explicitly via forceFill(). editor_id remains fillable because tenant
+     * assignment is performed by trusted code and the BelongsToEditor trait.
+     */
     protected $fillable = [
         'username',
         'first_name',
@@ -24,10 +31,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'is_admin',
         'preferences',
-        'is_editor',
-        'is_staff',
         'editor_metadata',
         'editor_id',
     ];

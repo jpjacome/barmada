@@ -24,8 +24,9 @@ class CreateAdminUser extends Command
             'name' => $name . ' Admin',
             'email' => $email,
             'password' => Hash::make($password),
-            'is_admin' => true,
         ]);
+        // Privilege flag is not mass-assignable; set it explicitly.
+        $user->forceFill(['is_admin' => true])->save();
 
         $this->info('Admin user created successfully!');
         $this->info('Name: ' . $name);
