@@ -802,3 +802,88 @@
     }
 }
 
+
+/* ---- Cart bar + order review (running total before submitting) ---- */
+.order-form {
+    padding-bottom: 90px;
+}
+
+.cart-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-4, 1rem);
+    padding: 0.75rem 1.25rem;
+    background: var(--color-bg2, #fff);
+    border-top: 1px solid var(--color-accents2, #ddd);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.cart-bar-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.cart-bar-items {
+    font-size: var(--text-sm, 0.875rem);
+    color: var(--color-accents, #666);
+}
+
+.cart-bar-total {
+    font-size: var(--text-lg, 1.125rem);
+    color: var(--color-primary, #222);
+}
+
+.cart-bar .submit-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.order-review-content {
+    text-align: left;
+}
+
+.order-review-list {
+    list-style: none;
+    margin: 1rem 0;
+    padding: 0;
+    max-height: 45vh;
+    overflow-y: auto;
+}
+
+.order-review-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px dashed var(--color-accents2, #ddd);
+}
+
+.order-review-total {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    font-size: var(--text-lg, 1.125rem);
+    margin: 0.75rem 0 1rem;
+}
+
+.order-review-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.review-cancel-btn {
+    background: transparent;
+    border: 1px solid var(--color-accents2, #ccc);
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    color: var(--color-accents, #555);
+}
