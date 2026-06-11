@@ -141,18 +141,19 @@ class TenantIsolationTest extends TestCase
     {
         $editorA = $this->makeEditor();
         $editorB = $this->makeEditor();
-        $orderA = $this->makeOrderFor($editorA);
-        $orderB = $this->makeOrderFor($editorB);
+        $tableA = $this->makeTableFor($editorA);
+        $tableB = $this->makeTableFor($editorB);
 
         // Implicit binding goes through the global scope: the other tenant's
-        // order does not exist as far as this editor is concerned.
+        // table does not exist as far as this editor is concerned. (The QR
+        // image route is the surviving implicitly-bound endpoint.)
         $this->actingAs($editorA)
-            ->get('/api/orders/'.$orderB->id)
+            ->get('/tables/'.$tableB->id.'/qr')
             ->assertNotFound();
 
         $this->actingAs($editorA)
-            ->get('/api/orders/'.$orderA->id)
+            ->get('/tables/'.$tableA->id.'/qr')
             ->assertOk()
-            ->assertJsonPath('id', $orderA->id);
+            ->assertHeader('Content-Type', 'image/png');
     }
 }
