@@ -54,6 +54,25 @@ class User extends Authenticatable
         'editor_metadata' => 'array',
     ];
 
+    /**
+     * The tenant (editor) this user operates under.
+     *
+     * Editors own their tenant, staff belong to their editor's tenant,
+     * admins and tenant-less users return null.
+     */
+    public function effectiveEditorId(): ?int
+    {
+        if ($this->is_editor) {
+            return $this->id;
+        }
+
+        if ($this->is_staff) {
+            return $this->editor_id;
+        }
+
+        return null;
+    }
+
     public function tables()
     {
         return $this->hasMany(Table::class, 'editor_id');

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToEditor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,7 +10,7 @@ use Illuminate\Support\Str;
 
 class Table extends Model
 {
-    use HasFactory;
+    use BelongsToEditor, HasFactory;
 
     /**
      * The attributes that are mass assignable.

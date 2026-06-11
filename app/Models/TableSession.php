@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToEditor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class TableSession extends Model
 {
-    use HasFactory;
+    use BelongsToEditor, HasFactory;
 
     protected $fillable = [
         'table_id',
