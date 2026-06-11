@@ -20,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'editor' => EnsureUserIsEditor::class,
             'ip.approved' => EnsureIpIsApprovedForTableSession::class,
         ]);
+
+        // The guest device cookie must be readable on the stateless QR
+        // order routes (no EncryptCookies there), so it is excluded from
+        // cookie encryption. It contains only a random identifier.
+        $middleware->encryptCookies(except: ['barmada_device']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

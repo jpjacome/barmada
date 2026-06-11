@@ -2,6 +2,33 @@
     <link href="{{ asset('css/all-orders.css') }}" rel="stylesheet">
      
 
+    <!-- Service Requests Panel (guest bill / waiter calls) -->
+    @if(count($serviceRequests) > 0)
+    <div class="orders-panel compact-pending-orders">
+        <h3 class="orders-panel-title">Service Requests</h3>
+        <div class="orders-panel-content">
+            <div class="orders-scroll-container">
+                @foreach($serviceRequests as $serviceRequest)
+                    <div class="pending-order-card active-table-card order-card-warning" wire:key="service-{{ $serviceRequest['id'] }}">
+                        <span class="pending-order-table active-table-number">Table {{ $serviceRequest['table_number'] }}</span>
+                        <span class="active-table-clients">
+                            @if($serviceRequest['type'] === 'bill')
+                                <i class="bi bi-receipt"></i> Bill requested
+                            @else
+                                <i class="bi bi-hand-index-thumb"></i> Waiter called
+                            @endif
+                            · {{ $serviceRequest['time'] }}
+                        </span>
+                        <button wire:click="markServiceRequestDone({{ $serviceRequest['id'] }})" class="pending-order-accept-btn active-table-approve-btn">
+                            Done
+                        </button>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Active Tables Panel -->
     <div class="orders-panel compact-pending-orders">
         <h3 class="orders-panel-title">Active Tables</h3>
@@ -109,8 +136,13 @@
                                                 <span class="order-no-products">No products</span>
                                             @endif
                                         </div>
+                                        @if(!empty($pendingOrder['note']))
+                                            <div class="order-card-note" style="margin-top:0.35rem;font-style:italic;opacity:0.85;">
+                                                <i class="bi bi-chat-left-text"></i> {{ $pendingOrder['note'] }}
+                                            </div>
+                                        @endif
                                     </div>
-                                    
+
                                     <div class="order-card-footer">
                                         <div class="order-card-actions">
                                             <button 
@@ -532,6 +564,10 @@ document.addEventListener('livewire:initialized', () => {
 
     Livewire.on('new-approval-request', () => {
         BarmadaAlerts.notify([660, 660], 'Table approval request');
+    });
+
+    Livewire.on('new-service-request', () => {
+        BarmadaAlerts.notify([990, 660, 990], 'Service requested');
     });
 });
 </script>

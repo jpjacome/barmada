@@ -2,92 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
 use App\Models\OrderItem;
+use App\Support\DeviceToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
 class OrderController extends Controller
 {
-    /**
-     * Display a listing of orders.
-     */
-    public function index(Request $request)
-    {
-        $user = Auth::user();
-        $sort = $request->query('sort');
-        $direction = $request->query('direction', 'asc');
-        
-        // Get all pending orders for the latest orders panel
-        $pendingOrders = Order::with('table')
-            ->where('status', 'pending')
-            ->when($user->is_editor, fn($q) => $q->where('editor_id', $user->id))
-            ->latest()->get();
-        
-        // Start with a base query for all orders
-        $query = Order::with('table');
-        
-        if ($user->is_editor) {
-            $query->where('editor_id', $user->id);
-        }
-        
-        // Apply sorting
-        if ($sort === 'table') {
-            $query->join('tables', 'orders.table_id', '=', 'tables.id')
-                  ->select('orders.*')
-                  ->orderBy('tables.id', $direction);
-        } elseif ($sort === 'status') {
-            $query->orderBy('status', $direction);
-        } elseif ($sort === 'id') {
-            $query->orderBy('id', $direction);
-        } elseif ($sort === 'created_at') {
-            $query->orderBy('created_at', $direction);
-        } else {
-            // Default sort by latest
-            $query->latest();
-        }
-        
-        $orders = $query->get();
-        $products = Product::all()->keyBy('id');
-        
-        return view('orders.index', compact('orders', 'products', 'sort', 'direction', 'pendingOrders'));
-    }
-
-    /**
-     * Show the form for creating a new order.
-     */
-    public function create()
-    {
-        $user = Auth::user();
-        if ($user->is_editor) {
-            $editorId = $user->id;
-        } elseif ($user->is_staff) {
-            $editorId = $user->editor_id;
-        } else {
-            $editorId = $user->id;
-        }
-        $products = Product::where('editor_id', $editorId)->orderBy('name')->get();
-        $tables = Table::where('editor_id', $editorId)->orderBy('table_number')->get();
-
-        // Get the table ID from the query parameter
-        $selectedTableId = request()->query('table');
-
-        // Validate the table ID if provided
-        if ($selectedTableId) {
-            $table = Table::find($selectedTableId);
-            if (!$table || $table->editor_id != $editorId) {
-                return redirect()->route('orders.create')->with('error', 'Invalid table selected.');
-            }
-        }
-
-        $currentEditorId = $editorId;
-        $currency = $this->applyVenuePresentation($editorId, $user);
-        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'currentEditorId', 'currency'));
-    }
-
     /**
      * Apply a venue's presentation settings (locale for the menu pages,
      * currency symbol for prices). Returns the currency symbol.
@@ -142,6 +68,7 @@ class OrderController extends Controller
             'table_id' => 'required|exists:tables,id',
             'products' => 'required|array|max:50',
             'products.*' => 'integer|min:0|max:99',
+            'note' => 'nullable|string|max:280',
         ]);
         
         // Check if any products were ordered
@@ -180,26 +107,36 @@ class OrderController extends Controller
         // staff user's id).
         $editorId = $user->is_admin ? $table->editor_id : $user->effectiveEditorId();
         
-        // Create the order
+        // Create the order. Manual orders record who entered them so the
+        // staff analytics have a real grouping column.
         $order = Order::create([
             'table_id' => $table->id,
             'table_session_id' => $currentSession->id,
             'status' => 'pending',
+            'note' => isset($validated['note']) ? strip_tags($validated['note']) : null,
+            'created_by' => $user->id,
             'total_amount' => 0,
             'amount_paid' => 0,
             'amount_left' => 0,
             'editor_id' => $editorId,
         ]);
-        
+
         // Calculate total amount and create order items
         $totalAmount = 0;
         $itemIndex = 0;
-        
+
         foreach ($validated['products'] as $productId => $quantity) {
             if ($quantity > 0) {
                 // Products must belong to the table's tenant (also bounds
                 // admin-created orders to the right catalog).
                 $product = Product::forEditor($table->editor_id)->findOrFail($productId);
+                if (! $product->is_available) {
+                    $order->items()->delete();
+                    $order->delete();
+                    return redirect()->back()->withErrors([
+                        'products' => __('“:name” is sold out.', ['name' => $product->name]),
+                    ]);
+                }
                 $price = $product->price;
                 $totalAmount += $quantity * $price;
                 
@@ -254,109 +191,6 @@ class OrderController extends Controller
         }
 
         return view('orders.confirmation', compact('tableNumber'));
-    }
-    
-    /**
-     * Update the specified order.
-     */
-    public function update(Request $request, Order $order)
-    {
-        $this->authorize('update', $order);
-        
-        $validated = $request->validate([
-            'status' => 'required|in:pending,delivered,completed,cancelled',
-        ]);
-        
-        $order->update([
-            'status' => $validated['status']
-        ]);
-        
-        return redirect()->route('orders.index')->with('success', 'Order status updated successfully!');
-    }
-    
-    /**
-     * Get order data for AJAX requests.
-     */
-    public function getOrderData(Order $order)
-    {
-        $this->authorize('view', $order);
-
-        return response()->json($order);
-    }
-    
-    /**
-     * Update an order via AJAX request.
-     */
-    public function updateOrder(Request $request, Order $order)
-    {
-        $this->authorize('update', $order);
-        
-        // Handle status update if status parameter is present
-        if ($request->has('status')) {
-            $validated = $request->validate([
-                'status' => 'required|in:pending,delivered,completed,cancelled',
-            ]);
-            
-            $order->update([
-                'status' => $validated['status']
-            ]);
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Order status updated successfully!'
-            ]);
-        }
-        
-        // Handle full order update if products parameter is present
-        $validated = $request->validate([
-            'table_id' => 'required|exists:tables,id',
-            'products' => 'required|array',
-            'products.*' => 'integer|min:0',
-        ]);
-        
-        // Check if any products were ordered
-        $hasProducts = false;
-        foreach ($validated['products'] as $quantity) {
-            if ($quantity > 0) {
-                $hasProducts = true;
-                break;
-            }
-        }
-        
-        if (!$hasProducts) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Please select at least one product.'
-            ]);
-        }
-        
-        // Update order table_id while preserving status
-        $currentStatus = $order->status; // Save current status
-        // The target table must resolve within the caller's tenant.
-        \App\Models\Table::findOrFail($validated['table_id']);
-        $order->table_id = $validated['table_id'];
-        $order->save();
-        
-        // Reset all product quantities
-        for ($i = 1; $i <= 9; $i++) {
-            $order->update([
-                "product{$i}_qty" => 0
-            ]);
-        }
-        
-        // Update product quantities for the order
-        foreach ($validated['products'] as $productId => $quantity) {
-            if ($quantity > 0) {
-                $order->update([
-                    "product{$productId}_qty" => $quantity
-                ]);
-            }
-        }
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Order updated successfully!'
-        ]);
     }
     
     /**
@@ -497,24 +331,45 @@ class OrderController extends Controller
             abort(404, 'Table not found.');
         }
         $ip = request()->ip();
+        // Identify the device with a long-lived cookie [F-18]; IP remains a
+        // fallback for rows recorded before the cookie existed.
+        $device = DeviceToken::ensure(request());
         app()->setLocale($editor->guestLocale());
+
+        // Every scan is an analytics signal (QR conversion metrics).
+        ActivityLog::create([
+            'type' => 'qr_scan',
+            'table_id' => $table->id,
+            'editor_id' => $table->editor_id,
+            'description' => 'QR scan for table '.$table->table_number,
+        ]);
+
         // If table is open and has a unique token, handle session request
         if ($table->status === 'open' && $table->unique_token) {
             $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
             if ($currentSession) {
-                // Check if this IP is already pending or approved
-                $existingRequest = $currentSession->sessionRequests()->where('ip_address', $ip)->whereIn('status', ['pending', 'approved'])->first();
+                // Check if this device is already pending or approved
+                $existingRequest = $this->scopeToDevice(
+                    $currentSession->sessionRequests()->whereIn('status', ['pending', 'approved']),
+                    $ip,
+                    $device
+                )->first();
                 if (!$existingRequest) {
                     \App\Models\TableSessionRequest::create([
                         'table_session_id' => $currentSession->id,
                         'table_id' => $table->id,
                         'ip_address' => $ip,
+                        'device_token' => $device,
                         'status' => 'pending',
                         'requested_at' => now(),
                     ]);
                 }
                 // If already approved, redirect to order page
-                $approved = $currentSession->sessionRequests()->where('ip_address', $ip)->where('status', 'approved')->exists();
+                $approved = $this->scopeToDevice(
+                    $currentSession->sessionRequests()->where('status', 'approved'),
+                    $ip,
+                    $device
+                )->exists();
                 if ($approved) {
                     return redirect()->route('order.redirect', ['unique_token' => $table->unique_token]);
                 }
@@ -530,21 +385,43 @@ class OrderController extends Controller
         // Record the scanning device NOW (without a session): staff approval
         // adopts these requests into the session created when the table
         // opens, so the first customer is approved in one step. [F-1]
-        $alreadyRequested = \App\Models\TableSessionRequest::whereNull('table_session_id')
-            ->where('table_id', $table->id)
-            ->where('ip_address', $ip)
-            ->where('status', 'pending')
-            ->whereDate('created_at', now()->toDateString())
-            ->exists();
+        $alreadyRequested = $this->scopeToDevice(
+            \App\Models\TableSessionRequest::whereNull('table_session_id')
+                ->where('table_id', $table->id)
+                ->where('status', 'pending')
+                ->whereDate('created_at', now()->toDateString()),
+            $ip,
+            $device
+        )->exists();
         if (! $alreadyRequested) {
             \App\Models\TableSessionRequest::create([
                 'table_id' => $table->id,
                 'ip_address' => $ip,
+                'device_token' => $device,
                 'status' => 'pending',
                 'requested_at' => now(),
             ]);
         }
         return view('orders.waiting-approval', ['table' => $table]);
+    }
+
+    /**
+     * Constrain a session-request query to the calling device: by device
+     * cookie when present (with IP fallback for token-less legacy rows),
+     * by IP otherwise. [F-18]
+     */
+    private function scopeToDevice($query, string $ip, ?string $device)
+    {
+        return $query->where(function ($q) use ($ip, $device) {
+            if ($device) {
+                $q->where('device_token', $device)
+                    ->orWhere(function ($qq) use ($ip) {
+                        $qq->whereNull('device_token')->where('ip_address', $ip);
+                    });
+            } else {
+                $q->where('ip_address', $ip);
+            }
+        });
     }
 
     /**
@@ -570,11 +447,16 @@ class OrderController extends Controller
                     'redirect_url' => route('order.redirect', ['unique_token' => $table->unique_token])
                 ]);
             } else {
-                // Guest: require IP approval
+                // Guest: require device approval
                 $ip = request()->ip();
+                $device = DeviceToken::ensure(request());
                 $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
                 if ($currentSession) {
-                    $approved = $currentSession->sessionRequests()->where('ip_address', $ip)->where('status', 'approved')->exists();
+                    $approved = $this->scopeToDevice(
+                        $currentSession->sessionRequests()->where('status', 'approved'),
+                        $ip,
+                        $device
+                    )->exists();
                     if ($approved) {
                         return response()->json([
                             'status' => 'open',
@@ -588,17 +470,19 @@ class OrderController extends Controller
                     // or register a fresh pending request if none exists —
                     // without this, guests who scanned while the table was
                     // closed could wait forever with staff seeing nothing.
-                    $known = $currentSession->sessionRequests()
-                        ->where('ip_address', $ip)
-                        ->whereIn('status', ['pending', 'approved'])
-                        ->exists();
+                    $known = $this->scopeToDevice(
+                        $currentSession->sessionRequests()->whereIn('status', ['pending', 'approved']),
+                        $ip,
+                        $device
+                    )->exists();
                     if (! $known) {
-                        $orphan = \App\Models\TableSessionRequest::whereNull('table_session_id')
-                            ->where('table_id', $table->id)
-                            ->where('ip_address', $ip)
-                            ->where('status', 'pending')
-                            ->latest('requested_at')
-                            ->first();
+                        $orphan = $this->scopeToDevice(
+                            \App\Models\TableSessionRequest::whereNull('table_session_id')
+                                ->where('table_id', $table->id)
+                                ->where('status', 'pending'),
+                            $ip,
+                            $device
+                        )->latest('requested_at')->first();
                         if ($orphan) {
                             $orphan->table_session_id = $currentSession->id;
                             $orphan->save();
@@ -607,6 +491,7 @@ class OrderController extends Controller
                                 'table_session_id' => $currentSession->id,
                                 'table_id' => $table->id,
                                 'ip_address' => $ip,
+                                'device_token' => $device,
                                 'status' => 'pending',
                                 'requested_at' => now(),
                             ]);

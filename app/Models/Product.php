@@ -11,7 +11,11 @@ class Product extends Model
     use BelongsToEditor, HasFactory;
     
     protected $fillable = [
-        'name', 'price', 'icon_type', 'icon_value', 'category_id', 'editor_id', 'photo', 'description'
+        'name', 'price', 'is_available', 'icon_type', 'icon_value', 'category_id', 'editor_id', 'photo', 'description'
+    ];
+
+    protected $casts = [
+        'is_available' => 'boolean',
     ];
 
     public function category()

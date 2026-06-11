@@ -13,6 +13,7 @@ class TableSessionRequest extends Model
         'table_session_id',
         'table_id',
         'ip_address',
+        'device_token',
         'status',
         'requested_at',
         'approved_at',

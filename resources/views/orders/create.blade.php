@@ -25,8 +25,18 @@
                 </div>
             @endif
 
+            @if(isset($unique_token))
+                <p style="text-align:center;margin-bottom:1rem;">
+                    <a href="{{ route('order.session', ['unique_token' => $unique_token]) }}" class="page-link">
+                        <i class="bi bi-receipt"></i> {{ __('My table & bill') }}
+                    </a>
+                </p>
+            @endif
+
             <form method="POST" action="{{ isset($unique_token) ? route('order.guest.store', ['unique_token' => $unique_token]) : route('orders.store') }}" class="order-form" id="order-form">
                 @csrf
+                <input type="hidden" name="note" id="order-note-input" value="">
+
 
                 <!-- Table selection -->
                 <div class="form-group">
@@ -132,6 +142,10 @@
         <h2>{{ __('Your order') }}</h2>
         <ul id="order-review-list" class="order-review-list"></ul>
         <div class="order-review-total">{{ __('Total') }}: <strong id="order-review-total"></strong></div>
+        <div class="order-review-note">
+            <textarea id="order-note" maxlength="280" rows="2" placeholder="{{ __('Any special requests? (optional)') }}"
+                      style="width:100%;border:1px solid var(--color-accents2,#ccc);border-radius:8px;padding:0.5rem;"></textarea>
+        </div>
         <div class="order-review-actions">
             <button type="button" id="review-cancel" class="review-cancel-btn">{{ __('Cancel') }}</button>
             <button type="button" id="review-confirm" class="submit-button">{{ __('Confirm order') }}</button>
@@ -228,6 +242,7 @@
         document.getElementById('order-review-modal').classList.remove('active');
     });
     document.getElementById('review-confirm').addEventListener('click', function () {
+        document.getElementById('order-note-input').value = document.getElementById('order-note').value;
         document.getElementById('order-form').submit();
     });
     document.querySelectorAll('.product-quantity').forEach(function (input) {

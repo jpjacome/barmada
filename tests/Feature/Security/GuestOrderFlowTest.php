@@ -179,10 +179,13 @@ class GuestOrderFlowTest extends TestCase
 
         $uri = '/qr-entry/'.rawurlencode($editor->username).'/7';
 
-        $this->get($uri)->assertOk();
+        $response = $this->get($uri)->assertOk();
         $this->assertSame(1, $session->sessionRequests()->where('status', 'pending')->count());
 
-        // Re-scanning does not pile up duplicate requests.
+        // Re-scanning (same device cookie, like a real browser) does not
+        // pile up duplicate requests.
+        $cookie = $response->getCookie(\App\Support\DeviceToken::COOKIE, false);
+        $this->withUnencryptedCookie(\App\Support\DeviceToken::COOKIE, $cookie->getValue());
         $this->get($uri)->assertOk();
         $this->assertSame(1, $session->sessionRequests()->count());
     }
