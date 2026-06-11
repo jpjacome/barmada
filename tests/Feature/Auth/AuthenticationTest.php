@@ -19,7 +19,9 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
+        // Post-login redirects are role-based: editors land on the dashboard.
         $user = User::factory()->create();
+        $user->forceFill(['is_editor' => true, 'editor_id' => $user->id])->save();
 
         $response = $this->post('/login', [
             'email' => $user->email,
