@@ -9,10 +9,13 @@ use App\Models\Product;
 use App\Models\OrderItem;
 use Livewire\Attributes\On;
 use App\Models\ActivityLog;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 
 class TablesList extends Component
 {
+    use AuthorizesRequests;
+
     public $tables = [];
     public $lastUpdated;
     public $status = 'Loading tables...';
@@ -112,11 +115,9 @@ class TablesList extends Component
     public function addTable()
     {
         $user = Auth::user();
-        if (!$user->is_admin && !$user->is_editor && !$user->is_staff) {
-            abort(403);
-        }
-        // For staff, use their editor_id for table ownership
-        $editorId = $user->is_admin || $user->is_editor ? $user->id : $user->editor_id;
+        $this->authorize('create', Table::class);
+        // Admins create under their own id; editors and staff under their tenant.
+        $editorId = $user->is_admin ? $user->id : $user->effectiveEditorId();
         $existingNumbers = Table::where('editor_id', $editorId)->pluck('table_number')->toArray();
         $nextTableNumber = 1;
         while (in_array($nextTableNumber, $existingNumbers)) {
@@ -135,11 +136,8 @@ class TablesList extends Component
 
     public function deleteTable($tableId)
     {
-        $user = Auth::user();
         $table = Table::findOrFail($tableId);
-        if (!$user->is_admin && !($user->is_editor && $table->editor_id == $user->id) && !($user->is_staff && $user->editor_id == $table->editor_id)) {
-            abort(403);
-        }
+        $this->authorize('delete', $table);
         // Check if the table has any active orders
         $hasActiveOrders = Order::where('table_id', $tableId)->exists();
         if ($hasActiveOrders) {
@@ -155,7 +153,10 @@ class TablesList extends Component
 
     public function viewTableOrders($tableId)
     {
-        $this->selectedTable = $tableId;
+        $table = Table::findOrFail($tableId);
+        $this->authorize('view', $table);
+
+        $this->selectedTable = $table->id;
         $this->loadTableOrders();
         $this->showOrdersModal = true;
         
@@ -240,6 +241,14 @@ class TablesList extends Component
 
     public function selectItem($orderId, $productId, $itemIndex)
     {
+        // Resolve the order through EditorScope first; order items carry
+        // no tenant key of their own.
+        $order = Order::find($orderId);
+        if (! $order) {
+            return;
+        }
+        $this->authorize('update', $order);
+
         $orderItem = OrderItem::where('order_id', $orderId)
             ->where('product_id', $productId)
             ->where('item_index', $itemIndex)
@@ -304,6 +313,7 @@ class TablesList extends Component
     public function toggleAllItems($orderId)
     {
         $order = Order::findOrFail($orderId);
+        $this->authorize('update', $order);
         $items = $order->items;
         // Always mark all items as paid
         $totalAmount = 0;
@@ -339,7 +349,13 @@ class TablesList extends Component
 
     public function toggleAllTableItems()
     {
-        $orders = Order::where('table_id', $this->selectedTable)->get();
+        $table = Table::find($this->selectedTable);
+        if (! $table) {
+            return;
+        }
+        $this->authorize('update', $table);
+
+        $orders = Order::where('table_id', $table->id)->get();
         $allItems = OrderItem::whereIn('order_id', $orders->pluck('id'))->get();
         // Always mark all items as paid
         $totalAmount = 0;
@@ -385,7 +401,8 @@ class TablesList extends Component
 
     public function saveReference($tableId)
     {
-        $table = Table::find($tableId);
+        $table = Table::findOrFail($tableId);
+        $this->authorize('update', $table);
         $table->reference = $this->referenceText;
         $table->save();
         
@@ -490,6 +507,7 @@ class TablesList extends Component
     {
         $table = Table::find($tableId);
         if (!$table) return;
+        $this->authorize('update', $table);
 
         $user = Auth::user();
         $today = now()->toDateString();
@@ -539,6 +557,12 @@ class TablesList extends Component
 
     public function payAndCloseTable()
     {
+        $guardTable = Table::find($this->selectedTable);
+        if (! $guardTable) {
+            return;
+        }
+        $this->authorize('update', $guardTable);
+
         // Mark all items as paid
         $this->toggleAllTableItems();
         // Directly close the table after marking all items as paid

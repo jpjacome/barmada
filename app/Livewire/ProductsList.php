@@ -1,18 +1,19 @@
 <?php
 
-namespace app\Livewire;
+namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Product;
 use App\Models\Category;
 use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class ProductsList extends Component
 {
-    use WithFileUploads;
+    use AuthorizesRequests, WithFileUploads;
     
     public $products = [];
     public $categories = [];
@@ -75,6 +76,12 @@ class ProductsList extends Component
 
     public function loadProducts()
     {
+        // Sorting props are client-controlled; constrain before querying.
+        if (! in_array($this->sortField, ['name', 'price', 'created_at', 'updated_at', 'category_id'], true)) {
+            $this->sortField = 'name';
+        }
+        $this->sortDirection = $this->sortDirection === 'desc' ? 'desc' : 'asc';
+
         $user = Auth::user();
         if ($user->is_admin) {
             $this->products = Product::with('category')
@@ -148,11 +155,14 @@ class ProductsList extends Component
             $photoPath = $this->photo;
         }
 
+        // Category assignment must resolve within the caller's tenant.
+        if ($this->categoryId !== null && $this->categoryId !== '' && ! Category::find($this->categoryId)) {
+            $this->categoryId = null;
+        }
+
         if ($this->editMode) {
             $product = Product::findOrFail($this->productId);
-            if (!$user->is_admin && !($user->is_editor && $product->editor_id == $user->id)) {
-                abort(403);
-            }
+            $this->authorize('update', $product);
             $product->update([
                 'name' => $this->name,
                 'price' => $this->price,
@@ -173,11 +183,11 @@ class ProductsList extends Component
                 'description' => $this->description,
                 'photo' => $photoPath,
             ];
+            $this->authorize('create', Product::class);
             if ($user->is_admin) {
-                $data['editor_id'] = $user->id; // Optionally allow admin to set another editor_id if needed
-            } else {
                 $data['editor_id'] = $user->id;
             }
+            // Non-admins: BelongsToEditor assigns the tenant automatically.
             Product::create($data);
             $this->status = "Product '{$this->name}' added successfully!";
         }
@@ -200,9 +210,10 @@ class ProductsList extends Component
             ],
         ]);
 
+        $this->authorize('create', Category::class);
         Category::create([
             'name' => $this->categoryName,
-            'editor_id' => $user->id,
+            'editor_id' => $user->is_admin ? $user->id : $user->effectiveEditorId(),
         ]);
         $this->categoryName = '';
         $this->loadCategories();
@@ -218,6 +229,7 @@ class ProductsList extends Component
             return;
         }
 
+        $this->authorize('delete', $category);
         $categoryName = $category->name;
         $category->delete();
         $this->loadCategories();
@@ -240,6 +252,7 @@ class ProductsList extends Component
         $this->productId = $id;
         
         $product = Product::findOrFail($id);
+        $this->authorize('update', $product);
         $this->name = $product->name;
         $this->price = $product->price;
         $this->iconType = $product->icon_type ?? 'bootstrap';
@@ -288,9 +301,7 @@ class ProductsList extends Component
             return;
         }
         
-        if (!$user->is_admin && !($user->is_editor && $product->editor_id == $user->id)) {
-            abort(403);
-        }
+        $this->authorize('delete', $product);
         
         $productName = $product->name;
         $product->delete();
@@ -339,23 +350,20 @@ class ProductsList extends Component
     public function eraseAllProducts()
     {
         $user = Auth::user();
-        if ($user->is_admin) {
-            $count = Product::count();
-            Product::truncate();
-        } else if ($user->is_editor) {
-            $count = Product::where('editor_id', $user->id)->count();
-            Product::where('editor_id', $user->id)->delete();
-        } else {
-            $count = 0;
+        if (! $user->is_admin && ! $user->is_editor) {
+            abort(403);
         }
+        // EditorScope bounds this to the caller's tenant; admins clear all
+        // tenants explicitly through this action. No table truncation.
+        $count = Product::count();
+        Product::query()->delete();
         $this->status = $count . ' products deleted.';
         $this->loadProducts();
     }
 
     public function confirmEraseAll()
     {
-        $user = Auth::user();
-        $count = Product::where('editor_id', $user->id)->count();
+        $count = Product::count();
         $this->dispatch('showDeleteConfirmation', [
             'message' => "Are you sure you want to erase ALL (" . $count . ") products? This action cannot be undone.",
             'eraseAll' => 'true'
@@ -365,8 +373,11 @@ class ProductsList extends Component
     public function deleteAllConfirmed()
     {
         $user = Auth::user();
-        $count = Product::where('editor_id', $user->id)->count();
-        Product::where('editor_id', $user->id)->delete();
+        if (! $user->is_admin && ! $user->is_editor) {
+            abort(403);
+        }
+        $count = Product::count();
+        Product::query()->delete();
         $this->status = $count . ' products deleted.';
         $this->loadProducts();
     }

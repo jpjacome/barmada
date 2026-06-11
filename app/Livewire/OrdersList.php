@@ -9,11 +9,12 @@ use App\Models\Table;
 use Livewire\WithPagination;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\OrderItem;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 
 class OrdersList extends Component
 {
-    use WithPagination;
+    use AuthorizesRequests, WithPagination;
 
     public $pendingOrders = [];
     public $products = [];
@@ -58,12 +59,13 @@ class OrdersList extends Component
 
     public function updateOrderStatus($orderId, $status)
     {
-        $user = Auth::user();
         $order = Order::findOrFail($orderId);
+        $this->authorize('update', $order);
 
-        if (!$user->is_admin && !($user->is_editor && $order->editor_id == $user->id)) {
-            abort(403);
+        if (! in_array($status, ['pending', 'delivered'], true)) {
+            abort(422, 'Unsupported order status.');
         }
+
 
         $order->status = $status;
         $order->save();
@@ -114,6 +116,7 @@ class OrdersList extends Component
     public function editOrder($orderId)
     {
         $order = Order::with(['table', 'items'])->findOrFail($orderId);
+        $this->authorize('update', $order);
         
         // Initialize editingOrder with current values
         $this->editingOrder = [
@@ -137,9 +140,11 @@ class OrdersList extends Component
         }
 
         $order = Order::findOrFail($this->editingOrder['id']);
+        $this->authorize('update', $order);
         
-        // Update table
-        $order->table_id = $this->editingOrder['table_id'];
+        // The target table must resolve within the caller's tenant.
+        $targetTable = Table::findOrFail($this->editingOrder['table_id']);
+        $order->table_id = $targetTable->id;
         $order->save();
         
         // Delete all existing order items
@@ -195,6 +200,13 @@ class OrdersList extends Component
                 'lastUpdated' => $this->lastUpdated,
             ]);
         }
+
+        // Sorting input is client-controlled; constrain to known columns.
+        $allowedSorts = ['created_at', 'updated_at', 'id', 'status', 'total_amount', 'table_id'];
+        if (! in_array($this->sort, $allowedSorts, true)) {
+            $this->sort = 'created_at';
+        }
+        $this->direction = $this->direction === 'asc' ? 'asc' : 'desc';
 
         // Apply sorting
         if ($this->sort === 'table_id') {

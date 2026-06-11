@@ -75,11 +75,9 @@ class TableController extends Controller
      */
     public function show(Table $table)
     {
-        $user = Auth::user();
-        if ($user->is_admin || ($user->is_editor && $table->editor_id == $user->id) || ($user->is_staff && $user->editor_id == $table->editor_id)) {
-            return view('tables.show', compact('table'));
-        }
-        abort(403);
+        $this->authorize('view', $table);
+
+        return view('tables.show', compact('table'));
     }
 
     /**
@@ -87,11 +85,9 @@ class TableController extends Controller
      */
     public function edit(Table $table)
     {
-        $user = Auth::user();
-        if ($user->is_admin || ($user->is_editor && $table->editor_id == $user->id)) {
-            return view('tables.edit', compact('table'));
-        }
-        abort(403);
+        $this->authorize('update', $table);
+
+        return view('tables.edit', compact('table'));
     }
 
     /**
@@ -99,10 +95,7 @@ class TableController extends Controller
      */
     public function update(Request $request, Table $table)
     {
-        $user = Auth::user();
-        if (!$user->is_admin && !($user->is_editor && $table->editor_id == $user->id)) {
-            abort(403);
-        }
+        $this->authorize('update', $table);
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:tables,name,' . $table->id,
             'capacity' => 'required|integer|min:1|max:20',
@@ -117,10 +110,7 @@ class TableController extends Controller
      */
     public function destroy(Table $table)
     {
-        $user = Auth::user();
-        if (!$user->is_admin && !($user->is_editor && $table->editor_id == $user->id)) {
-            abort(403);
-        }
+        $this->authorize('delete', $table);
         $table->delete();
         return redirect()->route('tables.index')->with('success', 'Table deleted successfully!');
     }
@@ -148,12 +138,8 @@ class TableController extends Controller
      */
     public function qrImage($tableId)
     {
-        $user = Auth::user();
         $table = \App\Models\Table::findOrFail($tableId);
-        // Only allow admin or the editor who owns the table
-        if (!$user->is_admin && !($user->is_editor && $table->editor_id == $user->id)) {
-            abort(403);
-        }
+        $this->authorize('view', $table);
         $editor = $table->editor;
         $orderLink = url('/qr-entry/' . rawurlencode($editor->username) . '/' . $table->table_number);
         $logoPath = public_path('images/logo-light.png');

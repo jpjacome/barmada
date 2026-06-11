@@ -11,11 +11,9 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if (!$user->is_admin && !$user->is_editor) {
-            abort(403);
-        }
+        $this->authorize('create', Category::class);
 
-        $editorId = $user->is_admin ? $request->input('editor_id', null) : $user->id;
+        $editorId = $user->is_admin ? $request->input('editor_id', null) : $user->effectiveEditorId();
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -37,10 +35,7 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        $user = Auth::user();
-        if (!$user->is_admin && !($user->is_editor && $category->editor_id == $user->id)) {
-            abort(403);
-        }
+        $this->authorize('delete', $category);
 
         $category->delete();
 
@@ -49,13 +44,11 @@ class CategoryController extends Controller
 
     public function moveUp(Category $category)
     {
-        $user = Auth::user();
-        if (!$user->is_admin && !($user->is_editor && $category->editor_id == $user->id)) {
-            abort(403);
-        }
+        $this->authorize('update', $category);
 
+        // Swap only within the category's own tenant.
         $previousCategory = Category::where('sort_order', '<', $category->sort_order)
-            ->where('editor_id', $user->is_admin ? '!=' : '=', $user->id)
+            ->where('editor_id', $category->editor_id)
             ->orderBy('sort_order', 'desc')
             ->first();
 
@@ -73,13 +66,11 @@ class CategoryController extends Controller
 
     public function moveDown(Category $category)
     {
-        $user = Auth::user();
-        if (!$user->is_admin && !($user->is_editor && $category->editor_id == $user->id)) {
-            abort(403);
-        }
+        $this->authorize('update', $category);
 
+        // Swap only within the category's own tenant.
         $nextCategory = Category::where('sort_order', '>', $category->sort_order)
-            ->where('editor_id', $user->is_admin ? '!=' : '=', $user->id)
+            ->where('editor_id', $category->editor_id)
             ->orderBy('sort_order', 'asc')
             ->first();
 

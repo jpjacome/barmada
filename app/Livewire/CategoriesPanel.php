@@ -4,11 +4,14 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Category;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class CategoriesPanel extends Component
 {
+    use AuthorizesRequests;
+
     public $categories = [];
     public $newCategoryName = '';
     public $status = '';
@@ -43,10 +46,12 @@ class CategoriesPanel extends Component
                 }),
             ],
         ]);
-        $maxOrder = Category::where('editor_id', $user->id)->max('sort_order') ?? 0;
+        $this->authorize('create', Category::class);
+        $tenantId = $user->is_admin ? $user->id : $user->effectiveEditorId();
+        $maxOrder = Category::where('editor_id', $tenantId)->max('sort_order') ?? 0;
         Category::create([
             'name' => $this->newCategoryName,
-            'editor_id' => $user->id,
+            'editor_id' => $tenantId,
             'sort_order' => $maxOrder + 1,
         ]);
         $this->newCategoryName = '';
@@ -62,6 +67,7 @@ class CategoriesPanel extends Component
             $this->status = 'Error: Category not found';
             return;
         }
+        $this->authorize('delete', $category);
         $category->delete();
         $this->status = 'Category deleted successfully!';
         $this->resequenceSortOrder();
@@ -71,6 +77,7 @@ class CategoriesPanel extends Component
     {
         $category = Category::find($id);
         if (!$category) return;
+        $this->authorize('update', $category);
         $user = Auth::user();
         $query = $user->is_admin
             ? Category::query()
@@ -93,6 +100,7 @@ class CategoriesPanel extends Component
     {
         $category = Category::find($id);
         if (!$category) return;
+        $this->authorize('update', $category);
         $user = Auth::user();
         $query = $user->is_admin
             ? Category::query()
