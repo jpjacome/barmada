@@ -1,3 +1,19 @@
+/* Brand Fonts */
+@font-face {
+    font-family: 'Crimson Text';
+    src: url('../fonts/CrimsonText-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Crimson Text';
+    src: url('../fonts/CrimsonText-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
     /* Colors */
     --color-primary: #73AB84;    /* Cambridge Blue */
@@ -32,15 +48,8 @@
     --spacing-20: 5rem;
     
     /* Typography */
-    @font-face {
-        font-family: 'Crimson Text';
-        src: url('/public/fonts/CrimsonText-Regular.ttf');
-    }
-    @font-face {
-        font-family: 'Inter-tight';
-        src: url('/public/fonts/Inter-tight-Regular.ttf');
-    }
-    --font-family: 'Crimson Text', serif;
+    --font-family: 'Crimson Text', Georgia, serif;
+    --font-family-body: 'Inter Tight', 'Inter-tight', ui-sans-serif, system-ui, sans-serif;
     --text-xs: 0.75rem;
     --text-sm: 0.875rem;
     --text-base: 1rem;
@@ -89,7 +98,7 @@
 /* General Page Styles */
 body {
     color: var(--color-accents);
-    font-family: 'Inter-tight', sans-serif;
+    font-family: var(--font-family-body);
     margin: 0;
     padding: 0;
     overflow-x: hidden;
