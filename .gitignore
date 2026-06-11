@@ -5,9 +5,16 @@
 /storage/*.key
 /vendor
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
 .phpunit.result.cache
+# Never commit databases, dumps or backups
+*.sql
+*.sqlite
+*.sqlite3
+*.dump
+*.bak
+*.backup
 docker-compose.override.yml
 Homestead.json
 Homestead.yaml
