@@ -153,7 +153,7 @@
                                         <td>{{ $file['time'] }}</td>
                                         <td>{{ $file['size'] }}</td>
                                         <td>
-                                            <a href="{{ asset($file['path']) }}" download class="archive-download">
+                                            <a href="{{ $file['download_url'] }}" class="archive-download">
                                                 <i class="bi bi-download"></i>
                                                 Download
                                             </a>

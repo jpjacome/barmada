@@ -380,8 +380,11 @@ class AllOrdersList extends Component
             session()->flash('message', 'Only editors can export their own orders.');
             return;
         }
-        // Create per-editor archive directory if it doesn't exist
-        $archiveDir = storage_path('app/public/archive/' . $editorId);
+        // Create per-editor archive directory if it doesn't exist. This lives
+        // OUTSIDE the public disk so order exports (which contain customer and
+        // sales data) are never web-accessible; downloads are served only
+        // through the authorized orders.archive.download route.
+        $archiveDir = storage_path('app/archive/' . $editorId);
         if (!file_exists($archiveDir)) {
             mkdir($archiveDir, 0755, true);
         }
@@ -415,7 +418,6 @@ class AllOrdersList extends Component
         // Save XML to file
         $xml->asXML($filepath);
         // Show success message with storage location
-        $relativePath = 'storage/archive/' . $editorId . '/' . $filename;
         session()->flash('message', "Orders exported to XML file: {$filename}. Stored in your archive folder.");
     }
 

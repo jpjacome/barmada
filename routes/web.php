@@ -45,6 +45,12 @@ Route::get('/products', [NumberController::class, 'livewire'])->middleware(['aut
 Route::get('/orders', [OrderController::class, 'index'])->middleware(['auth'])->name('orders.index');
 Route::patch('/orders/{order}', [OrderController::class, 'update'])->middleware(['auth'])->name('orders.update');
 Route::get('/orders/archive', [OrderController::class, 'archive'])->middleware(['auth', 'editor'])->name('orders.archive');
+// Owner-only archive download. Filename is constrained to the editor's own
+// naming pattern in the controller; the where() blocks path separators.
+Route::get('/orders/archive/download/{filename}', [OrderController::class, 'downloadArchive'])
+    ->middleware(['auth', 'editor'])
+    ->where('filename', '[A-Za-z0-9._-]+')
+    ->name('orders.archive.download');
 Route::get('/orders/create', [OrderController::class, 'create'])->middleware(['auth'])->name('orders.create.form');
 
 // Editor/Admin order creation (NO ip.approved middleware)

@@ -15,11 +15,19 @@ class SettingsController extends Controller
 
     public function updateLogo(Request $request)
     {
+        // The theme logo is a single global brand asset served from the web
+        // root, so only the platform admin may replace it. The settings view
+        // already hides this form for non-admins; enforce it server-side too.
+        abort_unless((bool) ($request->user()?->is_admin), 403);
+
         $request->validate([
             'logo' => [
                 'required',
                 'file',
-                'mimes:jpeg,png,jpg,gif,svg',
+                'image',
+                // SVG intentionally excluded: it can carry active content and
+                // is not a safe upload target for a web-root asset.
+                'mimes:jpeg,png,jpg,gif,webp',
                 'max:2048',
             ],
             'theme' => [
@@ -31,7 +39,15 @@ class SettingsController extends Controller
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $theme = $request->input('theme');
-            $extension = $file->getClientOriginalExtension();
+            // Never trust the client-supplied extension for the on-disk name;
+            // derive a safe extension from the validated image content type.
+            $extensionMap = [
+                'image/jpeg' => 'jpg',
+                'image/png'  => 'png',
+                'image/gif'  => 'gif',
+                'image/webp' => 'webp',
+            ];
+            $extension = $extensionMap[$file->getMimeType()] ?? 'png';
             $filename = 'logo-' . $theme . '.' . $extension;
             $path = public_path('images');
             

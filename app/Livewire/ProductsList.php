@@ -139,18 +139,45 @@ class ProductsList extends Component
             ]);
 
             if ($this->svgFile) {
-                // Store the new SVG file and get its filename
-                $filename = $this->svgFile->store('product-icons', 'public');
-                $iconValue = $filename;
+                // Only accept genuine, script-free SVGs, and store under a
+                // random name with a forced .svg extension so an attacker
+                // cannot land an executable file (e.g. .php) on the public
+                // disk via a crafted original filename.
+                $original = strtolower((string) $this->svgFile->getClientOriginalExtension());
+                $contents = @file_get_contents($this->svgFile->getRealPath());
+                if ($original !== 'svg' || $contents === false || ! $this->isSafeSvg($contents)) {
+                    $this->addError('svgFile', 'The icon must be a valid SVG with no scripts or embedded content.');
+                    return;
+                }
+                $iconValue = $this->svgFile->storeAs(
+                    'product-icons',
+                    \Illuminate\Support\Str::random(40) . '.svg',
+                    'public'
+                );
             } else {
                 // Retain the existing icon value if no new file is uploaded
                 $iconValue = $this->iconValue;
             }
         }
-        
-        // Handle photo upload
+
+        // Handle photo upload — accept only real raster images and force a
+        // safe, fixed extension on the stored filename.
         if ($this->photoFile) {
-            $photoPath = $this->photoFile->store('product-photos', 'public');
+            $this->validate([
+                'photoFile' => ['nullable', 'file', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:1024'],
+            ]);
+            $photoExtensionMap = [
+                'image/jpeg' => 'jpg',
+                'image/png'  => 'png',
+                'image/gif'  => 'gif',
+                'image/webp' => 'webp',
+            ];
+            $photoExt = $photoExtensionMap[$this->photoFile->getMimeType()] ?? 'jpg';
+            $photoPath = $this->photoFile->storeAs(
+                'product-photos',
+                \Illuminate\Support\Str::random(40) . '.' . $photoExt,
+                'public'
+            );
         } else {
             $photoPath = $this->photo;
         }
@@ -195,7 +222,35 @@ class ProductsList extends Component
         $this->closeModal();
         $this->loadProducts();
     }
-    
+
+    /**
+     * Reject SVGs that carry active content. This is a lightweight gate
+     * (not a full sanitizer): it blocks scripts, event handlers, external
+     * entities and embeddings that could execute if the file were opened
+     * directly in the browser.
+     */
+    private function isSafeSvg(string $svg): bool
+    {
+        $haystack = strtolower($svg);
+        if (! str_contains($haystack, '<svg')) {
+            return false;
+        }
+        $blocked = [
+            '<script', 'javascript:', '<foreignobject', '<iframe',
+            '<embed', '<object', '<!entity',
+        ];
+        foreach ($blocked as $needle) {
+            if (str_contains($haystack, $needle)) {
+                return false;
+            }
+        }
+        // Any inline event handler such as onload= / onclick=.
+        if (preg_match('/\son[a-z]+\s*=/i', $svg)) {
+            return false;
+        }
+        return true;
+    }
+
     public function saveCategory()
     {
         $user = Auth::user();

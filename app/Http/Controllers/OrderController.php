@@ -326,11 +326,12 @@ class OrderController extends Controller
     /**
      * Display order archives page with XML files.
      *
-     * Implementation plan:
-     * - Only allow access to editors (abort 403 otherwise)
-     * - Only show files belonging to the current editor (by folder or filename)
-     * - Files should be stored as: storage/app/public/archive/{editor_id}/orders_{editor_id}_YYYY-MM-DD_HH-ii-ss.xml
-     * - If not, filter by filename: orders_{editor_id}_*.xml
+     * - Editors only (abort 403 otherwise).
+     * - Only the current editor's own files are listed.
+     * - Files live OUTSIDE the public disk at:
+     *   storage/app/archive/{editor_id}/orders_{editor_id}_YYYY-MM-DD_HH-ii-ss.xml
+     * - Each row links to the authorized downloadArchive() route, never a
+     *   public storage URL.
      */
     public function archive()
     {
@@ -339,7 +340,9 @@ class OrderController extends Controller
             abort(403);
         }
         $editorId = $user->id;
-        $archiveDir = storage_path('app/public/archive/' . $editorId);
+        // Archives live outside the public disk; the listing only ever scans
+        // the caller's own per-editor directory.
+        $archiveDir = storage_path('app/archive/' . $editorId);
         $files = [];
         if (file_exists($archiveDir)) {
             $xmlFiles = glob($archiveDir . '/orders_' . $editorId . '_*.xml');
@@ -352,7 +355,9 @@ class OrderController extends Controller
                 $time = isset($matches[2]) ? str_replace('-', ':', $matches[2]) : '';
                 $files[] = [
                     'name' => $filename,
-                    'path' => 'storage/archive/' . $editorId . '/' . $filename,
+                    // Served through the authorized, ownership-checked route —
+                    // never a public/guessable storage URL.
+                    'download_url' => route('orders.archive.download', ['filename' => $filename]),
                     'size' => $this->formatFileSize($size),
                     'last_modified' => date('Y-m-d H:i:s', $lastModified),
                     'date' => $date,
@@ -364,6 +369,40 @@ class OrderController extends Controller
             });
         }
         return view('orders.archive', compact('files'));
+    }
+
+    /**
+     * Stream an order-archive XML file to its owning editor only.
+     *
+     * Archives are stored outside the public disk and contain customer/sales
+     * data, so every download is gated on (a) editor role, (b) a filename that
+     * matches the caller's own per-editor naming pattern, and (c) a realpath
+     * containment check that prevents traversal or symlink escape.
+     */
+    public function downloadArchive(string $filename)
+    {
+        $user = Auth::user();
+        if (!$user->is_editor) {
+            abort(403);
+        }
+        $editorId = $user->id;
+
+        // Filename must be exactly one of this editor's own archive files.
+        if (!preg_match('/^orders_' . $editorId . '_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.xml$/', $filename)) {
+            abort(404);
+        }
+
+        $dir = storage_path('app/archive/' . $editorId);
+        $realBase = realpath($dir);
+        $realPath = realpath($dir . '/' . $filename);
+        if ($realBase === false || $realPath === false
+            || !str_starts_with($realPath, $realBase . DIRECTORY_SEPARATOR)) {
+            abort(404);
+        }
+
+        return response()->download($realPath, $filename, [
+            'Content-Type' => 'application/xml',
+        ]);
     }
 
     /**
