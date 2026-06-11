@@ -78,11 +78,8 @@ class TablesList extends Component
     private function loadProducts()
     {
         $rawProducts = Product::all();
-        \Log::info('Raw products from database: ' . json_encode($rawProducts));
-        
+
         $this->products = $rawProducts->mapWithKeys(function ($product) {
-            \Log::info("Processing product {$product->id}: icon={$product->icon}, type={$product->icon_type}");
-            
             return [$product->id => [
                 'id' => $product->id,
                 'name' => $product->name,
@@ -91,8 +88,6 @@ class TablesList extends Component
                 'icon_type' => $product->icon_type
             ]];
         })->toArray();
-        
-        \Log::info('Processed products array: ' . json_encode($this->products));
     }
 
     #[On('refresh-tables')]

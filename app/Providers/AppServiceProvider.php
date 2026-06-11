@@ -21,7 +21,11 @@ class AppServiceProvider extends ServiceProvider
         /*--------------------------------------------------------------
         | 1.  Force every generated URL to live under /barmada/public
         --------------------------------------------------------------*/
-        URL::forceRootUrl(config('app.url'));               // APP_URL in .env
+        // Only force the root URL when APP_URL is actually configured; forcing
+        // an empty root URL would corrupt every generated link.
+        if ($appUrl = config('app.url')) {
+            URL::forceRootUrl($appUrl);               // APP_URL in .env
+        }
         if (app()->environment('production')) {
             URL::forceScheme('https');
         }

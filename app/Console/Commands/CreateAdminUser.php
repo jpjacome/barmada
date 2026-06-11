@@ -8,13 +8,19 @@ use Illuminate\Support\Facades\Hash;
 
 class CreateAdminUser extends Command
 {
-    protected $signature = 'user:create-admin {email} {password} {name?}';
+    protected $signature = 'user:create-admin {email} {password?} {name?}';
     protected $description = 'Create a new admin user';
 
     public function handle()
     {
         $email = $this->argument('email');
-        $password = $this->argument('password');
+        // Prefer a hidden prompt so the password is not exposed in shell
+        // history or the process list when omitted from the command line.
+        $password = $this->argument('password') ?: $this->secret('Password');
+        if (!$password) {
+            $this->error('A password is required.');
+            return self::FAILURE;
+        }
         $name = $this->argument('name') ?? 'Admin User';
 
         $user = User::create([

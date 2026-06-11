@@ -109,9 +109,6 @@ class ProductsList extends Component
         } else {
             $this->categories = collect();
         }
-        
-        // Log category scoping
-        \Log::info('Categories loaded for user ' . $user->id . ' (admin=' . ($user->is_admin ? '1' : '0') . ', editor=' . ($user->is_editor ? '1' : '0') . '): ' . $this->categories->pluck('id')->join(','));
     }
 
     #[On('refresh-products')]

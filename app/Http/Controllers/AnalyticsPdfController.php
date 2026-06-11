@@ -384,50 +384,63 @@ class AnalyticsPdfController extends Controller
         ];
         $callback = function() use ($months, $statsRows, $matrixRows, $serviceOpsStats, $productCategoryStats) {
             $file = fopen('php://output', 'w');
+            // Neutralize CSV formula injection: any cell that a spreadsheet
+            // could interpret as a formula is prefixed with a single quote.
+            $sanitize = function ($value) {
+                if (is_string($value) && $value !== ''
+                    && in_array($value[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
+                    return "'" . $value;
+                }
+                return $value;
+            };
+            $put = function ($handle, $row) use ($sanitize) {
+                $row = is_array($row) ? $row : [$row];
+                fputcsv($handle, array_map($sanitize, $row));
+            };
             // Monthly Stats
-            fputcsv($file, ['Monthly Stats']);
-            fputcsv($file, array_keys($months[0]));
+            $put($file, ['Monthly Stats']);
+            $put($file, array_keys($months[0]));
             foreach ($months as $row) {
-                fputcsv($file, $row);
+                $put($file, $row);
             }
-            fputcsv($file, []);
+            $put($file, []);
             // Stats by Range
-            fputcsv($file, ['Stats by Range']);
-            fputcsv($file, array_keys($statsRows[0]));
+            $put($file, ['Stats by Range']);
+            $put($file, array_keys($statsRows[0]));
             foreach ($statsRows as $row) {
-                fputcsv($file, $row);
+                $put($file, $row);
             }
-            fputcsv($file, []);
+            $put($file, []);
             // Product Sales Matrix
-            fputcsv($file, ['Product Sales Matrix']);
-            fputcsv($file, array_keys($matrixRows[0]));
+            $put($file, ['Product Sales Matrix']);
+            $put($file, array_keys($matrixRows[0]));
             foreach ($matrixRows as $row) {
-                fputcsv($file, $row);
+                $put($file, $row);
             }
-            fputcsv($file, []);
+            $put($file, []);
             // Service & Operations (Month)
-            fputcsv($file, ['Service & Operations (Month)']);
+            $put($file, ['Service & Operations (Month)']);
             foreach ($serviceOpsStats['month'] as $key => $val) {
                 if (is_array($val)) {
-                    fputcsv($file, [$key]);
+                    $put($file, [$key]);
                     foreach ($val as $item) {
-                        fputcsv($file, $item);
+                        $put($file, $item);
                     }
                 } else {
-                    fputcsv($file, [$key, $val]);
+                    $put($file, [$key, $val]);
                 }
             }
-            fputcsv($file, []);
+            $put($file, []);
             // Product Category Stats (Month)
-            fputcsv($file, ['Product Category Stats (Month)']);
+            $put($file, ['Product Category Stats (Month)']);
             foreach ($productCategoryStats['month'] as $key => $val) {
                 if (is_array($val)) {
-                    fputcsv($file, [$key]);
+                    $put($file, [$key]);
                     foreach ($val as $item) {
-                        fputcsv($file, $item);
+                        $put($file, $item);
                     }
                 } else {
-                    fputcsv($file, [$key, $val]);
+                    $put($file, [$key, $val]);
                 }
             }
             fclose($file);

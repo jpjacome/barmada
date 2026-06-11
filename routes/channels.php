@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
+// The "numbers" feature is deprecated (its routes redirect to the dashboard).
+// Deny broadcast authorization rather than authorizing every user.
 Broadcast::channel('numbers', function () {
-    return true; // Public channel, anyone can listen
-}); 
+    return false;
+});

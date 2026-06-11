@@ -98,12 +98,12 @@ class SettingsController extends Controller
         $currentTheme = session('theme', 'light');
         $newTheme = $currentTheme === 'light' ? 'dark' : 'light';
         
+        // Do not log session identifiers.
         \Log::info('Theme toggle', [
             'current_theme' => $currentTheme,
             'new_theme' => $newTheme,
-            'session_id' => session()->getId()
         ]);
-        
+
         // Store in session
         session(['theme' => $newTheme]);
         

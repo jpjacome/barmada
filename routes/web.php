@@ -79,9 +79,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
         $editors = User::where('is_editor', true)->paginate(10);
         return view('admin.editors', compact('editors'));
     })->name('admin.editors');
-    Route::post('/admin/impersonate/{id}', [ImpersonateController::class, 'impersonate'])->name('admin.impersonate');
-    Route::post('/admin/impersonate/leave', [ImpersonateController::class, 'leave'])->name('admin.impersonate.leave');
+    Route::post('/admin/impersonate/{id}', [ImpersonateController::class, 'impersonate'])->whereNumber('id')->name('admin.impersonate');
 });
+
+// Leaving impersonation must be reachable while authenticated as the
+// impersonated (non-admin) editor; the controller verifies an active
+// impersonation session before restoring the admin account.
+Route::post('/admin/impersonate/leave', [ImpersonateController::class, 'leave'])
+    ->middleware(['auth'])
+    ->name('admin.impersonate.leave');
 
 // Staff placeholder page (for editors)
 Route::middleware(['auth', 'editor'])->group(function () {
