@@ -473,28 +473,19 @@ class TablesList extends Component
     {
         $user = Auth::user();
         $editorName = $user->username; // Use username for QR links
+        $tenant = $user->is_admin ? $user : \App\Models\User::find($user->effectiveEditorId());
         return view('livewire.tables-list', [
-            'editorName' => $editorName
+            'editorName' => $editorName,
+            'currency' => $tenant ? $tenant->currencySymbol() : '$',
         ]);
     }
 
     protected function updateTableStatus($tableId)
     {
-        $table = Table::find($tableId);
-        if (!$table) return;
-        $orders = Order::where('table_id', $tableId)->get();
-        $totalLeft = 0;
-        foreach ($orders as $order) {
-            $order->refresh();
-            foreach ($order->items as $item) {
-                $item->refresh();
-                if (!$item->is_paid) {
-                    $totalLeft += $item->price;
-                }
-            }
-        }
-        $table->status = $totalLeft === 0 ? 'closed' : 'open';
-        $table->save();
+        // Payment completion no longer auto-closes the table [F-11]: closing
+        // a session (which kills the QR token and ejects seated guests who
+        // pay per round) must always be an explicit staff action via
+        // toggleTableStatus() or payAndCloseTable().
         $this->loadTables(); // Ensure UI and state are refreshed
     }
 

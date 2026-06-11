@@ -202,7 +202,7 @@
                                                     <span class="product-unit">#{{ $item['item_index'] }}</span>
                                                 </div>
                                                 <div class="product-item-right">
-                                                    <span class="product-price">€{{ number_format($item['price'], 2) }}</span>
+                                                    <span class="product-price">{{ $currency }}{{ number_format($item['price'], 2) }}</span>
                                                 </div>
                                             </div>
                                             <div class="product-item-status">
@@ -214,9 +214,9 @@
                                 
                                 <div class="order-footer">
                                     <div class="order-totals">
-                                        <span>Total: €{{ number_format($order['total_amount'], 2) }}</span>
-                                        <span>Paid: €{{ number_format($order['amount_paid'], 2) }}</span>
-                                        <span>Left: €{{ number_format($order['amount_left'], 2) }}</span>
+                                        <span>Total: {{ $currency }}{{ number_format($order['total_amount'], 2) }}</span>
+                                        <span>Paid: {{ $currency }}{{ number_format($order['amount_paid'], 2) }}</span>
+                                        <span>Left: {{ $currency }}{{ number_format($order['amount_left'], 2) }}</span>
                                     </div>
                                     <div class="order-actions">
                                         <button 
@@ -256,15 +256,15 @@
                         <div class="footer-summary">
                             <div class="footer-summary-item">
                                 <span class="footer-summary-label">Table Total:</span>
-                                <span class="footer-summary-value">€{{ number_format($tableTotal, 2) }}</span>
+                                <span class="footer-summary-value">{{ $currency }}{{ number_format($tableTotal, 2) }}</span>
                             </div>
                             <div class="footer-summary-item">
                                 <span class="footer-summary-label">Total Paid:</span>
-                                <span class="footer-summary-value footer-summary-paid">€{{ number_format($tablePaid, 2) }}</span>
+                                <span class="footer-summary-value footer-summary-paid">{{ $currency }}{{ number_format($tablePaid, 2) }}</span>
                             </div>
                             <div class="footer-summary-item">
                                 <span class="footer-summary-label">Total Left:</span>
-                                <span class="footer-summary-value">€{{ number_format($tableLeft, 2) }}</span>
+                                <span class="footer-summary-value">{{ $currency }}{{ number_format($tableLeft, 2) }}</span>
                             </div>
                         </div>
                         <div class="footer-actions">
