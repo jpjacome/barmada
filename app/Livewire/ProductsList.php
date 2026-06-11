@@ -126,14 +126,14 @@ class ProductsList extends Component
         $user = Auth::user();
         if ($this->iconType === 'bootstrap') {
             $this->validate([
-                'name' => 'required|min:3|max:255',
+                'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
                 'price' => 'required|numeric|min:0.01',
-                'bootstrapIcon' => 'required',
+                'bootstrapIcon' => ['required', 'regex:/^[a-z0-9 -]+$/i'],
             ]);
             $iconValue = $this->bootstrapIcon;
         } else {
             $this->validate([
-                'name' => 'required|min:3|max:255',
+                'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
                 'price' => 'required|numeric|min:0.01',
                 'svgFile' => 'nullable|file|max:1024',
             ]);

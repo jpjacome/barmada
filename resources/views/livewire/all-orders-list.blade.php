@@ -88,12 +88,12 @@
                                                     $iconType = $item['product']->icon_type ?? 'bootstrap';
                                                     
                                                     if ($iconType === 'bootstrap') {
-                                                        $iconHtml = "<i class='{$icon}'></i>";
+                                                        $iconHtml = "<i class='" . e($icon) . "'></i>";
                                                     } else {
-                                                        $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='order-product-icon'>";
+                                                        $iconHtml = "<img src='" . e(asset('storage/' . $icon)) . "' class='order-product-icon'>";
                                                     }
                                                     
-                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item['product']->name}</span>: {$item['quantity']}</span>";
+                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>" . e($item['product']->name) . "</span>: " . (int) $item['quantity'] . "</span>";
                                                 }
                                             @endphp
                                             
@@ -212,11 +212,11 @@
                                                     $icon = $item['product']->icon_value ?? 'bi-box';
                                                     $iconType = $item['product']->icon_type ?? 'bootstrap';
                                                     if ($iconType === 'bootstrap') {
-                                                        $iconHtml = "<i class='{$icon}'></i>";
+                                                        $iconHtml = "<i class='" . e($icon) . "'></i>";
                                                     } else {
-                                                        $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='order-product-icon'>";
+                                                        $iconHtml = "<img src='" . e(asset('storage/' . $icon)) . "' class='order-product-icon'>";
                                                     }
-                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$item['product']->name}</span>: {$item['quantity']}</span>";
+                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>" . e($item['product']->name) . "</span>: " . (int) $item['quantity'] . "</span>";
                                                 }
                                             @endphp
                                             @if(count($productList) > 0)

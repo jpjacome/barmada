@@ -42,12 +42,12 @@
                                                 $iconType = $products[$i]['icon_type'] ?? 'bootstrap';
                                                 
                                                 if ($iconType === 'bootstrap') {
-                                                    $iconHtml = "<i class='{$icon}'></i>";
+                                                    $iconHtml = "<i class='" . e($icon) . "'></i>";
                                                 } else {
-                                                    $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
+                                                    $iconHtml = "<img src='" . e(asset('storage/' . $icon)) . "' class='w-4 h-4 inline-block'>";
                                                 }
                                                 
-                                                $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$products[$i]['name']}</span>: {$qty}</span>";
+                                                $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>" . e($products[$i]['name']) . "</span>: " . (int) $qty . "</span>";
                                             }
                                         }
                                     @endphp
@@ -169,12 +169,12 @@
                                                     $iconType = $products[$item->product_id]['icon_type'] ?? 'bootstrap';
                                                     
                                                     if ($iconType === 'bootstrap') {
-                                                        $iconHtml = "<i class='{$icon}'></i>";
+                                                        $iconHtml = "<i class='" . e($icon) . "'></i>";
                                                     } else {
-                                                        $iconHtml = "<img src='" . asset('storage/' . $icon) . "' class='w-4 h-4 inline-block'>";
+                                                        $iconHtml = "<img src='" . e(asset('storage/' . $icon)) . "' class='w-4 h-4 inline-block'>";
                                                     }
                                                     
-                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>{$products[$item->product_id]['name']}</span>: {$item->quantity}</span>";
+                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>" . e($products[$item->product_id]['name']) . "</span>: " . (int) $item->quantity . "</span>";
                                                 }
                                             @endphp
                                             
