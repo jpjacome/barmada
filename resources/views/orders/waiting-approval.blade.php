@@ -18,8 +18,11 @@
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var tableId = @json($table->id);
+        var tableId = @json(isset($table) && $table ? $table->id : null);
         var pollInterval = 3000; // 3 seconds
+        if (!tableId) {
+            return; // No table context (e.g. direct visit): nothing to poll.
+        }
         function pollStatus() {
             fetch('{{ url("/poll-table-status") }}/' + tableId)
                 .then(response => response.json())

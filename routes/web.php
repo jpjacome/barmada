@@ -52,11 +52,16 @@ Route::get('/order', [OrderController::class, 'orderEntry'])->middleware(['auth'
 Route::post('/order', [OrderController::class, 'store'])->middleware(['auth'])->name('orders.store');
 Route::get('/order/confirmation', [OrderController::class, 'confirmation'])->name('orders.confirmation');
 
-// Guest-accessible (QR/unique token) order flows (with ip.approved)
+// Guest-accessible (QR/unique token) order flows. The informational
+// waiting page is public; the order form and submission are gated by
+// device approval (ip.approved) and the submission is rate limited.
 Route::get('/orders/waiting-approval', function () {
     return view('orders.waiting-approval');
-})->middleware(['ip.approved'])->name('orders.waiting-approval');
-Route::post('/order/{unique_token}', [TableController::class, 'storeGuestOrder'])->withoutMiddleware(['web'])->name('order.guest.store');
+})->name('orders.waiting-approval');
+Route::post('/order/{unique_token}', [TableController::class, 'storeGuestOrder'])
+    ->withoutMiddleware(['web'])
+    ->middleware(['ip.approved', 'throttle:60,1'])
+    ->name('order.guest.store');
 
 // Admin-only routes
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -112,14 +117,20 @@ Route::get('/numbers/livewire', function() {
     return redirect()->route('products.index');
 })->name('numbers.livewire');
 
-// Add a route to handle redirection based on the unique token
-Route::get('/order/{unique_token}', [TableController::class, 'redirectToOrder'])->name('order.redirect');
+// Order form via unique token: device approval enforced
+Route::get('/order/{unique_token}', [TableController::class, 'redirectToOrder'])
+    ->middleware(['ip.approved'])
+    ->name('order.redirect');
 
 // QR Entry route for customers scanning the QR code at the table
-Route::get('/qr-entry/{editorname}/{table_number}', [OrderController::class, 'qrEntry'])->name('orders.qr-entry');
+// (creates approval requests — rate limited)
+Route::get('/qr-entry/{editorname}/{table_number}', [OrderController::class, 'qrEntry'])
+    ->middleware(['throttle:30,1'])
+    ->name('orders.qr-entry');
 
-// Polling endpoint for table status
-Route::get('/poll-table-status/{table}', [OrderController::class, 'pollTableStatus']);
+// Polling endpoint for table status (rate limited)
+Route::get('/poll-table-status/{table}', [OrderController::class, 'pollTableStatus'])
+    ->middleware(['throttle:120,1']);
 
 // API route for fetching order data (authenticated; ownership enforced in controller)
 Route::get('/api/orders/{order}', [OrderController::class, 'getOrderData'])->middleware(['auth']);

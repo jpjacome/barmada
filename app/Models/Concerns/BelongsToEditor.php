@@ -43,12 +43,18 @@ trait BelongsToEditor
     }
 
     /**
-     * Constrain a query to one editor explicitly (admin contexts).
+     * Constrain a query to one editor explicitly (admin and guest-flow
+     * contexts). A null tenant matches nothing — records without a
+     * tenant are never reachable through tenant-bounded lookups.
      */
-    public function scopeForEditor(Builder $query, int $editorId): Builder
+    public function scopeForEditor(Builder $query, ?int $editorId): Builder
     {
-        return $query
-            ->withoutGlobalScope(EditorScope::class)
-            ->where($query->getModel()->qualifyColumn('editor_id'), $editorId);
+        $query->withoutGlobalScope(EditorScope::class);
+
+        if ($editorId === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where($query->getModel()->qualifyColumn('editor_id'), $editorId);
     }
 }

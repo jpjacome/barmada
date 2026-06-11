@@ -150,11 +150,14 @@ class OrdersList extends Component
         // Delete all existing order items
         $order->items()->delete();
         
-        // Create new order items
+        // Create new order items. editingOrder is a client-controlled
+        // Livewire property: bound quantities and resolve products within
+        // the order's tenant only.
         $itemIndex = 0;
         foreach ($this->editingOrder['products'] as $productId => $quantity) {
+            $quantity = min(99, max(0, (int) $quantity));
             if ($quantity > 0) {
-                $product = Product::findOrFail($productId);
+                $product = Product::forEditor($order->editor_id)->findOrFail($productId);
                 // Create individual order items for each unit
                 for ($i = 0; $i < $quantity; $i++) {
                     OrderItem::create([

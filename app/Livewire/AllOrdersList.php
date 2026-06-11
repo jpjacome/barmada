@@ -269,14 +269,14 @@ class AllOrdersList extends Component
     public function updateProductQuantity($productId, $quantity)
     {
         if (!$this->editingOrder) return;
-        $this->editingOrder['products'][$productId] = max(0, intval($quantity));
+        $this->editingOrder['products'][$productId] = min(99, max(0, intval($quantity)));
     }
 
     public function incrementProductQuantity($productId)
     {
         if (!$this->editingOrder) return;
         $currentQuantity = $this->editingOrder['products'][$productId] ?? 0;
-        $this->editingOrder['products'][$productId] = $currentQuantity + 1;
+        $this->editingOrder['products'][$productId] = min(99, $currentQuantity + 1);
     }
 
     public function decrementProductQuantity($productId)
@@ -300,11 +300,14 @@ class AllOrdersList extends Component
             // Delete all existing items
             $order->items()->delete();
             
-            // Create new items with correct quantities
+            // Create new items with correct quantities. editingOrder is a
+            // client-controlled Livewire property: bound quantities and
+            // resolve products within the order's tenant only.
             $itemIndex = 0;
             foreach ($this->editingOrder['products'] as $productId => $quantity) {
+                $quantity = min(99, max(0, (int) $quantity));
                 if ($quantity > 0) {
-                    $product = Product::find($productId);
+                    $product = Product::forEditor($order->editor_id)->find($productId);
                     if (! $product) {
                         continue;
                     }

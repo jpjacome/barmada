@@ -162,12 +162,13 @@ class TableController extends Controller
     {
         $table = Table::where('unique_token', $unique_token)->first();
         if (!$table || $table->status !== 'open') {
-            return redirect()->route('orders.waiting-approval')->withErrors(['error' => 'Table is not open or does not exist.']);
+            // Stateless route: no session flash available, plain redirect.
+            return redirect()->route('orders.waiting-approval');
         }
 
         $validated = $request->validate([
-            'products' => 'required|array',
-            'products.*' => 'integer|min:1',
+            'products' => 'required|array|min:1|max:50',
+            'products.*' => 'integer|min:1|max:99',
         ]);
 
         // Find the current open TableSession for this table
@@ -177,7 +178,20 @@ class TableController extends Controller
             ->first();
 
         if (!$currentSession) {
-            return redirect()->route('orders.waiting-approval')->withErrors(['error' => 'No open session for this table.']);
+            // Stateless route: no session flash available, plain redirect.
+            return redirect()->route('orders.waiting-approval');
+        }
+
+        // Resolve products up front; every product must belong to the
+        // table's tenant. Rejecting before the order row exists avoids
+        // persisting partial orders.
+        $products = [];
+        foreach (array_keys($validated['products']) as $productId) {
+            $product = \App\Models\Product::forEditor($table->editor_id)->find($productId);
+            if (! $product) {
+                abort(422, 'Invalid product for this table.');
+            }
+            $products[$productId] = $product;
         }
 
         // Create the order
@@ -192,7 +206,7 @@ class TableController extends Controller
         $totalAmount = 0;
         $itemIndex = 0; // Initialize item index
         foreach ($validated['products'] as $productId => $quantity) {
-            $product = \App\Models\Product::find($productId);
+            $product = $products[$productId];
             for ($i = 0; $i < $quantity; $i++) {
                 $order->items()->create([
                     'product_id' => $productId,

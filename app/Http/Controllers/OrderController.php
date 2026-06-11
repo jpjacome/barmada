@@ -120,8 +120,8 @@ class OrderController extends Controller
         $user = Auth::user();
         $validated = $request->validate([
             'table_id' => 'required|exists:tables,id',
-            'products' => 'required|array',
-            'products.*' => 'integer|min:0',
+            'products' => 'required|array|max:50',
+            'products.*' => 'integer|min:0|max:99',
         ]);
         
         // Check if any products were ordered
@@ -155,8 +155,10 @@ class OrderController extends Controller
             return redirect()->back()->withErrors(['table_id' => 'No open session for this table. Please open the table first.']);
         }
         
-        // Assign editor_id: admin uses table's editor, editor uses own, guest uses table's editor
-        $editorId = $user && $user->is_admin ? $table->editor_id : ($user ? $user->id : $table->editor_id);
+        // Assign editor_id: admins record the table's tenant; editors and
+        // staff record their own tenant (a staff user's editor, not the
+        // staff user's id).
+        $editorId = $user->is_admin ? $table->editor_id : $user->effectiveEditorId();
         
         // Create the order
         $order = Order::create([
@@ -175,7 +177,9 @@ class OrderController extends Controller
         
         foreach ($validated['products'] as $productId => $quantity) {
             if ($quantity > 0) {
-                $product = Product::findOrFail($productId);
+                // Products must belong to the table's tenant (also bounds
+                // admin-created orders to the right catalog).
+                $product = Product::forEditor($table->editor_id)->findOrFail($productId);
                 $price = $product->price;
                 $totalAmount += $quantity * $price;
                 
