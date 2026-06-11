@@ -9,12 +9,13 @@ use App\Models\Product;
 use App\Models\Table;
 use App\Models\TableSessionRequest;
 use App\Models\TableSession;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class AllOrdersList extends Component
 {
-    use WithPagination;
+    use AuthorizesRequests, WithPagination;
 
     public $products = [];
     public $sort = 'created_at';
@@ -48,21 +49,8 @@ class AllOrdersList extends Component
 
     public function loadTables()
     {
-        $user = Auth::user();
-        // Only show tables for the current editor (or all if admin)
-        if ($user->is_admin) {
-            $this->tables = Table::whereIn('status', ['pending_approval', 'open'])->get();
-        } else if ($user->is_editor) {
-            $this->tables = Table::where('editor_id', $user->id)
-                ->whereIn('status', ['pending_approval', 'open'])
-                ->get();
-        } else if ($user->is_staff) {
-            $this->tables = Table::where('editor_id', $user->editor_id)
-                ->whereIn('status', ['pending_approval', 'open'])
-                ->get();
-        } else {
-            $this->tables = collect();
-        }
+        // EditorScope bounds this query to the caller's tenant; admins see all.
+        $this->tables = Table::whereIn('status', ['pending_approval', 'open'])->get();
         $this->activeTables = $this->tables->map(function ($table) {
             // For open tables, get the current session
             $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
@@ -97,12 +85,13 @@ class AllOrdersList extends Component
 
     public function loadPendingOrders()
     {
-        $user = Auth::user();
-        $query = Order::where('status', 'pending')->with(['table', 'items.product']);
-        if (!$user->is_admin) {
-            $query->where('editor_id', $user->id);
-        }
-        $this->pendingOrders = $query->orderBy('created_at', 'desc')->limit(100)->get()->toArray();
+        // EditorScope bounds this query to the caller's tenant; admins see all.
+        $this->pendingOrders = Order::where('status', 'pending')
+            ->with(['table', 'items.product'])
+            ->orderBy('created_at', 'desc')
+            ->limit(100)
+            ->get()
+            ->toArray();
     }
 
     protected function initializeOrderDetails()
@@ -205,6 +194,7 @@ class AllOrdersList extends Component
     {
         $order = Order::find($orderId);
         if ($order) {
+            $this->authorize('update', $order);
             $order->status = $order->status === 'pending' ? 'delivered' : 'pending';
             $order->save();
             
@@ -219,6 +209,7 @@ class AllOrdersList extends Component
     public function openStatusModal($orderId)
     {
         $order = Order::with('items.product')->findOrFail($orderId);
+        $this->authorize('update', $order);
         $this->editingOrder = [
             'id' => $order->id,
             'status' => $order->status,
@@ -248,6 +239,7 @@ class AllOrdersList extends Component
         if ($this->editingOrder) {
             $order = Order::find($this->editingOrder['id']);
             if ($order) {
+                $this->authorize('update', $order);
                 $order->status = $order->status === 'pending' ? 'delivered' : 'pending';
                 $order->save();
                 
@@ -299,8 +291,11 @@ class AllOrdersList extends Component
         $order = Order::with('items')->find($this->editingOrder['id']);
         
         if ($order) {
-            // Update table
-            $order->table_id = $this->editingOrder['table_id'];
+            $this->authorize('update', $order);
+
+            // The target table must resolve within the caller's tenant.
+            $targetTable = Table::findOrFail($this->editingOrder['table_id']);
+            $order->table_id = $targetTable->id;
             
             // Delete all existing items
             $order->items()->delete();
@@ -310,6 +305,9 @@ class AllOrdersList extends Component
             foreach ($this->editingOrder['products'] as $productId => $quantity) {
                 if ($quantity > 0) {
                     $product = Product::find($productId);
+                    if (! $product) {
+                        continue;
+                    }
                     $order->items()->create([
                         'product_id' => $productId,
                         'quantity' => $quantity,
@@ -335,6 +333,7 @@ class AllOrdersList extends Component
         $order = Order::find($orderId);
         
         if ($order) {
+            $this->authorize('delete', $order);
             $order->delete();
             
             // Force refresh both lists
@@ -350,8 +349,11 @@ class AllOrdersList extends Component
 
     public function deleteAllOrders()
     {
-        // First delete all order items
-        \App\Models\OrderItem::query()->delete();
+        $this->authorize('deleteAll', Order::class);
+
+        // EditorScope bounds both deletes to the caller's tenant; admins
+        // clear across tenants explicitly through this action.
+        \App\Models\OrderItem::whereIn('order_id', Order::query()->select('id'))->delete();
         
         // Then delete all orders
         Order::query()->delete();
@@ -426,6 +428,7 @@ class AllOrdersList extends Component
     {
         $order = \App\Models\Order::find($orderId);
         if ($order && $order->status === 'pending_approval') {
+            $this->authorize('update', $order);
             $table = \App\Models\Table::find($order->table_id);
             if ($table) {
                 // Set table status to open (triggers unique token generation)
@@ -447,6 +450,7 @@ class AllOrdersList extends Component
     {
         $table = \App\Models\Table::find($tableId);
         if ($table && $table->status === 'pending_approval') {
+            $this->authorize('update', $table);
             $table->status = 'open';
             $table->save();
             // Optionally: notify the customer (they will be redirected by polling)
@@ -459,6 +463,7 @@ class AllOrdersList extends Component
     {
         $table = Table::find($tableId);
         if ($table && $table->status === 'pending_approval') {
+            $this->authorize('update', $table);
             // Open the table
             $table->status = 'open';
             $table->save();
@@ -485,6 +490,11 @@ class AllOrdersList extends Component
     {
         $request = TableSessionRequest::find($requestId);
         if ($request && $request->status === 'pending' && $request->table_session_id) {
+            // Resolving the session through EditorScope enforces ownership;
+            // sessions outside the caller's tenant resolve to null.
+            if (! TableSession::find($request->table_session_id)) {
+                return;
+            }
             $request->status = 'approved';
             $request->approved_at = now();
             $request->save();
@@ -500,15 +510,19 @@ class AllOrdersList extends Component
 
     public function render()
     {
-        $user = Auth::user();
+        // EditorScope bounds this query to the caller's tenant; admins see all.
         $query = Order::with(['table', 'items.product']);
 
-        if (!$user->is_admin) {
-            $query->where('editor_id', $user->id);
-        }
 
         // Only show orders from the last 2 days
         $query->where('created_at', '>=', Carbon::now()->subDays(1)->startOfDay());
+
+        // Sorting input is client-controlled; constrain to known columns.
+        $allowedSorts = ['created_at', 'updated_at', 'id', 'status', 'total_amount', 'table_id'];
+        if (! in_array($this->sort, $allowedSorts, true)) {
+            $this->sort = 'created_at';
+        }
+        $this->direction = $this->direction === 'asc' ? 'asc' : 'desc';
 
         if ($this->sort === 'table_id') {
             $query->join('tables', 'orders.table_id', '=', 'tables.id')
