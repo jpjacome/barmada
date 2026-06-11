@@ -64,6 +64,43 @@
                             <p class="settings-form-error">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div class="settings-form-group">
+                        <label for="business_timezone" class="settings-form-label">Venue timezone</label>
+                        @php
+                            $commonTimezones = [
+                                'UTC', 'America/Guayaquil', 'America/Bogota', 'America/Lima', 'America/Mexico_City',
+                                'America/Argentina/Buenos_Aires', 'America/Santiago', 'America/Sao_Paulo', 'America/Caracas',
+                                'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+                                'Europe/Madrid', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Rome',
+                                'Europe/Lisbon', 'Atlantic/Canary',
+                            ];
+                            $currentTz = auth()->user()->businessTimezone();
+                            if (! in_array($currentTz, $commonTimezones)) {
+                                array_unshift($commonTimezones, $currentTz);
+                            }
+                        @endphp
+                        <select name="business_timezone" id="business_timezone" class="settings-form-input">
+                            @foreach($commonTimezones as $tz)
+                                <option value="{{ $tz }}" {{ $currentTz === $tz ? 'selected' : '' }}>{{ $tz }}</option>
+                            @endforeach
+                        </select>
+                        <p class="settings-form-helper">Used to bucket your analytics by your local clock.</p>
+                        @error('business_timezone')
+                            <p class="settings-form-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="settings-form-group">
+                        <label for="day_cutoff_hour" class="settings-form-label">Business day starts at</label>
+                        <select name="day_cutoff_hour" id="day_cutoff_hour" class="settings-form-input">
+                            @for($hour = 0; $hour <= 12; $hour++)
+                                <option value="{{ $hour }}" {{ auth()->user()->dayCutoffHour() === $hour ? 'selected' : '' }}>{{ sprintf('%02d:00', $hour) }}</option>
+                            @endfor
+                        </select>
+                        <p class="settings-form-helper">Sales after midnight but before this hour count toward the previous day — a Friday night ends on "Friday".</p>
+                        @error('day_cutoff_hour')
+                            <p class="settings-form-error">{{ $message }}</p>
+                        @enderror
+                    </div>
                     <div class="settings-form-actions">
                         <button type="submit" class="settings-button">Save Business Settings</button>
                     </div>

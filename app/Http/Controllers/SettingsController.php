@@ -106,13 +106,22 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'currency_symbol' => ['required', 'string', 'max:5', 'regex:/^[^<>"\']+$/u'],
             'locale' => ['required', 'in:en,es'],
+            'business_timezone' => ['nullable', 'timezone:all'],
+            'day_cutoff_hour' => ['nullable', 'integer', 'min:0', 'max:12'],
         ]);
 
         // Not mass-assignable by design; set explicitly from validated input.
         $user->forceFill([
             'currency_symbol' => $validated['currency_symbol'],
             'locale' => $validated['locale'],
-        ])->save();
+        ]);
+        if (array_key_exists('business_timezone', $validated) && $validated['business_timezone'] !== null) {
+            $user->forceFill(['business_timezone' => $validated['business_timezone']]);
+        }
+        if (array_key_exists('day_cutoff_hour', $validated) && $validated['day_cutoff_hour'] !== null) {
+            $user->forceFill(['day_cutoff_hour' => (int) $validated['day_cutoff_hour']]);
+        }
+        $user->save();
 
         return redirect()->route('settings.index')
             ->with('success', 'Business settings updated.');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\BusinessDay;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -20,13 +21,12 @@ class AnalyticsPdfController extends Controller
         // --- Monthly Stats ---
         $months = [];
         for ($i = 0; $i < 12; $i++) {
-            $date = now()->copy()->subMonths($i);
-            $month = $date->month;
-            $year = $date->year;
+            // Business months in the venue's timezone + cutoff. [F-22]
+            [$mFrom, $mTo, $date] = BusinessDay::monthRangeUtc(auth()->user(), $i);
             $query = \App\Models\Order::query()
                 ->where('editor_id', $editorId)
-                ->whereMonth('created_at', $month)
-                ->whereYear('created_at', $year);
+                ->where('created_at', '>=', $mFrom)
+                ->where('created_at', '<', $mTo);
             $orders = $query->with(['items.product'])->get();
             $orderCount = $orders->count();
             $totalSales = $orders->sum('total_amount');
@@ -43,7 +43,7 @@ class AnalyticsPdfController extends Controller
             $topProduct = $topProductId ? (\App\Models\Product::find($topProductId)->name ?? null) : null;
             $hourCounts = [];
             foreach ($orders as $order) {
-                $hour = $order->created_at->format('H:00');
+                $hour = BusinessDay::localHour(auth()->user(), $order->created_at);
                 $hourCounts[$hour] = ($hourCounts[$hour] ?? 0) + 1;
             }
             arsort($hourCounts);
@@ -68,9 +68,10 @@ class AnalyticsPdfController extends Controller
         $allProductNames = collect();
         $productSales = [];
         foreach ($periods as $key => $period) {
-            $from = now()->copy()->subDays($period['days'] - 1)->startOfDay();
+            [$pFrom, $pTo] = BusinessDay::rangeUtc(auth()->user(), $key);
             $orders = \App\Models\Order::where('editor_id', $editorId)
-                ->where('created_at', '>=', $from)
+                ->where('created_at', '>=', $pFrom)
+                ->where('created_at', '<', $pTo)
                 ->with('items.product')
                 ->get();
             $stats = [];
@@ -131,13 +132,12 @@ class AnalyticsPdfController extends Controller
         // --- Monthly Stats ---
         $months = [];
         for ($i = 0; $i < 12; $i++) {
-            $date = now()->copy()->subMonths($i);
-            $month = $date->month;
-            $year = $date->year;
+            // Business months in the venue's timezone + cutoff. [F-22]
+            [$mFrom, $mTo, $date] = BusinessDay::monthRangeUtc(auth()->user(), $i);
             $query = \App\Models\Order::query()
                 ->where('editor_id', $editorId)
-                ->whereMonth('created_at', $month)
-                ->whereYear('created_at', $year);
+                ->where('created_at', '>=', $mFrom)
+                ->where('created_at', '<', $mTo);
             $orders = $query->with(['items.product'])->get();
             $orderCount = $orders->count();
             $totalSales = $orders->sum('total_amount');
@@ -154,7 +154,7 @@ class AnalyticsPdfController extends Controller
             $topProduct = $topProductId ? (\App\Models\Product::find($topProductId)->name ?? null) : null;
             $hourCounts = [];
             foreach ($orders as $order) {
-                $hour = $order->created_at->format('H:00');
+                $hour = BusinessDay::localHour(auth()->user(), $order->created_at);
                 $hourCounts[$hour] = ($hourCounts[$hour] ?? 0) + 1;
             }
             arsort($hourCounts);
@@ -179,9 +179,10 @@ class AnalyticsPdfController extends Controller
         $allProductNames = collect();
         $productSales = [];
         foreach ($periods as $key => $period) {
-            $from = now()->copy()->subDays($period['days'] - 1)->startOfDay();
+            [$pFrom, $pTo] = BusinessDay::rangeUtc(auth()->user(), $key);
             $orders = \App\Models\Order::where('editor_id', $editorId)
-                ->where('created_at', '>=', $from)
+                ->where('created_at', '>=', $pFrom)
+                ->where('created_at', '<', $pTo)
                 ->with('items.product')
                 ->get();
             $stats = [];
@@ -254,13 +255,12 @@ class AnalyticsPdfController extends Controller
         // --- Monthly Stats ---
         $months = [];
         for ($i = 0; $i < 12; $i++) {
-            $date = now()->copy()->subMonths($i);
-            $month = $date->month;
-            $year = $date->year;
+            // Business months in the venue's timezone + cutoff. [F-22]
+            [$mFrom, $mTo, $date] = BusinessDay::monthRangeUtc(auth()->user(), $i);
             $query = \App\Models\Order::query()
                 ->where('editor_id', $editorId)
-                ->whereMonth('created_at', $month)
-                ->whereYear('created_at', $year);
+                ->where('created_at', '>=', $mFrom)
+                ->where('created_at', '<', $mTo);
             $orders = $query->with(['items.product'])->get();
             $orderCount = $orders->count();
             $totalSales = $orders->sum('total_amount');
@@ -277,7 +277,7 @@ class AnalyticsPdfController extends Controller
             $topProduct = $topProductId ? (\App\Models\Product::find($topProductId)->name ?? null) : null;
             $hourCounts = [];
             foreach ($orders as $order) {
-                $hour = $order->created_at->format('H:00');
+                $hour = BusinessDay::localHour(auth()->user(), $order->created_at);
                 $hourCounts[$hour] = ($hourCounts[$hour] ?? 0) + 1;
             }
             arsort($hourCounts);
@@ -296,13 +296,10 @@ class AnalyticsPdfController extends Controller
         $ranges = ['today', '7days', '30days', 'month'];
         $statsRows = [];
         foreach ($ranges as $range) {
-            $query = \App\Models\Order::query()->where('editor_id', $editorId);
-            switch ($range) {
-                case 'today': $query->whereDate('created_at', $now->toDateString()); break;
-                case '7days': $query->where('created_at', '>=', $now->copy()->subDays(7)->startOfDay()); break;
-                case '30days': $query->where('created_at', '>=', $now->copy()->subDays(30)->startOfDay()); break;
-                case 'month': $query->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year); break;
-            }
+            [$rFrom, $rTo] = BusinessDay::rangeUtc(auth()->user(), $range);
+            $query = \App\Models\Order::query()->where('editor_id', $editorId)
+                ->where('created_at', '>=', $rFrom)
+                ->where('created_at', '<', $rTo);
             $orders = $query->with(['items.product'])->get();
             $orderCount = $orders->count();
             $totalSales = $orders->sum('total_amount');
@@ -319,7 +316,7 @@ class AnalyticsPdfController extends Controller
             $topProduct = $topProductId ? (\App\Models\Product::find($topProductId)->name ?? null) : null;
             $hourCounts = [];
             foreach ($orders as $order) {
-                $hour = $order->created_at->format('H:00');
+                $hour = BusinessDay::localHour(auth()->user(), $order->created_at);
                 $hourCounts[$hour] = ($hourCounts[$hour] ?? 0) + 1;
             }
             arsort($hourCounts);
@@ -343,9 +340,10 @@ class AnalyticsPdfController extends Controller
         $allProductNames = collect();
         $productSales = [];
         foreach ($periods as $key => $period) {
-            $from = now()->copy()->subDays($period['days'] - 1)->startOfDay();
+            [$pFrom, $pTo] = BusinessDay::rangeUtc(auth()->user(), $key);
             $orders = \App\Models\Order::where('editor_id', $editorId)
-                ->where('created_at', '>=', $from)
+                ->where('created_at', '>=', $pFrom)
+                ->where('created_at', '<', $pTo)
                 ->with('items.product')
                 ->get();
             $stats = [];
@@ -453,15 +451,13 @@ class AnalyticsPdfController extends Controller
     // Helper methods copied from Livewire component for PDF export
     private function aggregateServiceOpsStats($range, $editorId)
     {
-        $now = now();
-        $sessionQuery = \App\Models\TableSession::query()->where('editor_id', $editorId);
-        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId);
-        $activityQuery = \App\Models\ActivityLog::query()->where('editor_id', $editorId);
-        switch ($range) {
-            case 'today': $sessionQuery->whereDate('opened_at', $now->toDateString()); $orderQuery->whereDate('created_at', $now->toDateString()); $activityQuery->whereDate('created_at', $now->toDateString()); break;
-            case 'month': $sessionQuery->whereMonth('opened_at', $now->month)->whereYear('opened_at', $now->year); $orderQuery->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year); $activityQuery->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year); break;
-            default: $sessionQuery->whereDate('opened_at', $now->toDateString()); $orderQuery->whereDate('created_at', $now->toDateString()); $activityQuery->whereDate('created_at', $now->toDateString());
-        }
+        [$from, $to] = BusinessDay::rangeUtc(auth()->user(), $range);
+        $sessionQuery = \App\Models\TableSession::query()->where('editor_id', $editorId)
+            ->where('opened_at', '>=', $from)->where('opened_at', '<', $to);
+        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId)
+            ->where('created_at', '>=', $from)->where('created_at', '<', $to);
+        $activityQuery = \App\Models\ActivityLog::query()->where('editor_id', $editorId)
+            ->where('created_at', '>=', $from)->where('created_at', '<', $to);
         $sessions = $sessionQuery->get();
         $orders = $orderQuery->with('table')->get();
         $activities = $activityQuery->get();
@@ -501,11 +497,11 @@ class AnalyticsPdfController extends Controller
         if (count($qrTimes)) {
             $avgTimeQrToOrder = round(array_sum($qrTimes) / count($qrTimes) / 60, 2);
         }
-        $staffOrderCounts = $orders->groupBy('user_id')->map->count();
+        $staffOrderCounts = $orders->groupBy('created_by')->map->count();
         $staffOrderCountsArr = [];
         foreach ($staffOrderCounts as $uid => $count) {
-            $user = $uid ? (\App\Models\User::find($uid)->name ?? $uid) : 'Unknown';
-            $staffOrderCountsArr[] = ['name' => $user, 'orders' => $count];
+            $name = $uid ? (\App\Models\User::find($uid)->name ?? ('User #'.$uid)) : 'Guests (QR)';
+            $staffOrderCountsArr[] = ['name' => $name, 'orders' => $count];
         }
         $tableUsage = $orders->groupBy('table_id')->map->count();
         $tableUsageArr = [];
@@ -530,12 +526,10 @@ class AnalyticsPdfController extends Controller
 
     private function aggregateProductCategoryStats($range, $editorId)
     {
-        $now = now();
-        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId);
-        switch ($range) {
-            case 'month': $orderQuery->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year); break;
-            default: $orderQuery->whereDate('created_at', $now->toDateString());
-        }
+        [$from, $to] = BusinessDay::rangeUtc(auth()->user(), $range);
+        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId)
+            ->where('created_at', '>=', $from)
+            ->where('created_at', '<', $to);
         $orders = $orderQuery->with(['items.product'])->get();
         $productStats = [];
         $categoryStats = [];
