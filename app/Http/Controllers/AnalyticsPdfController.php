@@ -114,6 +114,7 @@ class AnalyticsPdfController extends Controller
             'productSalesMatrix' => $productSalesMatrix,
             'serviceOpsStats' => $serviceOpsStats,
             'productCategoryStats' => $productCategoryStats,
+            'currency' => $user ? $user->currencySymbol() : '$',
         ]);
         return $pdf->download('analytics-dashboard.pdf');
     }
@@ -235,6 +236,7 @@ class AnalyticsPdfController extends Controller
             'serviceOpsStats' => $serviceOpsStats,
             'productCategoryStats' => $productCategoryStats,
             'chartImages' => $chartImages,
+            'currency' => $user ? $user->currencySymbol() : '$',
         ]);
         return $pdf->download('analytics-dashboard.pdf');
     }

@@ -80,8 +80,11 @@ class AnalyticsDashboard extends Component
 
     public $productSalesMatrix = [];
 
+    public $currency = '$';
+
     public function mount()
     {
+        $this->currency = auth()->user() ? auth()->user()->currencySymbol() : '$';
         $this->fetchAllStats();
         $this->fetchAllProductCategoryStats();
         $this->fetchAllServiceOpsStats();
@@ -423,7 +426,7 @@ class AnalyticsDashboard extends Component
             'data' => [
                 'labels' => $labels,
                 'datasets' => [[
-                    'label' => 'Sales (€)',
+                    'label' => 'Sales ('.$this->currency.')',
                     'data' => $data,
                     'borderColor' => 'rgba(75, 192, 192, 1)',
                     'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
@@ -466,7 +469,7 @@ class AnalyticsDashboard extends Component
             'data' => [
                 'labels' => $labels,
                 'datasets' => [[
-                    'label' => 'Sales (€)',
+                    'label' => 'Sales ('.$this->currency.')',
                     'data' => $data,
                     'borderColor' => 'rgba(255, 159, 64, 1)',
                     'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
@@ -508,7 +511,7 @@ class AnalyticsDashboard extends Component
             'data' => [
                 'labels' => $labels,
                 'datasets' => [[
-                    'label' => 'Sales (€)',
+                    'label' => 'Sales ('.$this->currency.')',
                     'data' => $data,
                     'borderColor' => 'rgba(54, 162, 235, 1)',
                     'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
@@ -600,7 +603,7 @@ class AnalyticsDashboard extends Component
                 'data' => $data,
                 'orders' => $ordersArr,
                 'datasets' => [[
-                    'label' => 'Revenue (€)',
+                    'label' => 'Revenue ('.$this->currency.')',
                     'data' => $data,
                     'backgroundColor' => $barColors,
                     'borderColor' => $borderColors,

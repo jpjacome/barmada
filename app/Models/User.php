@@ -77,6 +77,22 @@ class User extends Authenticatable
         return null;
     }
 
+    /**
+     * Currency symbol shown anywhere money is rendered for this tenant.
+     */
+    public function currencySymbol(): string
+    {
+        return $this->currency_symbol ?: '$';
+    }
+
+    /**
+     * Locale used on the guest-facing (QR ordering) pages of this tenant.
+     */
+    public function guestLocale(): string
+    {
+        return $this->locale ?: 'es';
+    }
+
     public function tables()
     {
         return $this->hasMany(Table::class, 'editor_id');
