@@ -121,9 +121,9 @@ Route::get('/qr-entry/{editorname}/{table_number}', [OrderController::class, 'qr
 // Polling endpoint for table status
 Route::get('/poll-table-status/{table}', [OrderController::class, 'pollTableStatus']);
 
-// API route for fetching order data
-Route::get('/api/orders/{order}', [OrderController::class, 'getOrderData']);
-Route::put('/orders/{order}', [OrderController::class, 'updateOrder'])->name('orders.updateAjax');
+// API route for fetching order data (authenticated; ownership enforced in controller)
+Route::get('/api/orders/{order}', [OrderController::class, 'getOrderData'])->middleware(['auth']);
+Route::put('/orders/{order}', [OrderController::class, 'updateOrder'])->middleware(['auth'])->name('orders.updateAjax');
 
 // Auth routes
 Route::middleware('auth')->group(function () {

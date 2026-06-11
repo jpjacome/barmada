@@ -30,7 +30,8 @@ class AnalyticsController extends Controller
     {
         // [2025-05-04] Implements aggregation for today, last 7 days, last 30 days, and current month
         $user = auth()->user();
-        $editorId = $request->input('editor_id', $user ? $user->id : null);
+        // Tenant is derived from the authenticated user, never from input.
+        $editorId = $user ? $user->effectiveEditorId() : null;
         $range = $request->input('range', 'today');
         $now = now();
         $query = \App\Models\Order::query()->where('editor_id', $editorId);
@@ -106,7 +107,8 @@ class AnalyticsController extends Controller
     {
         // [2025-05-04] Implements aggregation for product/category analytics
         $user = auth()->user();
-        $editorId = $request->input('editor_id', $user ? $user->id : null);
+        // Tenant is derived from the authenticated user, never from input.
+        $editorId = $user ? $user->effectiveEditorId() : null;
         $range = $request->input('range', 'today');
         $now = now();
         $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId);
@@ -193,7 +195,8 @@ class AnalyticsController extends Controller
     {
         // [2025-05-04] Implements aggregation for service/operations analytics
         $user = auth()->user();
-        $editorId = $request->input('editor_id', $user ? $user->id : null);
+        // Tenant is derived from the authenticated user, never from input.
+        $editorId = $user ? $user->effectiveEditorId() : null;
         $range = $request->input('range', 'today');
         $now = now();
         $sessionQuery = \App\Models\TableSession::query()->where('editor_id', $editorId);

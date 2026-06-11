@@ -221,10 +221,7 @@ class OrderController extends Controller
      */
     public function update(Request $request, Order $order)
     {
-        $user = Auth::user();
-        if (!$user->is_admin && !($user->is_editor && $order->editor_id == $user->id)) {
-            abort(403);
-        }
+        $this->authorize('update', $order);
         
         $validated = $request->validate([
             'status' => 'required|in:pending,delivered,completed,cancelled',
@@ -242,6 +239,8 @@ class OrderController extends Controller
      */
     public function getOrderData(Order $order)
     {
+        $this->authorize('view', $order);
+
         return response()->json($order);
     }
     
@@ -250,10 +249,7 @@ class OrderController extends Controller
      */
     public function updateOrder(Request $request, Order $order)
     {
-        $user = Auth::user();
-        if (!$user->is_admin && !($user->is_editor && $order->editor_id == $user->id)) {
-            abort(403);
-        }
+        $this->authorize('update', $order);
         
         // Handle status update if status parameter is present
         if ($request->has('status')) {
@@ -296,6 +292,8 @@ class OrderController extends Controller
         
         // Update order table_id while preserving status
         $currentStatus = $order->status; // Save current status
+        // The target table must resolve within the caller's tenant.
+        \App\Models\Table::findOrFail($validated['table_id']);
         $order->table_id = $validated['table_id'];
         $order->save();
         
