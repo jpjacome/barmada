@@ -34,9 +34,6 @@
                 </div>
                 
                 <div class="table-card-info" wire:key="info-{{ $table->id }}">
-                    <button class="table-qr-button" title="Table info" style="margin-right: 8px;" wire:click="openClientInfoModal({{ $table->id }})">
-                        <i class="bi bi-info-circle"></i>
-                    </button>
                     @if($editingReference === $table->id)
                         <div class="reference-edit-form">
                             <input
@@ -306,50 +303,7 @@
         </div>
     @endif
 
-    <!-- Client Info Modal -->
-    @if($showClientInfoModal)
-    <div class="modal-wrapper">
-        <div class="modal-backdrop" wire:click="closeClientInfoModal">
-            <div class="modal" wire:click.stop>
-                <div class="modal-header">
-                    <h3 class="modal-title">Client Information</h3>
-                    <button wire:click="closeClientInfoModal" class="modal-close">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-4" style="font-size: 1em; color: #666;">
-                        <strong>If the client requests a tax-deductible invoice, please fill out the following information:</strong>
-                    </div>
-                    <form>
-                        <div class="mb-3">
-                            <label class="block font-semibold mb-1">Full Name or Business Name (Razón Social)</label>
-                            <input type="text" class="reference-input w-full" placeholder="Full Name or Business Name">
-                        </div>
-                        <div class="mb-3">
-                            <label class="block font-semibold mb-1">Tax Identification Number (TIN, VAT, RUC, CIF, NIF, National ID, etc.)</label>
-                            <input type="text" class="reference-input w-full" placeholder="Tax ID or National ID">
-                        </div>
-                        <div class="mb-3">
-                            <label class="block font-semibold mb-1">Address</label>
-                            <input type="text" class="reference-input w-full" placeholder="Address">
-                        </div>
-                        <div class="mb-3">
-                            <label class="block font-semibold mb-1">Email Address (to send the electronic invoice)</label>
-                            <input type="email" class="reference-input w-full" placeholder="Email">
-                        </div>
-                        <div class="mb-3">
-                            <label class="block font-semibold mb-1">Phone Number (optional)</label>
-                            <input type="tel" class="reference-input w-full" placeholder="Phone">
-                        </div>
-                        <div class="reference-actions">
-                            <button type="button" class="reference-save" wire:click="closeClientInfoModal">Close</button>
-                            <button type="button" class="reference-save">Save (no action)</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+    {{-- The decorative "client invoice info" modal was removed [F-6]: its
+         Save button stored nothing. Proper invoice capture is tracked as a
+         real feature on the backlog. --}}
 </div>

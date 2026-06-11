@@ -40,6 +40,19 @@ class StaffList extends Component
         $this->showStaffModal = true;
     }
 
+    public function editStaff($id)
+    {
+        $user = $this->ownStaff()->findOrFail($id);
+        $this->authorize('manageStaff', $user);
+
+        $this->resetForm();
+        $this->editMode = true;
+        $this->staffId = $user->id;
+        $this->name = $user->first_name ?: $user->name;
+        $this->email = $user->email;
+        $this->showStaffModal = true;
+    }
+
     public function saveStaff()
     {
         $editor = auth()->user();

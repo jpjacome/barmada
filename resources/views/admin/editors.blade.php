@@ -29,12 +29,14 @@
                                         <i class="bi bi-box-arrow-in-right"></i>
                                     </button>
                                 </form>
-                                <button class="editor-edit-button" title="Edit Editor">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="editor-delete-button" title="Delete Editor">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <form method="POST" action="{{ route('admin.editors.destroy', $editor->id) }}" style="display:inline"
+                                      onsubmit="return confirm('Delete “{{ $editor->name }}” and ALL of its data (tables, products, orders, staff)? This cannot be undone.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="editor-delete-button" title="Delete Establishment">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     @empty

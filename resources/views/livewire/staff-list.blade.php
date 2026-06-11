@@ -22,6 +22,9 @@
                                 <td class="staff-cell staff-name-cell">{{ $user->name }}</td>
                                 <td class="staff-cell staff-email-cell">{{ $user->email }}</td>
                                 <td class="staff-cell staff-actions">
+                                    <button wire:click="editStaff({{ $user->id }})" class="staff-edit-button" title="Edit Staff" style="background:transparent;border:none;cursor:pointer;margin-right:0.4rem;">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
                                     <button wire:click="confirmDelete({{ $user->id }})" class="staff-delete-button" title="Delete Staff">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -66,13 +69,12 @@
                         <input type="email" id="email" wire:model="email" class="staff-form-input" placeholder="Enter staff email">
                         @error('email') <span class="staff-form-error">{{ $message }}</span> @enderror
                     </div>
-                    @if(!$editMode)
                     <div class="staff-form-group">
                         <label for="password" class="staff-form-label">Password</label>
-                        <input type="password" id="password" wire:model="password" class="staff-form-input" placeholder="Set password">
+                        <input type="password" id="password" wire:model="password" class="staff-form-input"
+                               placeholder="{{ $editMode ? 'Leave blank to keep the current password' : 'Set password' }}">
                         @error('password') <span class="staff-form-error">{{ $message }}</span> @enderror
                     </div>
-                    @endif
                 </div>
                 <div class="staff-modal-footer">
                     <button type="button" wire:click="closeModal" class="staff-cancel-button">Cancel</button>
