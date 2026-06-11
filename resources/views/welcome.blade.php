@@ -16,7 +16,7 @@
             <p class="hp-eyebrow">Bar &amp; Restaurant Management</p>
             <h1 class="hp-title" id="hp-hero-title">Revolutionize Your Bar &amp; Restaurant</h1>
             <p class="hp-tagline">Let Your Tables <span class="hp-tagline-accent">Order Themselves!</span></p>
-            <p class="hp-lede">Barmada makes managing orders effortless for owners and a breeze for customers. No more waiting for staff, no more mistakes&mdash;just fast, contactless, and accurate service every time.</p>
+            <p class="hp-lede">Barmada makes managing orders effortless for owners and a breeze for customers. No more waiting for staff, no more mistakes&mdash;just fast, contactless, and accurate service every time. No commissions, no subscriptions&mdash;your hardware, your server, your data.</p>
             <div class="hp-actions">
                 @if (Route::has('login'))
                     <a href="{{ route('login') }}" class="hp-btn hp-btn-primary">Get Started <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
@@ -36,7 +36,7 @@
             <article class="hp-card" data-reveal>
                 <span class="hp-card-icon"><i class="bi bi-qr-code-scan" aria-hidden="true"></i></span>
                 <h3>QR Table Ordering</h3>
-                <p>Customers scan, order, and pay right from their table&mdash;no app, no hassle.</p>
+                <p>Customers scan and order right from their table&mdash;no app, no account, no payment wall. The bar collects payment the way it always has.</p>
             </article>
             <article class="hp-card" data-reveal style="--hp-reveal-delay: 80ms;">
                 <span class="hp-card-icon"><i class="bi bi-people" aria-hidden="true"></i></span>
@@ -81,8 +81,8 @@
                 <article class="hp-pov-card" data-reveal style="--hp-reveal-delay: 80ms;">
                     <span class="hp-card-icon"><i class="bi bi-cup-straw" aria-hidden="true"></i></span>
                     <div>
-                        <h3>Easy Customization</h3>
-                        <p>Customize your order, add notes, and see the menu with images and prices&mdash;just like you want it.</p>
+                        <h3>Visual Menu</h3>
+                        <p>Browse the menu with photos, descriptions and prices, build your round, and review the total before sending&mdash;all in seconds.</p>
                     </div>
                 </article>
                 <article class="hp-pov-card" data-reveal style="--hp-reveal-delay: 160ms;">
@@ -114,7 +114,7 @@
                     <i class="bi bi-phone" aria-hidden="true"></i> Mobile Friendly
                 </button>
                 <button type="button" class="hp-pill" id="hp-pill-3" aria-controls="hp-trust-panel" aria-expanded="false">
-                    <i class="bi bi-bar-chart" aria-hidden="true"></i> Real-Time Analytics
+                    <i class="bi bi-bar-chart" aria-hidden="true"></i> Built-in Analytics
                 </button>
             </div>
             <div class="hp-trust-panel" id="hp-trust-panel" role="region" aria-live="polite" aria-label="Feature details">
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var featureTexts = {
         1: "Barmada is designed with security and privacy at its core. All user data, orders, and business information are protected using Laravel’s robust authentication, authorization, and encryption features. Access to sensitive features is restricted by user roles and middleware, ensuring only authorized personnel can view or modify critical data. Activity logs and audit trails provide transparency and accountability, while secure session management and encrypted connections keep your business and customer information safe at all times.",
         2: "Barmada is fully mobile friendly, offering a seamless experience on any device. The interface automatically adapts to smartphones and tablets, ensuring that both customers and staff can access all features with ease. Touch-optimized controls, responsive layouts, and fast load times make managing orders and navigating menus effortless, whether you’re behind the bar or at the table.",
-        3: "Barmada provides real-time analytics to help you make informed decisions instantly. Track sales, monitor order trends, and view live activity dashboards as events happen. With up-to-the-minute data on customer preferences and business performance, you can optimize operations, spot opportunities, and respond to changes as they occur—all from a single, intuitive dashboard."
+        3: "Barmada ships with an analytics dashboard built for bar owners: daily, weekly and monthly sales, top and least-selling products, category breakdowns, peak hours, session durations and table turnover. Export everything to PDF or CSV whenever you need it—no extra modules, no premium tier."
     };
     var defaultText = 'Select a feature above to learn more.';
     var panel = document.getElementById('hp-trust-panel');
