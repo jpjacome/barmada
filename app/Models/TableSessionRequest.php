@@ -11,6 +11,7 @@ class TableSessionRequest extends Model
 
     protected $fillable = [
         'table_session_id',
+        'table_id',
         'ip_address',
         'status',
         'requested_at',
@@ -21,5 +22,10 @@ class TableSessionRequest extends Model
     public function tableSession()
     {
         return $this->belongsTo(TableSession::class);
+    }
+
+    public function table()
+    {
+        return $this->belongsTo(Table::class);
     }
 }

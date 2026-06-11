@@ -52,7 +52,7 @@ class GuestOrderFlowTest extends TestCase
 
         $this->post('/order/'.$table->unique_token, [
             'products' => [$product->id => 2],
-        ])->assertRedirect(route('orders.confirmation', absolute: false));
+        ])->assertRedirect(route('orders.confirmation', ['t' => $table->unique_token], absolute: false));
 
         $order = Order::acrossEditors()->firstOrFail();
         // The order is recorded against the TABLE's tenant.
@@ -197,7 +197,7 @@ class GuestOrderFlowTest extends TestCase
             ->assertRedirect(route('order.redirect', ['unique_token' => $table->unique_token], absolute: false));
     }
 
-    public function test_qr_entry_on_a_closed_table_only_flags_it_pending(): void
+    public function test_qr_entry_on_a_closed_table_flags_it_pending_and_records_the_device(): void
     {
         $editor = $this->makeEditor();
         $table = $this->makeTableFor($editor, ['status' => 'closed', 'table_number' => 9]);
@@ -205,6 +205,12 @@ class GuestOrderFlowTest extends TestCase
         $this->get('/qr-entry/'.rawurlencode($editor->username).'/9')->assertOk();
 
         $this->assertSame('pending_approval', $table->fresh()->status);
-        $this->assertSame(0, TableSessionRequest::count());
+
+        // [F-1] The scanning device is recorded (without a session yet, and
+        // still unapproved) so a single staff approval can let it in later.
+        $request = TableSessionRequest::sole();
+        $this->assertNull($request->table_session_id);
+        $this->assertSame($table->id, $request->table_id);
+        $this->assertSame('pending', $request->status);
     }
 }
