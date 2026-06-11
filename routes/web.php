@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\Number;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingsController;
@@ -31,20 +30,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Temporary admin password reset route
-Route::get('/reset-admin', function () {
-    $user = User::find(1); // Get user with ID 1
-    
-    if ($user) {
-        $newPassword = 'password123';
-        $user->password = Hash::make($newPassword);
-        $user->save();
-        return "Admin password reset to: " . $newPassword;
-    }
-    
-    return "Admin user not found!";
-});
-
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
@@ -60,7 +45,7 @@ Route::get('/products', [NumberController::class, 'livewire'])->middleware(['aut
 Route::get('/orders', [OrderController::class, 'index'])->middleware(['auth'])->name('orders.index');
 Route::patch('/orders/{order}', [OrderController::class, 'update'])->middleware(['auth'])->name('orders.update');
 Route::get('/orders/archive', [OrderController::class, 'archive'])->middleware(['auth', 'editor'])->name('orders.archive');
-Route::get('/orders/create', [OrderController::class, 'create'])->middleware(['auth'])->name('orders.create');
+Route::get('/orders/create', [OrderController::class, 'create'])->middleware(['auth'])->name('orders.create.form');
 
 // Editor/Admin order creation (NO ip.approved middleware)
 Route::get('/order', [OrderController::class, 'orderEntry'])->middleware(['auth'])->name('orders.create');
