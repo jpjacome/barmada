@@ -117,7 +117,9 @@ class ProductsList extends Component
         $this->loadProducts();
     }
     
-    // Create or update a product
+    // Create or update a product — persistence and the upload security
+    // gates live in the shared SaveProduct action (same code path as
+    // the API); this method keeps the form validation and modal flow.
     public function saveProduct()
     {
         $user = Auth::user();
@@ -127,125 +129,59 @@ class ProductsList extends Component
                 'price' => 'required|numeric|min:0.01',
                 'bootstrapIcon' => ['required', 'regex:/^[a-z0-9 -]+$/i'],
             ]);
-            $iconValue = $this->bootstrapIcon;
         } else {
             $this->validate([
                 'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
                 'price' => 'required|numeric|min:0.01',
                 'svgFile' => 'nullable|file|max:1024',
             ]);
-
-            if ($this->svgFile) {
-                // Only accept genuine, script-free SVGs, and store under a
-                // random name with a forced .svg extension so an attacker
-                // cannot land an executable file (e.g. .php) on the public
-                // disk via a crafted original filename.
-                $original = strtolower((string) $this->svgFile->getClientOriginalExtension());
-                $contents = @file_get_contents($this->svgFile->getRealPath());
-                if ($original !== 'svg' || $contents === false || ! $this->isSafeSvg($contents)) {
-                    $this->addError('svgFile', 'The icon must be a valid SVG with no scripts or embedded content.');
-                    return;
-                }
-                $iconValue = $this->svgFile->storeAs(
-                    'product-icons',
-                    \Illuminate\Support\Str::random(40) . '.svg',
-                    'public'
-                );
-            } else {
-                // Retain the existing icon value if no new file is uploaded
-                $iconValue = $this->iconValue;
-            }
         }
 
-        // Handle photo upload — accept only real raster images and force a
-        // safe, fixed extension on the stored filename.
         if ($this->photoFile) {
             $this->validate([
                 'photoFile' => ['nullable', 'file', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:1024'],
             ]);
-            $photoExtensionMap = [
-                'image/jpeg' => 'jpg',
-                'image/png'  => 'png',
-                'image/gif'  => 'gif',
-                'image/webp' => 'webp',
-            ];
-            $photoExt = $photoExtensionMap[$this->photoFile->getMimeType()] ?? 'jpg';
-            $photoPath = $this->photoFile->storeAs(
-                'product-photos',
-                \Illuminate\Support\Str::random(40) . '.' . $photoExt,
-                'public'
-            );
-        } else {
-            $photoPath = $this->photo;
         }
 
-        // Category assignment must resolve within the caller's tenant.
-        if ($this->categoryId !== null && $this->categoryId !== '' && ! Category::find($this->categoryId)) {
-            $this->categoryId = null;
-        }
+        $data = [
+            'name' => $this->name,
+            'price' => $this->price,
+            'icon_type' => $this->iconType,
+            'bootstrap_icon' => $this->bootstrapIcon,
+            'icon_value_fallback' => $this->iconValue,
+            'category_id' => $this->categoryId,
+            'description' => $this->description,
+            'photo_fallback' => $this->photo,
+        ];
 
+        $product = null;
         if ($this->editMode) {
             $product = Product::findOrFail($this->productId);
             $this->authorize('update', $product);
-            $product->update([
-                'name' => $this->name,
-                'price' => $this->price,
-                'icon_type' => $this->iconType,
-                'icon_value' => $iconValue,
-                'category_id' => $this->categoryId,
-                'description' => $this->description,
-                'photo' => $photoPath,
-            ]);
-            $this->status = "Product '{$this->name}' updated successfully!";
         } else {
-            $data = [
-                'name' => $this->name,
-                'price' => $this->price,
-                'icon_type' => $this->iconType,
-                'icon_value' => $iconValue,
-                'category_id' => $this->categoryId,
-                'description' => $this->description,
-                'photo' => $photoPath,
-            ];
             $this->authorize('create', Product::class);
-            if ($user->is_admin) {
-                $data['editor_id'] = $user->id;
-            }
-            // Non-admins: BelongsToEditor assigns the tenant automatically.
-            Product::create($data);
-            $this->status = "Product '{$this->name}' added successfully!";
         }
-        
+
+        try {
+            app(\App\Actions\Products\SaveProduct::class)->handle(
+                $user,
+                $data,
+                $this->iconType === 'svg' ? $this->svgFile : null,
+                $this->photoFile,
+                $product,
+            );
+        } catch (\App\Exceptions\DomainActionException $e) {
+            $this->addError('svgFile', $e->getMessage());
+
+            return;
+        }
+
+        $this->status = $this->editMode
+            ? "Product '{$this->name}' updated successfully!"
+            : "Product '{$this->name}' added successfully!";
+
         $this->closeModal();
         $this->loadProducts();
-    }
-
-    /**
-     * Reject SVGs that carry active content. This is a lightweight gate
-     * (not a full sanitizer): it blocks scripts, event handlers, external
-     * entities and embeddings that could execute if the file were opened
-     * directly in the browser.
-     */
-    private function isSafeSvg(string $svg): bool
-    {
-        $haystack = strtolower($svg);
-        if (! str_contains($haystack, '<svg')) {
-            return false;
-        }
-        $blocked = [
-            '<script', 'javascript:', '<foreignobject', '<iframe',
-            '<embed', '<object', '<!entity',
-        ];
-        foreach ($blocked as $needle) {
-            if (str_contains($haystack, $needle)) {
-                return false;
-            }
-        }
-        // Any inline event handler such as onload= / onclick=.
-        if (preg_match('/\son[a-z]+\s*=/i', $svg)) {
-            return false;
-        }
-        return true;
     }
 
     public function saveCategory()
@@ -263,10 +199,10 @@ class ProductsList extends Component
         ]);
 
         $this->authorize('create', Category::class);
-        Category::create([
-            'name' => $this->categoryName,
-            'editor_id' => $user->is_admin ? $user->id : $user->effectiveEditorId(),
-        ]);
+        app(\App\Actions\Categories\CreateCategory::class)->handle(
+            (int) ($user->is_admin ? $user->id : $user->effectiveEditorId()),
+            $this->categoryName,
+        );
         $this->categoryName = '';
         $this->loadCategories();
         $this->status = 'Category added successfully!';
@@ -283,7 +219,7 @@ class ProductsList extends Component
 
         $this->authorize('delete', $category);
         $categoryName = $category->name;
-        $category->delete();
+        app(\App\Actions\Categories\DeleteCategory::class)->handle($category);
         $this->loadCategories();
         $this->status = "Category '{$categoryName}' deleted successfully!";
     }
