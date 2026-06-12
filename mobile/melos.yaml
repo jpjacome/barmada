@@ -18,3 +18,6 @@ scripts:
   format:
     description: Verify formatting.
     run: dart format --set-exit-if-changed .
+  l10n:
+    description: Regenerate the staff app's localizations from lib/l10n/*.arb.
+    run: melos exec --scope="barmada_staff" -- flutter gen-l10n

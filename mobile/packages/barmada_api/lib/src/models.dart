@@ -136,7 +136,8 @@ class ApiUser {
 
 /// `POST /api/v1/auth/login`.
 class AuthResult {
-  AuthResult({required this.token, required this.abilities, required this.user});
+  AuthResult(
+      {required this.token, required this.abilities, required this.user});
 
   factory AuthResult.fromJson(Map<String, dynamic> json) => AuthResult(
         token: asStringOrNull(json['token']) ?? '',
@@ -222,15 +223,13 @@ class OrderInfo {
       paid: paid,
       left: left,
       items: items,
-      tableNumber: json['table_number'] == null
-          ? null
-          : asInt(json['table_number']),
+      tableNumber:
+          json['table_number'] == null ? null : asInt(json['table_number']),
       tableSessionId: json['table_session_id'] == null
           ? null
           : asInt(json['table_session_id']),
       note: asStringOrNull(json['note']),
-      createdBy:
-          json['created_by'] == null ? null : asInt(json['created_by']),
+      createdBy: json['created_by'] == null ? null : asInt(json['created_by']),
       createdAt: asDateTime(json['created_at']),
     );
   }
@@ -277,9 +276,8 @@ class ApprovalRequestInfo {
         id: asInt(json['id']),
         tableId: asInt(json['table_id']),
         scope: asStringOrNull(json['scope']) ?? 'additional_guest',
-        tableNumber: json['table_number'] == null
-            ? null
-            : asInt(json['table_number']),
+        tableNumber:
+            json['table_number'] == null ? null : asInt(json['table_number']),
         tableStatus: asStringOrNull(json['table_status']),
         requestedAt: asDateTime(json['requested_at']),
       );
@@ -312,9 +310,8 @@ class ServiceRequestInfo {
         id: asInt(json['id']),
         type: asStringOrNull(json['type']) ?? 'waiter',
         tableId: json['table_id'] == null ? null : asInt(json['table_id']),
-        tableNumber: json['table_number'] == null
-            ? null
-            : asInt(json['table_number']),
+        tableNumber:
+            json['table_number'] == null ? null : asInt(json['table_number']),
         status: asStringOrNull(json['status']),
         time: asStringOrNull(json['time']) ??
             asStringOrNull(json['requested_at']),
@@ -382,8 +379,7 @@ class TableInfo {
       status: asStringOrNull(json['status']) ?? 'closed',
       reference: asStringOrNull(json['reference']),
       archivedAt: asDateTime(json['archived_at']),
-      currentSessionId:
-          session is Map ? asInt(session['id']) : null,
+      currentSessionId: session is Map ? asInt(session['id']) : null,
     );
   }
 
@@ -450,8 +446,7 @@ class ProductInfo {
       price: asDouble(json['price']),
       isAvailable: asBool(json['is_available'], true),
       description: asStringOrNull(json['description']),
-      categoryName:
-          category is Map ? asStringOrNull(category['name']) : null,
+      categoryName: category is Map ? asStringOrNull(category['name']) : null,
       photo: asStringOrNull(json['photo']),
     );
   }

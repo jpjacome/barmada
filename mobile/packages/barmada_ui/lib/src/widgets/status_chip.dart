@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 /// A status chip in the web app's language: 15% tint background, solid
 /// border, colored text.
 class StatusChip extends StatelessWidget {
-  const StatusChip({super.key, required this.label, required this.color, this.icon});
+  const StatusChip(
+      {super.key, required this.label, required this.color, this.icon});
 
   final String label;
   final Color color;
