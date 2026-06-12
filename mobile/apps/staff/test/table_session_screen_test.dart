@@ -183,12 +183,16 @@ void main() {
     await _settleFrames(tester);
 
     expect(find.text('This table is closed'), findsOneWidget);
+    // No manual order entry on a closed table — orders need a session.
+    expect(find.text('New order'), findsNothing);
 
     await tester.tap(find.text('Open table'));
     await _settleFrames(tester);
 
     expect(client.openCalls, 1);
     expect(find.text('Table 4 is open.'), findsOneWidget); // snackbar
+    // The session is live now: the New-order FAB appears.
+    expect(find.text('New order'), findsOneWidget);
 
     await tester.pumpWidget(Container());
     await tester.pump(const Duration(seconds: 5)); // drain snackbar timer
