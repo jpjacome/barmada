@@ -96,10 +96,6 @@
   "@comingSoon": {
     "description": "Title on placeholder pages for not-yet-built features."
   },
-  "tablesPlaceholder": "Table grid with sessions, item payment ticking and bills — next chunk of Phase 1.",
-  "@tablesPlaceholder": {
-    "description": "Roadmap note on the Tables placeholder page."
-  },
   "productsPlaceholder": "Catalog with one-tap sold-out toggles — next chunk of Phase 1.",
   "@productsPlaceholder": {
     "description": "Roadmap note on the Products placeholder page. 'Sold out' matches the guest menu's wording."
@@ -216,6 +212,146 @@
   "delivered": "Delivered",
   "@delivered": {
     "description": "Order card action marking the order as delivered. The guest web app translates the matching status as 'Entregado'."
+  },
+
+  "statusOpen": "Open",
+  "@statusOpen": {
+    "description": "Table state chip: the table has a live session. 'Table' is feminine in Spanish (mesa)."
+  },
+  "statusClosed": "Closed",
+  "@statusClosed": {
+    "description": "Table state chip: no session."
+  },
+  "statusPendingApproval": "Pending approval",
+  "@statusPendingApproval": {
+    "description": "Table state chip: a first guest scanned and waits for staff approval."
+  },
+  "noTablesYet": "No tables yet",
+  "@noTablesYet": {
+    "description": "Empty tables grid title."
+  },
+  "noTablesSubtitle": "Create your tables in the web dashboard; they appear here instantly.",
+  "@noTablesSubtitle": {
+    "description": "Empty tables grid hint — table creation is web-only for now."
+  },
+  "openedAtTime": "Opened at {time}",
+  "@openedAtTime": {
+    "description": "When the current session started. {time} arrives pre-formatted for the locale.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "19:42"
+      }
+    }
+  },
+  "totalLabel": "Total",
+  "@totalLabel": {
+    "description": "Bill column: session total. The guest web app uses 'Total' too."
+  },
+  "paidLabel": "Paid",
+  "@paidLabel": {
+    "description": "Bill column: amount already ticked as paid. Guest web app: 'Pagado'."
+  },
+  "remainingLabel": "Remaining",
+  "@remainingLabel": {
+    "description": "Bill column: amount left to pay. Guest web app: 'Pendiente'."
+  },
+  "openTableAction": "Open table",
+  "@openTableAction": {
+    "description": "Button starting a new session on a closed table."
+  },
+  "approveTableAction": "Approve table",
+  "@approveTableAction": {
+    "description": "Button approving the waiting first guest (also adopts their device)."
+  },
+  "settleAllAction": "Mark all paid",
+  "@settleAllAction": {
+    "description": "Button ticking every remaining item on the session as paid."
+  },
+  "closeTableAction": "Close table",
+  "@closeTableAction": {
+    "description": "Button ending the session."
+  },
+  "closeTableTitle": "Close table {table}?",
+  "@closeTableTitle": {
+    "description": "Confirm dialog title before closing a table with an unpaid balance.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+  "closeUnpaidWarning": "{amount} is still unpaid on this bill.",
+  "@closeUnpaidWarning": {
+    "description": "Dialog body. {amount} arrives formatted with the venue currency symbol.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "€12.50"
+      }
+    }
+  },
+  "closeAndSettle": "Settle & close",
+  "@closeAndSettle": {
+    "description": "Dialog action: mark the remaining balance paid, then close (the web's pay-and-close)."
+  },
+  "closeWithoutSettling": "Close anyway",
+  "@closeWithoutSettling": {
+    "description": "Dialog action: close leaving the balance unpaid."
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Generic dialog dismiss. Guest web app: 'Cancelar'."
+  },
+  "tableOpenedSnack": "Table {table} is open.",
+  "@tableOpenedSnack": {
+    "description": "Snackbar after opening a table.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+  "tableClosedSnack": "Table {table} closed.",
+  "@tableClosedSnack": {
+    "description": "Snackbar after closing a table.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+  "sessionNoOrders": "No orders yet this session.",
+  "@sessionNoOrders": {
+    "description": "Open session with an empty bill. The guest web app translates this exact line as 'Aún no hay pedidos en esta sesión.'"
+  },
+  "tableClosedEmptyTitle": "This table is closed",
+  "@tableClosedEmptyTitle": {
+    "description": "Session screen body when the table has no session."
+  },
+  "tableClosedEmptySubtitle": "Open it to start a new session.",
+  "@tableClosedEmptySubtitle": {
+    "description": "Hint under the closed-table message."
+  },
+  "orderStatusPending": "Pending",
+  "@orderStatusPending": {
+    "description": "Order state chip on the bill. Order is masculine in Spanish (pedido)."
+  },
+  "orderStatusDelivered": "Delivered",
+  "@orderStatusDelivered": {
+    "description": "Order state chip on the bill — matches the guest web app's 'Entregado'."
+  },
+  "orderStatusCancelled": "Cancelled",
+  "@orderStatusCancelled": {
+    "description": "Order state chip on the bill."
+  },
+  "billRequestedChip": "Bill requested",
+  "@billRequestedChip": {
+    "description": "Session-screen chip: a guest asked for the bill. Tapping marks it handled."
+  },
+  "waiterCalledChip": "Waiter called",
+  "@waiterCalledChip": {
+    "description": "Session-screen chip: a guest called a waiter. Tapping marks it handled."
   },
 
   "errorNetwork": "Could not reach the server. Check the address and your connection.",

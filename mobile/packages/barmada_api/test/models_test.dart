@@ -136,6 +136,58 @@ void main() {
     expect(bill.total, 8.0);
     expect(bill.orders.single.items.single.price, 2.5);
     expect(bill.orders.single.items.single.productName, 'Pilsener');
+    expect(bill.hasOpenSession, isTrue);
+    expect(bill.openedAt, DateTime.parse('2026-06-12T20:30:00+00:00'));
+    expect(bill.table?.status, 'open');
+    expect(bill.serviceRequests, isEmpty);
+  });
+
+  test('session bill carries table state and service requests', () {
+    final bill = SessionBill.fromJson({
+      'table': {
+        'id': 4,
+        'table_number': 4,
+        'reference': 'Terraza',
+        'status': 'pending_approval',
+        'archived_at': null,
+      },
+      'session': {
+        'id': 9,
+        'session_number': 3,
+        'status': 'open',
+        'opened_at': '2026-06-12T20:30:00+00:00',
+      },
+      'orders': [],
+      'totals': {'total': 0, 'paid': 0, 'left': 0},
+      'invoice': null,
+      'service_requests': [
+        {'id': 31, 'type': 'bill', 'requested_at': '2026-06-12T22:01:00+00:00'},
+        {'id': 32, 'type': 'waiter', 'requested_at': null},
+      ],
+    });
+
+    expect(bill.table?.isAwaitingApproval, isTrue);
+    expect(bill.table?.reference, 'Terraza');
+    expect(bill.sessionStatus, 'open');
+    expect(bill.serviceRequests, hasLength(2));
+    expect(bill.serviceRequests.first.isBill, isTrue);
+    expect(bill.serviceRequests.last.isBill, isFalse);
+  });
+
+  test('session bill tolerates a closed table (null session)', () {
+    final bill = SessionBill.fromJson({
+      'table': {'id': 4, 'table_number': 4, 'status': 'closed'},
+      'session': null,
+      'orders': [],
+      'totals': {'total': 0, 'paid': 0, 'left': 0},
+      'invoice': null,
+      'service_requests': [],
+    });
+
+    expect(bill.hasOpenSession, isFalse);
+    expect(bill.sessionId, isNull);
+    expect(bill.openedAt, isNull);
+    expect(bill.table?.status, 'closed');
   });
 
   test('board snapshot parses all three sections', () {

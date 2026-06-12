@@ -75,10 +75,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get comingSoon => 'Coming soon';
 
   @override
-  String get tablesPlaceholder =>
-      'Table grid with sessions, item payment ticking and bills — next chunk of Phase 1.';
-
-  @override
   String get productsPlaceholder =>
       'Catalog with one-tap sold-out toggles — next chunk of Phase 1.';
 
@@ -156,6 +152,101 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get delivered => 'Delivered';
+
+  @override
+  String get statusOpen => 'Open';
+
+  @override
+  String get statusClosed => 'Closed';
+
+  @override
+  String get statusPendingApproval => 'Pending approval';
+
+  @override
+  String get noTablesYet => 'No tables yet';
+
+  @override
+  String get noTablesSubtitle =>
+      'Create your tables in the web dashboard; they appear here instantly.';
+
+  @override
+  String openedAtTime(String time) {
+    return 'Opened at $time';
+  }
+
+  @override
+  String get totalLabel => 'Total';
+
+  @override
+  String get paidLabel => 'Paid';
+
+  @override
+  String get remainingLabel => 'Remaining';
+
+  @override
+  String get openTableAction => 'Open table';
+
+  @override
+  String get approveTableAction => 'Approve table';
+
+  @override
+  String get settleAllAction => 'Mark all paid';
+
+  @override
+  String get closeTableAction => 'Close table';
+
+  @override
+  String closeTableTitle(Object table) {
+    return 'Close table $table?';
+  }
+
+  @override
+  String closeUnpaidWarning(String amount) {
+    return '$amount is still unpaid on this bill.';
+  }
+
+  @override
+  String get closeAndSettle => 'Settle & close';
+
+  @override
+  String get closeWithoutSettling => 'Close anyway';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String tableOpenedSnack(Object table) {
+    return 'Table $table is open.';
+  }
+
+  @override
+  String tableClosedSnack(Object table) {
+    return 'Table $table closed.';
+  }
+
+  @override
+  String get sessionNoOrders => 'No orders yet this session.';
+
+  @override
+  String get tableClosedEmptyTitle => 'This table is closed';
+
+  @override
+  String get tableClosedEmptySubtitle => 'Open it to start a new session.';
+
+  @override
+  String get orderStatusPending => 'Pending';
+
+  @override
+  String get orderStatusDelivered => 'Delivered';
+
+  @override
+  String get orderStatusCancelled => 'Cancelled';
+
+  @override
+  String get billRequestedChip => 'Bill requested';
+
+  @override
+  String get waiterCalledChip => 'Waiter called';
 
   @override
   String get errorNetwork =>

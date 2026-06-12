@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../board/board_screen.dart';
+import '../tables/tables_screen.dart';
 import 'more_screen.dart';
 import 'placeholder_screen.dart';
 
@@ -25,11 +26,7 @@ class _HomeShellState extends State<HomeShell> {
     // each tab's State alive across rebuilds (children match by type+slot).
     final pages = <Widget>[
       const BoardScreen(),
-      PlaceholderScreen(
-        title: l10n.tabTables,
-        icon: Icons.table_bar_outlined,
-        message: l10n.tablesPlaceholder,
-      ),
+      const TablesScreen(),
       PlaceholderScreen(
         title: l10n.tabProducts,
         icon: Icons.local_bar_outlined,

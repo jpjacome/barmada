@@ -75,10 +75,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get comingSoon => 'Muy pronto';
 
   @override
-  String get tablesPlaceholder =>
-      'Cuadrícula de mesas con sesiones, cobro artículo por artículo y cuentas — el siguiente bloque de la fase 1.';
-
-  @override
   String get productsPlaceholder =>
       'Catálogo con marcado de agotado de un toque — el siguiente bloque de la fase 1.';
 
@@ -156,6 +152,102 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get delivered => 'Entregado';
+
+  @override
+  String get statusOpen => 'Abierta';
+
+  @override
+  String get statusClosed => 'Cerrada';
+
+  @override
+  String get statusPendingApproval => 'Pendiente de aprobación';
+
+  @override
+  String get noTablesYet => 'Aún no hay mesas';
+
+  @override
+  String get noTablesSubtitle =>
+      'Crea tus mesas en el panel web; aparecerán aquí al instante.';
+
+  @override
+  String openedAtTime(String time) {
+    return 'Abierta a las $time';
+  }
+
+  @override
+  String get totalLabel => 'Total';
+
+  @override
+  String get paidLabel => 'Pagado';
+
+  @override
+  String get remainingLabel => 'Pendiente';
+
+  @override
+  String get openTableAction => 'Abrir mesa';
+
+  @override
+  String get approveTableAction => 'Aprobar mesa';
+
+  @override
+  String get settleAllAction => 'Marcar todo pagado';
+
+  @override
+  String get closeTableAction => 'Cerrar mesa';
+
+  @override
+  String closeTableTitle(Object table) {
+    return '¿Cerrar la mesa $table?';
+  }
+
+  @override
+  String closeUnpaidWarning(String amount) {
+    return 'Aún quedan $amount sin pagar en esta cuenta.';
+  }
+
+  @override
+  String get closeAndSettle => 'Cobrar y cerrar';
+
+  @override
+  String get closeWithoutSettling => 'Cerrar igualmente';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String tableOpenedSnack(Object table) {
+    return 'La mesa $table está abierta.';
+  }
+
+  @override
+  String tableClosedSnack(Object table) {
+    return 'Mesa $table cerrada.';
+  }
+
+  @override
+  String get sessionNoOrders => 'Aún no hay pedidos en esta sesión.';
+
+  @override
+  String get tableClosedEmptyTitle => 'Esta mesa está cerrada';
+
+  @override
+  String get tableClosedEmptySubtitle =>
+      'Ábrela para iniciar una nueva sesión.';
+
+  @override
+  String get orderStatusPending => 'Pendiente';
+
+  @override
+  String get orderStatusDelivered => 'Entregado';
+
+  @override
+  String get orderStatusCancelled => 'Cancelado';
+
+  @override
+  String get billRequestedChip => 'Cuenta solicitada';
+
+  @override
+  String get waiterCalledChip => 'Mesero llamado';
 
   @override
   String get errorNetwork =>

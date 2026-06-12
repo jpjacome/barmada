@@ -61,16 +61,16 @@ Sign in with an editor or staff account from your server (`/register` on the web
 - **Add server** with `/api/v1/meta` validation and capability discovery
 - **Login** (Sanctum token per device, stored in the keystore), logout, forget server
 - **Live board**: pending orders with the overdue chronometer, grouped items and notes; approval requests (first-guest and additional-guest); service requests — polling every 5 s with one-tap **Delivered / Approve / Done** actions
+- **Tables**: the live grid (open / pending-approval / closed at a glance) and per-table session screens — running bill with **item-by-item payment ticking**, totals (total / paid / remaining in the venue's currency), open / approve / mark-all-paid, and close with an explicit **settle & close** choice when money is still on the table
 - Dark Barmada theme by default (light theme included), 5-tab shell
 - **Bilingual UI (English / Español)**: follows the device language, with a live in-app override under **More → Language**
 
 ## Roadmap (next chunks of Phase 1)
 
-1. Tables grid + session detail with item-by-item payment ticking and bills
-2. Products with one-tap 86; manual order entry
-3. Push wake-ups (`firebase_messaging` — the server side shipped in barmada PR #29) + notification chime
-4. Analytics screens; settings; QR-scan-to-table; print/share
-5. Store packaging (icons, splash, signing, CI)
+1. Products with one-tap 86; manual order entry
+2. Push wake-ups (`firebase_messaging` — the server side shipped in barmada PR #29) + notification chime
+3. Analytics screens; settings; QR-scan-to-table; print/share
+4. Store packaging (icons, splash, signing, CI)
 
 ## Localization (i18n)
 

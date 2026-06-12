@@ -402,11 +402,16 @@ class SessionBill {
     required this.paid,
     required this.left,
     this.sessionId,
+    this.sessionStatus,
+    this.openedAt,
+    this.table,
+    this.serviceRequests = const [],
   });
 
   factory SessionBill.fromJson(Map<String, dynamic> json) {
     final totals = json['totals'];
     final session = json['session'];
+    final table = json['table'];
     return SessionBill(
       orders: (json['orders'] as List? ?? const [])
           .whereType<Map<String, dynamic>>()
@@ -416,6 +421,13 @@ class SessionBill {
       paid: totals is Map ? asDouble(totals['paid']) : 0,
       left: totals is Map ? asDouble(totals['left']) : 0,
       sessionId: session is Map ? asInt(session['id']) : null,
+      sessionStatus: session is Map ? asStringOrNull(session['status']) : null,
+      openedAt: session is Map ? asDateTime(session['opened_at']) : null,
+      table: table is Map<String, dynamic> ? TableInfo.fromJson(table) : null,
+      serviceRequests: (json['service_requests'] as List? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(ServiceRequestInfo.fromJson)
+          .toList(),
     );
   }
 
@@ -424,6 +436,17 @@ class SessionBill {
   final double paid;
   final double left;
   final int? sessionId;
+  final String? sessionStatus;
+  final DateTime? openedAt;
+
+  /// The table summary embedded in the session payload — its `status`
+  /// is what the screen's action row keys on after open/approve/close.
+  final TableInfo? table;
+
+  /// Unresolved bill/waiter taps for this session.
+  final List<ServiceRequestInfo> serviceRequests;
+
+  bool get hasOpenSession => sessionId != null;
 }
 
 /// A catalog product as live service needs it.
