@@ -38,7 +38,10 @@ Route::get('/dashboard', function () {
 // Only the index page exists — all table actions live in the Livewire
 // component; the old create/show/edit resource leftovers are gone.
 Route::resource('tables', TableController::class)->only(['index'])->middleware(['auth']);
+Route::get('/tables/qr-sheet', [TableController::class, 'qrSheet'])->middleware(['auth'])->name('tables.qr-sheet');
 Route::get('/tables/{table}/qr', [TableController::class, 'qrImage'])->name('tables.qr');
+Route::get('/tables/{table}/bill', [TableController::class, 'bill'])->middleware(['auth'])->name('tables.bill');
+Route::get('/orders/{order}/ticket', [OrderController::class, 'ticket'])->middleware(['auth'])->whereNumber('order')->name('orders.ticket');
 
 // Products route (accessible to both admins and editors)
 Route::get('/products', [ProductsController::class, 'index'])->middleware(['auth'])->name('products.index');
