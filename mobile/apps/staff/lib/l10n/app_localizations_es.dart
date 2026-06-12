@@ -72,13 +72,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tabMore => 'Más';
 
   @override
-  String get comingSoon => 'Muy pronto';
-
-  @override
-  String get analyticsPlaceholder =>
-      'Ventas por día de negocio, productos más vendidos y operación de servicio — el siguiente bloque de la fase 1.';
-
-  @override
   String currencyChip(String symbol) {
     return 'Moneda $symbol';
   }
@@ -305,6 +298,81 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String productBackOnSale(String name) {
     return '$name vuelve a estar a la venta.';
+  }
+
+  @override
+  String get analyticsOwnerOnlyTitle => 'Solo para el propietario';
+
+  @override
+  String get analyticsOwnerOnlySubtitle =>
+      'Las estadísticas están disponibles para la cuenta del propietario del local.';
+
+  @override
+  String get rangeToday => 'Hoy';
+
+  @override
+  String get range7days => '7 días';
+
+  @override
+  String get range30days => '30 días';
+
+  @override
+  String get totalSalesLabel => 'Ventas totales';
+
+  @override
+  String get ordersLabel => 'Pedidos';
+
+  @override
+  String get avgOrderLabel => 'Pedido promedio';
+
+  @override
+  String get peakHourLabel => 'Hora pico';
+
+  @override
+  String get topProductLabel => 'Producto más vendido';
+
+  @override
+  String get analyticsNoSales => 'Aún no hay ventas en este período.';
+
+  @override
+  String get ordersByHourTitle => 'Pedidos por hora';
+
+  @override
+  String get topProductsTitle => 'Productos más vendidos';
+
+  @override
+  String get byCategoryTitle => 'Por categoría';
+
+  @override
+  String get serviceTitle => 'Servicio';
+
+  @override
+  String get sessionsLabel => 'Sesiones';
+
+  @override
+  String get avgSessionLabel => 'Sesión promedio';
+
+  @override
+  String get mostUsedTableLabel => 'Mesa más usada';
+
+  @override
+  String get qrScansLabel => 'Escaneos QR';
+
+  @override
+  String get qrConversionLabel => 'QR → pedido';
+
+  @override
+  String get turnoverLabel => 'Rotación';
+
+  @override
+  String get whoTookOrdersTitle => 'Quién tomó los pedidos';
+
+  @override
+  String get guestsQrLabel => 'Clientes (QR)';
+
+  @override
+  String minutesShort(String value) {
+    return '$value min';
   }
 
   @override

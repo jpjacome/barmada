@@ -92,15 +92,6 @@
     "description": "Bottom tab and title of the account/settings page."
   },
 
-  "comingSoon": "Coming soon",
-  "@comingSoon": {
-    "description": "Title on placeholder pages for not-yet-built features."
-  },
-  "analyticsPlaceholder": "Business-day sales, top products and service ops — next chunk of Phase 1.",
-  "@analyticsPlaceholder": {
-    "description": "Roadmap note on the Analytics placeholder page."
-  },
-
   "currencyChip": "Currency {symbol}",
   "@currencyChip": {
     "description": "Chip on the More page showing the venue's currency symbol.",
@@ -435,6 +426,109 @@
       "name": {
         "type": "String",
         "example": "Pilsener"
+      }
+    }
+  },
+
+  "analyticsOwnerOnlyTitle": "Owner access only",
+  "@analyticsOwnerOnlyTitle": {
+    "description": "Shown to staff accounts — the analytics endpoints are restricted to the venue owner."
+  },
+  "analyticsOwnerOnlySubtitle": "Analytics are available to the venue owner's account.",
+  "@analyticsOwnerOnlySubtitle": {
+    "description": "Hint under the owner-only title."
+  },
+  "rangeToday": "Today",
+  "@rangeToday": {
+    "description": "Range picker: the current business day (venue timezone and cutoff)."
+  },
+  "range7days": "7 days",
+  "@range7days": {
+    "description": "Range picker: trailing seven business days."
+  },
+  "range30days": "30 days",
+  "@range30days": {
+    "description": "Range picker: trailing thirty business days."
+  },
+  "totalSalesLabel": "Total sales",
+  "@totalSalesLabel": {
+    "description": "Headline figure of the summary card."
+  },
+  "ordersLabel": "Orders",
+  "@ordersLabel": {
+    "description": "Summary stat: countable (non-cancelled) orders."
+  },
+  "avgOrderLabel": "Avg order",
+  "@avgOrderLabel": {
+    "description": "Summary stat: average order value."
+  },
+  "peakHourLabel": "Peak hour",
+  "@peakHourLabel": {
+    "description": "Summary stat: busiest local hour."
+  },
+  "topProductLabel": "Top product",
+  "@topProductLabel": {
+    "description": "Summary line naming the best seller."
+  },
+  "analyticsNoSales": "No sales in this period yet.",
+  "@analyticsNoSales": {
+    "description": "Summary card note when the range has zero orders."
+  },
+  "ordersByHourTitle": "Orders by hour",
+  "@ordersByHourTitle": {
+    "description": "Title of the 24-bar hour distribution chart."
+  },
+  "topProductsTitle": "Top products",
+  "@topProductsTitle": {
+    "description": "Title of the ranked best-sellers card."
+  },
+  "byCategoryTitle": "By category",
+  "@byCategoryTitle": {
+    "description": "Revenue split per category inside the products card."
+  },
+  "serviceTitle": "Service",
+  "@serviceTitle": {
+    "description": "Title of the service-operations card."
+  },
+  "sessionsLabel": "Sessions",
+  "@sessionsLabel": {
+    "description": "Service stat: table sessions opened in the range."
+  },
+  "avgSessionLabel": "Avg session",
+  "@avgSessionLabel": {
+    "description": "Service stat: average session duration."
+  },
+  "mostUsedTableLabel": "Busiest table",
+  "@mostUsedTableLabel": {
+    "description": "Service stat: table with the most orders."
+  },
+  "qrScansLabel": "QR scans",
+  "@qrScansLabel": {
+    "description": "Service stat: guest QR scans."
+  },
+  "qrConversionLabel": "QR → order",
+  "@qrConversionLabel": {
+    "description": "Service stat: percentage of scans that became orders."
+  },
+  "turnoverLabel": "Turnover",
+  "@turnoverLabel": {
+    "description": "Service stat: sessions per table in the range."
+  },
+  "whoTookOrdersTitle": "Who took the orders",
+  "@whoTookOrdersTitle": {
+    "description": "Order attribution list: staff members vs guest QR."
+  },
+  "guestsQrLabel": "Guests (QR)",
+  "@guestsQrLabel": {
+    "description": "Attribution row for guest self-orders. The server sends this exact English marker; the app swaps it for this translation."
+  },
+  "minutesShort": "{value} min",
+  "@minutesShort": {
+    "description": "Compact minutes, e.g. '42 min'.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "42"
       }
     }
   },

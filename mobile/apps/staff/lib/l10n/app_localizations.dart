@@ -218,18 +218,6 @@ abstract class AppLocalizations {
   /// **'More'**
   String get tabMore;
 
-  /// Title on placeholder pages for not-yet-built features.
-  ///
-  /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get comingSoon;
-
-  /// Roadmap note on the Analytics placeholder page.
-  ///
-  /// In en, this message translates to:
-  /// **'Business-day sales, top products and service ops — next chunk of Phase 1.'**
-  String get analyticsPlaceholder;
-
   /// Chip on the More page showing the venue's currency symbol.
   ///
   /// In en, this message translates to:
@@ -601,6 +589,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} is back on sale.'**
   String productBackOnSale(String name);
+
+  /// Shown to staff accounts — the analytics endpoints are restricted to the venue owner.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner access only'**
+  String get analyticsOwnerOnlyTitle;
+
+  /// Hint under the owner-only title.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics are available to the venue owner\'s account.'**
+  String get analyticsOwnerOnlySubtitle;
+
+  /// Range picker: the current business day (venue timezone and cutoff).
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get rangeToday;
+
+  /// Range picker: trailing seven business days.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get range7days;
+
+  /// Range picker: trailing thirty business days.
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get range30days;
+
+  /// Headline figure of the summary card.
+  ///
+  /// In en, this message translates to:
+  /// **'Total sales'**
+  String get totalSalesLabel;
+
+  /// Summary stat: countable (non-cancelled) orders.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get ordersLabel;
+
+  /// Summary stat: average order value.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg order'**
+  String get avgOrderLabel;
+
+  /// Summary stat: busiest local hour.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak hour'**
+  String get peakHourLabel;
+
+  /// Summary line naming the best seller.
+  ///
+  /// In en, this message translates to:
+  /// **'Top product'**
+  String get topProductLabel;
+
+  /// Summary card note when the range has zero orders.
+  ///
+  /// In en, this message translates to:
+  /// **'No sales in this period yet.'**
+  String get analyticsNoSales;
+
+  /// Title of the 24-bar hour distribution chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders by hour'**
+  String get ordersByHourTitle;
+
+  /// Title of the ranked best-sellers card.
+  ///
+  /// In en, this message translates to:
+  /// **'Top products'**
+  String get topProductsTitle;
+
+  /// Revenue split per category inside the products card.
+  ///
+  /// In en, this message translates to:
+  /// **'By category'**
+  String get byCategoryTitle;
+
+  /// Title of the service-operations card.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get serviceTitle;
+
+  /// Service stat: table sessions opened in the range.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get sessionsLabel;
+
+  /// Service stat: average session duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg session'**
+  String get avgSessionLabel;
+
+  /// Service stat: table with the most orders.
+  ///
+  /// In en, this message translates to:
+  /// **'Busiest table'**
+  String get mostUsedTableLabel;
+
+  /// Service stat: guest QR scans.
+  ///
+  /// In en, this message translates to:
+  /// **'QR scans'**
+  String get qrScansLabel;
+
+  /// Service stat: percentage of scans that became orders.
+  ///
+  /// In en, this message translates to:
+  /// **'QR → order'**
+  String get qrConversionLabel;
+
+  /// Service stat: sessions per table in the range.
+  ///
+  /// In en, this message translates to:
+  /// **'Turnover'**
+  String get turnoverLabel;
+
+  /// Order attribution list: staff members vs guest QR.
+  ///
+  /// In en, this message translates to:
+  /// **'Who took the orders'**
+  String get whoTookOrdersTitle;
+
+  /// Attribution row for guest self-orders. The server sends this exact English marker; the app swaps it for this translation.
+  ///
+  /// In en, this message translates to:
+  /// **'Guests (QR)'**
+  String get guestsQrLabel;
+
+  /// Compact minutes, e.g. '42 min'.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} min'**
+  String minutesShort(String value);
 
   /// Transport failure: DNS, refused connection, timeout, no network.
   ///
