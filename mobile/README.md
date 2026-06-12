@@ -64,13 +64,14 @@ Sign in with an editor or staff account from your server (`/register` on the web
 - **Tables**: the live grid (open / pending-approval / closed at a glance) and per-table session screens — running bill with **item-by-item payment ticking**, totals (total / paid / remaining in the venue's currency), open / approve / mark-all-paid, and close with an explicit **settle & close** choice when money is still on the table
 - **Products**: the catalog grouped by category with photos and venue-currency prices, a search box for rush moments, and **one-tap 86** — tap a row (or its switch) to mark sold out / back on sale; the guest menu reflects it on its next poll
 - **Manual order entry**: the **New order** button on any open table — searchable catalog with quantity steppers, sold-out items blocked, then a review sheet (the guest flow's *Revisar/Confirmar pedido* vocabulary) with an optional kitchen/bar note, submitted through the same CreateOrder path as the QR flow
-- Dark Barmada theme by default (light theme included), 5-tab shell
+- **Analytics** (owner accounts): business-day sales headline, orders-by-hour chart, top products with category split, and service ops (sessions, turnover, QR funnel, who-took-the-orders) over Today / 7 / 30 days — the same `VenueAnalytics` read models as the web dashboard
+- Dark Barmada theme by default (light theme included), 5-tab shell — **every tab is real now**
 - **Bilingual UI (English / Español)**: follows the device language, with a live in-app override under **More → Language**
 
 ## Roadmap (next chunks of Phase 1)
 
 1. Push wake-ups (`firebase_messaging` — the server side shipped in barmada PR #29) + notification chime
-2. Analytics screens; settings; QR-scan-to-table; print/share
+2. Settings; QR-scan-to-table; print/share
 3. Store packaging (icons, splash, signing, CI)
 
 ## Localization (i18n)
