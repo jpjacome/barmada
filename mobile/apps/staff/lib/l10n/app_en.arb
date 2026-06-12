@@ -350,6 +350,50 @@
     "description": "Session-screen chip: a guest called a waiter. Tapping marks it handled."
   },
 
+  "newOrderAction": "New order",
+  "@newOrderAction": {
+    "description": "Button on an open table starting manual order entry (staff takes the order for guests who don't scan)."
+  },
+  "newOrderSheetTitle": "New order · table {table}",
+  "@newOrderSheetTitle": {
+    "description": "Title of the order composer and its review sheet.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+  "itemsCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@itemsCount": {
+    "description": "Cart size in the composer's total bar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewOrder": "Review order",
+  "@reviewOrder": {
+    "description": "Composer button opening the pre-submit recap — the guest flow translates this exact label as 'Revisar pedido'."
+  },
+  "confirmOrder": "Confirm order",
+  "@confirmOrder": {
+    "description": "Review-sheet submit — the guest flow translates this exact label as 'Confirmar pedido'."
+  },
+  "orderNoteHint": "Order note (optional)",
+  "@orderNoteHint": {
+    "description": "Note field on the review sheet, printed on the kitchen/bar ticket."
+  },
+  "orderPlacedSnack": "Order placed for table {table}.",
+  "@orderPlacedSnack": {
+    "description": "Snackbar after a manual order is accepted.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+
   "soldOut": "Sold out",
   "@soldOut": {
     "description": "Chip on an 86'd product — the guest menu shows the same word ('Agotado')."
