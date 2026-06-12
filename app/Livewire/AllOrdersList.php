@@ -4,11 +4,16 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Actions\Approvals\ApproveSessionRequest;
+use App\Actions\Orders\ChangeOrderStatus;
+use App\Actions\ServiceRequests\ResolveServiceRequest;
+use App\Actions\Tables\ApproveTableAndAdoptRequests;
+use App\Actions\Tables\OpenTable;
+use App\Exceptions\DomainActionException;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
 use App\Models\TableSessionRequest;
-use App\Models\TableSession;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -125,11 +130,8 @@ class AllOrdersList extends Component
         // Resolved through EditorScope: requests outside the caller's
         // tenant are invisible. Admins resolve any.
         $request = \App\Models\ServiceRequest::find($requestId);
-        if ($request && $request->status === 'pending') {
-            $request->status = 'done';
-            $request->resolved_at = now();
-            $request->resolved_by = auth()->id();
-            $request->save();
+        if ($request) {
+            app(ResolveServiceRequest::class)->handle($request, Auth::user());
         }
         $this->loadServiceRequests();
     }
@@ -256,8 +258,10 @@ class AllOrdersList extends Component
             if ($order->status === 'cancelled') {
                 return;
             }
-            $order->status = $order->status === 'pending' ? 'delivered' : 'pending';
-            $order->save();
+            app(ChangeOrderStatus::class)->handle(
+                $order,
+                $order->status === 'pending' ? 'delivered' : 'pending'
+            );
             
             // Refresh pending orders
             $this->refreshPendingOrders();
@@ -301,8 +305,10 @@ class AllOrdersList extends Component
             $order = Order::find($this->editingOrder['id']);
             if ($order) {
                 $this->authorize('update', $order);
-                $order->status = $order->status === 'pending' ? 'delivered' : 'pending';
-                $order->save();
+                app(ChangeOrderStatus::class)->handle(
+                    $order,
+                    $order->status === 'pending' ? 'delivered' : 'pending'
+                );
                 
                 // Refresh both lists
                 $this->loadOrders();
@@ -500,8 +506,7 @@ class AllOrdersList extends Component
         $order = Order::find($orderId);
         if ($order && $order->status === 'pending') {
             $this->authorize('update', $order);
-            $order->status = 'cancelled';
-            $order->save();
+            app(ChangeOrderStatus::class)->handle($order, 'cancelled');
             $this->refreshPendingOrders();
             $this->lastUpdated = now()->format('H:i:s');
             $this->dispatch('orderDetailsUpdated', changes: [$orderId => 'removed']);
@@ -513,8 +518,7 @@ class AllOrdersList extends Component
         $table = \App\Models\Table::find($tableId);
         if ($table && $table->status === 'pending_approval') {
             $this->authorize('update', $table);
-            $table->status = 'open';
-            $table->save();
+            app(OpenTable::class)->handle($table);
             // Optionally: notify the customer (they will be redirected by polling)
         }
         // Optionally: refresh the admin view
@@ -526,38 +530,10 @@ class AllOrdersList extends Component
         $table = Table::find($tableId);
         if ($table && $table->status === 'pending_approval') {
             $this->authorize('update', $table);
-            // Open the table (the Table model hook creates the new session
-            // and rotates the QR token).
-            $table->status = 'open';
-            $table->save();
-
-            // Adopt the device requests recorded while the table was closed
-            // into the fresh session, approving the first requester so the
-            // waiting customer gets in without rescanning. Later requesters
-            // stay pending and appear in the open table's client list. [F-1]
-            $session = $table->sessions()
-                ->whereIn('status', ['open', 'reopened'])
-                ->latest('opened_at')
-                ->first();
-
-            if ($session) {
-                $orphans = TableSessionRequest::whereNull('table_session_id')
-                    ->where('table_id', $table->id)
-                    ->where('status', 'pending')
-                    ->whereDate('created_at', now()->toDateString())
-                    ->orderBy('requested_at')
-                    ->orderBy('id')
-                    ->get();
-
-                foreach ($orphans as $index => $request) {
-                    $request->table_session_id = $session->id;
-                    if ($index === 0) {
-                        $request->status = 'approved';
-                        $request->approved_at = now();
-                    }
-                    $request->save();
-                }
-            }
+            // Opens the table and adopts the device requests recorded while
+            // it was closed, approving the first requester so the waiting
+            // customer gets in without rescanning. [F-1]
+            app(ApproveTableAndAdoptRequests::class)->handle($table);
         }
         $this->loadTables();
     }
@@ -565,15 +541,15 @@ class AllOrdersList extends Component
     public function approveClientRequest($requestId)
     {
         $request = TableSessionRequest::find($requestId);
-        if ($request && $request->status === 'pending' && $request->table_session_id) {
-            // Resolving the session through EditorScope enforces ownership;
-            // sessions outside the caller's tenant resolve to null.
-            if (! TableSession::find($request->table_session_id)) {
-                return;
+        if ($request) {
+            try {
+                // Ownership is enforced inside the action by resolving the
+                // session through EditorScope.
+                app(ApproveSessionRequest::class)->handle($request);
+            } catch (DomainActionException) {
+                // Not approvable (already handled / out of tenant): the web
+                // board treats this as a silent no-op.
             }
-            $request->status = 'approved';
-            $request->approved_at = now();
-            $request->save();
         }
         $this->loadTables();
     }

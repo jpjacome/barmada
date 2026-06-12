@@ -188,48 +188,23 @@ class TableController extends Controller
             return redirect()->route('orders.waiting-approval');
         }
 
-        // Resolve products up front; every product must belong to the
-        // table's tenant. Rejecting before the order row exists avoids
-        // persisting partial orders.
-        $products = [];
-        foreach (array_keys($validated['products']) as $productId) {
-            $product = \App\Models\Product::forEditor($table->editor_id)->find($productId);
-            if (! $product) {
-                abort(422, 'Invalid product for this table.');
-            }
-            if (! $product->is_available) {
-                // Sold out between page load and submit.
-                abort(422, 'Product not available.');
-            }
-            $products[$productId] = $product;
+        // One code path with the staff form and the API: the CreateOrder
+        // action validates the catalog (tenant + availability) BEFORE the
+        // order row exists and explodes items one row per unit.
+        try {
+            app(\App\Actions\Orders\CreateOrder::class)->handle(
+                $table,
+                $currentSession,
+                $validated['products'],
+                $validated['note'] ?? null,
+                null, // guest order — no authenticated creator
+            );
+        } catch (\App\Exceptions\ProductUnavailableException $e) {
+            // Sold out between page load and submit.
+            abort(422, 'Product not available.');
+        } catch (\App\Exceptions\InvalidProductException $e) {
+            abort(422, 'Invalid product for this table.');
         }
-
-        // Create the order
-        $order = \App\Models\Order::create([
-            'table_id' => $table->id,
-            'table_session_id' => $currentSession->id,
-            'status' => 'pending',
-            'note' => isset($validated['note']) ? strip_tags($validated['note']) : null,
-            'total_amount' => 0, // Calculate total based on products
-            'editor_id' => $table->editor_id, // Assign the editor_id from the table
-        ]);
-
-        $totalAmount = 0;
-        $itemIndex = 0; // Initialize item index
-        foreach ($validated['products'] as $productId => $quantity) {
-            $product = $products[$productId];
-            for ($i = 0; $i < $quantity; $i++) {
-                $order->items()->create([
-                    'product_id' => $productId,
-                    'quantity' => 1,
-                    'price' => $product->price,
-                    'item_index' => $itemIndex++, // Increment item index for each item
-                ]);
-                $totalAmount += $product->price;
-            }
-        }
-
-        $order->update(['total_amount' => $totalAmount]);
 
         // Redirect to the confirmation page. The table token travels along
         // so the (stateless) confirmation can use the venue's language and
