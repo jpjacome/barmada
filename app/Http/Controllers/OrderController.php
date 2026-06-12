@@ -102,64 +102,25 @@ class OrderController extends Controller
             return redirect()->back()->withErrors(['table_id' => 'No open session for this table. Please open the table first.']);
         }
         
-        // Assign editor_id: admins record the table's tenant; editors and
-        // staff record their own tenant (a staff user's editor, not the
-        // staff user's id).
-        $editorId = $user->is_admin ? $table->editor_id : $user->effectiveEditorId();
-        
-        // Create the order. Manual orders record who entered them so the
-        // staff analytics have a real grouping column.
-        $order = Order::create([
-            'table_id' => $table->id,
-            'table_session_id' => $currentSession->id,
-            'status' => 'pending',
-            'note' => isset($validated['note']) ? strip_tags($validated['note']) : null,
-            'created_by' => $user->id,
-            'total_amount' => 0,
-            'amount_paid' => 0,
-            'amount_left' => 0,
-            'editor_id' => $editorId,
-        ]);
-
-        // Calculate total amount and create order items
-        $totalAmount = 0;
-        $itemIndex = 0;
-
-        foreach ($validated['products'] as $productId => $quantity) {
-            if ($quantity > 0) {
-                // Products must belong to the table's tenant (also bounds
-                // admin-created orders to the right catalog).
-                $product = Product::forEditor($table->editor_id)->findOrFail($productId);
-                if (! $product->is_available) {
-                    $order->items()->delete();
-                    $order->delete();
-                    return redirect()->back()->withErrors([
-                        'products' => __('“:name” is sold out.', ['name' => $product->name]),
-                    ]);
-                }
-                $price = $product->price;
-                $totalAmount += $quantity * $price;
-                
-                // Create individual order items for each unit
-                for ($i = 0; $i < $quantity; $i++) {
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $productId,
-                        'quantity' => 1,
-                        'price' => $price,
-                        'is_paid' => false,
-                        'item_index' => $itemIndex++
-                    ]);
-                }
-            }
+        // One code path with the guest flow and the API: the CreateOrder
+        // action bounds products to the table's tenant, enforces
+        // availability, explodes items per unit and records the creator
+        // so the staff analytics have a real grouping column.
+        try {
+            app(\App\Actions\Orders\CreateOrder::class)->handle(
+                $table,
+                $currentSession,
+                $validated['products'],
+                $validated['note'] ?? null,
+                $user,
+            );
+        } catch (\App\Exceptions\ProductUnavailableException $e) {
+            return redirect()->back()->withErrors(['products' => $e->getMessage()]);
+        } catch (\App\Exceptions\InvalidProductException $e) {
+            // Previously a findOrFail: products outside the tenant 404.
+            abort(404);
         }
-        
-        // Update order total
-        $order->update([
-            'total_amount' => $totalAmount,
-            'amount_left' => $totalAmount
-        ]);
-        
+
         return redirect()->route('orders.confirmation')->with('success', 'Your order has been submitted!');
     }
     

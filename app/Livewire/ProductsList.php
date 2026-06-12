@@ -377,8 +377,7 @@ class ProductsList extends Component
     {
         $product = Product::findOrFail($id);
         $this->authorize('update', $product);
-        $product->is_available = ! $product->is_available;
-        $product->save();
+        app(\App\Actions\Products\ToggleProductAvailability::class)->handle($product);
         $this->status = $product->is_available
             ? "'{$product->name}' is available again."
             : "'{$product->name}' marked as sold out.";
