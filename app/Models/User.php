@@ -6,11 +6,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -76,6 +77,47 @@ class User extends Authenticatable
         }
 
         return null;
+    }
+
+    /**
+     * Abilities stamped on API tokens, derived from the role flags at
+     * login time. Enforcement rides on the same policies as the web —
+     * these markers exist so future endpoints (and the mobile app's UI)
+     * can gate on them without re-deriving roles.
+     *
+     * @return list<string>
+     */
+    public function apiTokenAbilities(): array
+    {
+        if ($this->is_admin) {
+            return ['role:admin', 'role:editor', 'role:staff'];
+        }
+
+        if ($this->is_editor) {
+            return ['role:editor', 'role:staff'];
+        }
+
+        if ($this->is_staff) {
+            return ['role:staff'];
+        }
+
+        return [];
+    }
+
+    /**
+     * The user whose business settings (currency, locale, timezone) apply
+     * to this account: editors themselves, the owning editor for staff,
+     * self for admins and tenant-less users.
+     */
+    public function venueSettingsUser(): User
+    {
+        $tenantId = $this->effectiveEditorId();
+
+        if ($tenantId !== null && $tenantId !== $this->id) {
+            return User::find($tenantId) ?? $this;
+        }
+
+        return $this;
     }
 
     /**
