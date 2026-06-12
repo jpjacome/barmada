@@ -19,20 +19,14 @@ class Table extends Model
      */
     protected $fillable = [
         // 'id' intentionally omitted: the primary key must not be client-settable.
-        'orders',
         'status',
         'reference',
         'editor_id',
         'table_number', // Added for per-editor numbering
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'is_occupied' => 'boolean',
+        'archived_at' => 'datetime',
     ];
 
     /**
@@ -41,18 +35,6 @@ class Table extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
-    }
-
-    /**
-     * Get the current active order for this table, if any.
-     */
-    public function activeOrder()
-    {
-        return $this->orders()
-            ->where('status', 'open')
-            ->orWhere('status', 'in_progress')
-            ->latest()
-            ->first();
     }
 
     /**

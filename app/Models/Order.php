@@ -72,6 +72,15 @@ class Order extends Model
         });
     }
 
+    /**
+     * Orders that count toward revenue and operations metrics —
+     * everything except cancelled ones. [#12]
+     */
+    public function scopeCountable($query)
+    {
+        return $query->where('status', '!=', 'cancelled');
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);

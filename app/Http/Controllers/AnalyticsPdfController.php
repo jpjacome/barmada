@@ -23,7 +23,9 @@ class AnalyticsPdfController extends Controller
         for ($i = 0; $i < 12; $i++) {
             // Business months in the venue's timezone + cutoff. [F-22]
             [$mFrom, $mTo, $date] = BusinessDay::monthRangeUtc(auth()->user(), $i);
-            $query = \App\Models\Order::query()
+            $month = $date->month;
+            $year = $date->year;
+            $query = \App\Models\Order::query()->countable()
                 ->where('editor_id', $editorId)
                 ->where('created_at', '>=', $mFrom)
                 ->where('created_at', '<', $mTo);
@@ -69,7 +71,7 @@ class AnalyticsPdfController extends Controller
         $productSales = [];
         foreach ($periods as $key => $period) {
             [$pFrom, $pTo] = BusinessDay::rangeUtc(auth()->user(), $key);
-            $orders = \App\Models\Order::where('editor_id', $editorId)
+            $orders = \App\Models\Order::countable()->where('editor_id', $editorId)
                 ->where('created_at', '>=', $pFrom)
                 ->where('created_at', '<', $pTo)
                 ->with('items.product')
@@ -134,7 +136,9 @@ class AnalyticsPdfController extends Controller
         for ($i = 0; $i < 12; $i++) {
             // Business months in the venue's timezone + cutoff. [F-22]
             [$mFrom, $mTo, $date] = BusinessDay::monthRangeUtc(auth()->user(), $i);
-            $query = \App\Models\Order::query()
+            $month = $date->month;
+            $year = $date->year;
+            $query = \App\Models\Order::query()->countable()
                 ->where('editor_id', $editorId)
                 ->where('created_at', '>=', $mFrom)
                 ->where('created_at', '<', $mTo);
@@ -180,7 +184,7 @@ class AnalyticsPdfController extends Controller
         $productSales = [];
         foreach ($periods as $key => $period) {
             [$pFrom, $pTo] = BusinessDay::rangeUtc(auth()->user(), $key);
-            $orders = \App\Models\Order::where('editor_id', $editorId)
+            $orders = \App\Models\Order::countable()->where('editor_id', $editorId)
                 ->where('created_at', '>=', $pFrom)
                 ->where('created_at', '<', $pTo)
                 ->with('items.product')
@@ -257,7 +261,9 @@ class AnalyticsPdfController extends Controller
         for ($i = 0; $i < 12; $i++) {
             // Business months in the venue's timezone + cutoff. [F-22]
             [$mFrom, $mTo, $date] = BusinessDay::monthRangeUtc(auth()->user(), $i);
-            $query = \App\Models\Order::query()
+            $month = $date->month;
+            $year = $date->year;
+            $query = \App\Models\Order::query()->countable()
                 ->where('editor_id', $editorId)
                 ->where('created_at', '>=', $mFrom)
                 ->where('created_at', '<', $mTo);
@@ -297,7 +303,7 @@ class AnalyticsPdfController extends Controller
         $statsRows = [];
         foreach ($ranges as $range) {
             [$rFrom, $rTo] = BusinessDay::rangeUtc(auth()->user(), $range);
-            $query = \App\Models\Order::query()->where('editor_id', $editorId)
+            $query = \App\Models\Order::query()->countable()->where('editor_id', $editorId)
                 ->where('created_at', '>=', $rFrom)
                 ->where('created_at', '<', $rTo);
             $orders = $query->with(['items.product'])->get();
@@ -341,7 +347,7 @@ class AnalyticsPdfController extends Controller
         $productSales = [];
         foreach ($periods as $key => $period) {
             [$pFrom, $pTo] = BusinessDay::rangeUtc(auth()->user(), $key);
-            $orders = \App\Models\Order::where('editor_id', $editorId)
+            $orders = \App\Models\Order::countable()->where('editor_id', $editorId)
                 ->where('created_at', '>=', $pFrom)
                 ->where('created_at', '<', $pTo)
                 ->with('items.product')
@@ -397,27 +403,21 @@ class AnalyticsPdfController extends Controller
                 $row = is_array($row) ? $row : [$row];
                 fputcsv($handle, array_map($sanitize, $row));
             };
-            // Monthly Stats
-            $put($file, ['Monthly Stats']);
-            $put($file, array_keys($months[0]));
-            foreach ($months as $row) {
-                $put($file, $row);
-            }
-            $put($file, []);
-            // Stats by Range
-            $put($file, ['Stats by Range']);
-            $put($file, array_keys($statsRows[0]));
-            foreach ($statsRows as $row) {
-                $put($file, $row);
-            }
-            $put($file, []);
-            // Product Sales Matrix
-            $put($file, ['Product Sales Matrix']);
-            $put($file, array_keys($matrixRows[0]));
-            foreach ($matrixRows as $row) {
-                $put($file, $row);
-            }
-            $put($file, []);
+            // A section with no rows must not crash the export (e.g. a
+            // fresh venue with no sales in the window yet).
+            $section = function ($title, $rows) use ($file, $put) {
+                $put($file, [$title]);
+                if (! empty($rows)) {
+                    $put($file, array_keys(reset($rows)));
+                    foreach ($rows as $row) {
+                        $put($file, $row);
+                    }
+                }
+                $put($file, []);
+            };
+            $section('Monthly Stats', $months);
+            $section('Stats by Range', $statsRows);
+            $section('Product Sales Matrix', $matrixRows);
             // Service & Operations (Month)
             $put($file, ['Service & Operations (Month)']);
             foreach ($serviceOpsStats['month'] as $key => $val) {
@@ -454,7 +454,7 @@ class AnalyticsPdfController extends Controller
         [$from, $to] = BusinessDay::rangeUtc(auth()->user(), $range);
         $sessionQuery = \App\Models\TableSession::query()->where('editor_id', $editorId)
             ->where('opened_at', '>=', $from)->where('opened_at', '<', $to);
-        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId)
+        $orderQuery = \App\Models\Order::query()->countable()->where('editor_id', $editorId)
             ->where('created_at', '>=', $from)->where('created_at', '<', $to);
         $activityQuery = \App\Models\ActivityLog::query()->where('editor_id', $editorId)
             ->where('created_at', '>=', $from)->where('created_at', '<', $to);
@@ -527,7 +527,7 @@ class AnalyticsPdfController extends Controller
     private function aggregateProductCategoryStats($range, $editorId)
     {
         [$from, $to] = BusinessDay::rangeUtc(auth()->user(), $range);
-        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId)
+        $orderQuery = \App\Models\Order::query()->countable()->where('editor_id', $editorId)
             ->where('created_at', '>=', $from)
             ->where('created_at', '<', $to);
         $orders = $orderQuery->with(['items.product'])->get();

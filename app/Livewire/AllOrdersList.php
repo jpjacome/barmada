@@ -251,6 +251,11 @@ class AllOrdersList extends Component
         $order = Order::find($orderId);
         if ($order) {
             $this->authorize('update', $order);
+            // Cancelled is final from this control; un-cancelling would
+            // silently resurrect revenue. [#12]
+            if ($order->status === 'cancelled') {
+                return;
+            }
             $order->status = $order->status === 'pending' ? 'delivered' : 'pending';
             $order->save();
             
@@ -485,25 +490,21 @@ class AllOrdersList extends Component
         return $this->exportOrdersToXml();
     }
 
-    public function acceptOrderRequest($orderId)
+    /**
+     * Cancel an order [#12]: excluded from revenue and payment totals but
+     * kept in the history (unlike delete). Pending orders only — a
+     * delivered order represents served product.
+     */
+    public function cancelOrder($orderId)
     {
-        $order = \App\Models\Order::find($orderId);
-        if ($order && $order->status === 'pending_approval') {
+        $order = Order::find($orderId);
+        if ($order && $order->status === 'pending') {
             $this->authorize('update', $order);
-            $table = \App\Models\Table::find($order->table_id);
-            if ($table) {
-                // Set table status to open (triggers unique token generation)
-                $table->status = 'open';
-                $table->save();
-                // Update order status to approved
-                $order->status = 'approved';
-                $order->save();
-                // Optionally: notify or redirect the customer (could be via polling on the waiting page)
-            }
-            // Refresh lists
-            $this->loadOrders();
-            $this->loadPendingOrders();
-            $this->dispatch('orderDetailsUpdated', [ $orderId => 'removed' ]);
+            $order->status = 'cancelled';
+            $order->save();
+            $this->refreshPendingOrders();
+            $this->lastUpdated = now()->format('H:i:s');
+            $this->dispatch('orderDetailsUpdated', changes: [$orderId => 'removed']);
         }
     }
 

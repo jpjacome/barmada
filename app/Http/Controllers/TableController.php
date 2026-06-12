@@ -49,13 +49,14 @@ class TableController extends Controller
             app()->setLocale($editor->guestLocale());
         }
         $currency = $editor ? $editor->currencySymbol() : '$';
+        $venueName = $editor ? ($editor->business_name ?: $editor->name) : null;
         // Only load products and tables for the correct editor
         $products = Product::where('editor_id', $table->editor_id)->orderBy('name')->get();
         $tables = Table::where('editor_id', $table->editor_id)->orderBy('table_number')->get();
         $selectedTableId = $table->id;
         $currentEditorId = $table->editor_id;
         // Render the order creation view with the table preselected and correct editor context
-        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'unique_token', 'currentEditorId', 'currency'));
+        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'unique_token', 'currentEditorId', 'currency', 'venueName'));
     }
 
     /**

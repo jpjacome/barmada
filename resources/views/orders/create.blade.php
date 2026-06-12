@@ -13,6 +13,9 @@
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="order-container">
+            @if(!empty($venueName))
+                <p class="venue-name" style="text-align:center;margin-bottom:0.25rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-accents,#777);font-size:var(--text-sm,0.85rem);">{{ $venueName }}</p>
+            @endif
             <h1 class="order-title">{{ __('Place Order') }}</h1>
 
             @if ($errors->any())

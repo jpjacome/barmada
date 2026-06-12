@@ -46,5 +46,6 @@
     "Call a waiter": "Call a waiter",
     "Waiter called — on the way": "Waiter called — on the way",
     "Order more": "Order more",
-    "“:name” is sold out.": "“:name” is sold out."
+    "“:name” is sold out.": "“:name” is sold out.",
+    "Cancelled": "Cancelled"
 }
