@@ -512,6 +512,48 @@ abstract class AppLocalizations {
   /// **'Waiter called'**
   String get waiterCalledChip;
 
+  /// Button on an open table starting manual order entry (staff takes the order for guests who don't scan).
+  ///
+  /// In en, this message translates to:
+  /// **'New order'**
+  String get newOrderAction;
+
+  /// Title of the order composer and its review sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'New order · table {table}'**
+  String newOrderSheetTitle(Object table);
+
+  /// Cart size in the composer's total bar.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No items} =1{1 item} other{{count} items}}'**
+  String itemsCount(int count);
+
+  /// Composer button opening the pre-submit recap — the guest flow translates this exact label as 'Revisar pedido'.
+  ///
+  /// In en, this message translates to:
+  /// **'Review order'**
+  String get reviewOrder;
+
+  /// Review-sheet submit — the guest flow translates this exact label as 'Confirmar pedido'.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm order'**
+  String get confirmOrder;
+
+  /// Note field on the review sheet, printed on the kitchen/bar ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Order note (optional)'**
+  String get orderNoteHint;
+
+  /// Snackbar after a manual order is accepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Order placed for table {table}.'**
+  String orderPlacedSnack(Object table);
+
   /// Chip on an 86'd product — the guest menu shows the same word ('Agotado').
   ///
   /// In en, this message translates to:

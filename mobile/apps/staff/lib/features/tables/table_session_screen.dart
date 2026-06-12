@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import '../../l10n/api_error_l10n.dart';
 import '../../l10n/app_localizations.dart';
 import '../board/board_providers.dart';
+import 'order_composer_screen.dart';
 import 'tables_providers.dart';
 
 /// One table's live session: the running bill with the product's
@@ -121,8 +122,25 @@ class _TableSessionScreenState extends ConsumerState<TableSessionScreen> {
     final l10n = AppLocalizations.of(context);
     final bill = ref.watch(tableSessionProvider(widget.tableId));
     final snapshot = bill.valueOrNull;
+    final tableOpen = snapshot?.table?.status == 'open';
 
     return Scaffold(
+      // Manual order entry — for guests who don't scan. Only on open
+      // tables: orders need a session to land in.
+      floatingActionButton: tableOpen
+          ? FloatingActionButton.extended(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => OrderComposerScreen(
+                    tableId: widget.tableId,
+                    tableNumber: widget.tableNumber,
+                  ),
+                ),
+              ),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.newOrderAction),
+            )
+          : null,
       appBar: AppBar(
         title: Text(l10n.orderTableTitle(widget.tableNumber)),
         actions: [
@@ -232,7 +250,9 @@ class _SessionView extends ConsumerWidget {
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      // Extra bottom room so the New-order FAB never covers the last
+      // order's tick targets.
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       children: [
         Row(
           children: [

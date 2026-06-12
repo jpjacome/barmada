@@ -245,6 +245,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get waiterCalledChip => 'Waiter called';
 
   @override
+  String get newOrderAction => 'New order';
+
+  @override
+  String newOrderSheetTitle(Object table) {
+    return 'New order · table $table';
+  }
+
+  @override
+  String itemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+      zero: 'No items',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewOrder => 'Review order';
+
+  @override
+  String get confirmOrder => 'Confirm order';
+
+  @override
+  String get orderNoteHint => 'Order note (optional)';
+
+  @override
+  String orderPlacedSnack(Object table) {
+    return 'Order placed for table $table.';
+  }
+
+  @override
   String get soldOut => 'Sold out';
 
   @override
