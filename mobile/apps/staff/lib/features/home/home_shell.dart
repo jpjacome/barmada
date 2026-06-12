@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../board/board_screen.dart';
 import 'more_screen.dart';
 import 'placeholder_screen.dart';
@@ -16,60 +17,62 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
 
-  static const _pages = <Widget>[
-    BoardScreen(),
-    PlaceholderScreen(
-      title: 'Tables',
-      icon: Icons.table_bar_outlined,
-      message: 'Table grid with sessions, item payment ticking and bills — '
-          'next chunk of Phase 1.',
-    ),
-    PlaceholderScreen(
-      title: 'Products',
-      icon: Icons.local_bar_outlined,
-      message: 'Catalog with one-tap 86 availability — next chunk of Phase 1.',
-    ),
-    PlaceholderScreen(
-      title: 'Analytics',
-      icon: Icons.query_stats_outlined,
-      message: 'Business-day sales, top products and service ops — '
-          'next chunk of Phase 1.',
-    ),
-    MoreScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    // Built per-frame so labels follow the locale; the IndexedStack keeps
+    // each tab's State alive across rebuilds (children match by type+slot).
+    final pages = <Widget>[
+      const BoardScreen(),
+      PlaceholderScreen(
+        title: l10n.tabTables,
+        icon: Icons.table_bar_outlined,
+        message: l10n.tablesPlaceholder,
+      ),
+      PlaceholderScreen(
+        title: l10n.tabProducts,
+        icon: Icons.local_bar_outlined,
+        message: l10n.productsPlaceholder,
+      ),
+      PlaceholderScreen(
+        title: l10n.tabAnalytics,
+        icon: Icons.query_stats_outlined,
+        message: l10n.analyticsPlaceholder,
+      ),
+      const MoreScreen(),
+    ];
+
     return Scaffold(
-      body: IndexedStack(index: _index, children: _pages),
+      body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (value) => setState(() => _index = value),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.grid_view_outlined),
-            selectedIcon: Icon(Icons.grid_view_rounded),
-            label: 'Board',
+            icon: const Icon(Icons.grid_view_outlined),
+            selectedIcon: const Icon(Icons.grid_view_rounded),
+            label: l10n.tabBoard,
           ),
           NavigationDestination(
-            icon: Icon(Icons.table_bar_outlined),
-            selectedIcon: Icon(Icons.table_bar),
-            label: 'Tables',
+            icon: const Icon(Icons.table_bar_outlined),
+            selectedIcon: const Icon(Icons.table_bar),
+            label: l10n.tabTables,
           ),
           NavigationDestination(
-            icon: Icon(Icons.local_bar_outlined),
-            selectedIcon: Icon(Icons.local_bar),
-            label: 'Products',
+            icon: const Icon(Icons.local_bar_outlined),
+            selectedIcon: const Icon(Icons.local_bar),
+            label: l10n.tabProducts,
           ),
           NavigationDestination(
-            icon: Icon(Icons.query_stats_outlined),
-            selectedIcon: Icon(Icons.query_stats),
-            label: 'Analytics',
+            icon: const Icon(Icons.query_stats_outlined),
+            selectedIcon: const Icon(Icons.query_stats),
+            label: l10n.tabAnalytics,
           ),
           NavigationDestination(
-            icon: Icon(Icons.more_horiz_outlined),
-            selectedIcon: Icon(Icons.more_horiz),
-            label: 'More',
+            icon: const Icon(Icons.more_horiz_outlined),
+            selectedIcon: const Icon(Icons.more_horiz),
+            label: l10n.tabMore,
           ),
         ],
       ),

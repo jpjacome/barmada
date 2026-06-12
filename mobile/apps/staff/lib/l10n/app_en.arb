@@ -1,0 +1,251 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Barmada Staff",
+  "@appTitle": {
+    "description": "App name shown by the OS task switcher."
+  },
+
+  "startupErrorTitle": "Something went wrong",
+  "@startupErrorTitle": {
+    "description": "Title when the app fails to restore its session at startup."
+  },
+  "retry": "Try again",
+  "@retry": {
+    "description": "Generic retry button."
+  },
+
+  "setupTagline": "Run the bar from your pocket.",
+  "@setupTagline": {
+    "description": "Tagline under the wordmark on the first-run screen."
+  },
+  "setupServerLabel": "Your server",
+  "@setupServerLabel": {
+    "description": "Label above the server address field. Self-hosting is the product: the server belongs to the venue."
+  },
+  "setupServerHint": "https://bar.example  ·  http://10.0.2.2:8000",
+  "@setupServerHint": {
+    "description": "Example addresses inside the server field. URLs are locale-independent; keep as-is unless the examples should differ."
+  },
+  "setupEmulatorTip": "Tip: testing against `php artisan serve` on your laptop? Use http://10.0.2.2:8000 from the Android emulator, or your laptop's LAN IP from a real phone.",
+  "@setupEmulatorTip": {
+    "description": "Developer-facing hint under the server field. `php artisan serve` is a command and stays untranslated."
+  },
+  "setupEmptyUrl": "Enter your server address.",
+  "@setupEmptyUrl": {
+    "description": "Validation message when the server field is submitted empty."
+  },
+  "setupConnected": "Connected to {serverName}.",
+  "@setupConnected": {
+    "description": "Snackbar after a server responds to /meta.",
+    "placeholders": {
+      "serverName": {
+        "type": "String",
+        "example": "La Cantina"
+      }
+    }
+  },
+  "connect": "Connect",
+  "@connect": {
+    "description": "Button that validates and saves the server address."
+  },
+
+  "emailLabel": "Email",
+  "@emailLabel": {
+    "description": "Login email field label."
+  },
+  "passwordLabel": "Password",
+  "@passwordLabel": {
+    "description": "Login password field label."
+  },
+  "signIn": "Sign in",
+  "@signIn": {
+    "description": "Login submit button."
+  },
+  "useDifferentServer": "Use a different server",
+  "@useDifferentServer": {
+    "description": "Link on the login screen back to the add-server flow."
+  },
+  "defaultDeviceName": "Staff phone",
+  "@defaultDeviceName": {
+    "description": "Default device label sent to the server when creating the API token; venues see it in their device list."
+  },
+
+  "tabBoard": "Board",
+  "@tabBoard": {
+    "description": "Bottom tab: the live orders board."
+  },
+  "tabTables": "Tables",
+  "@tabTables": {
+    "description": "Bottom tab: tables."
+  },
+  "tabProducts": "Products",
+  "@tabProducts": {
+    "description": "Bottom tab: product catalog."
+  },
+  "tabAnalytics": "Analytics",
+  "@tabAnalytics": {
+    "description": "Bottom tab: sales analytics."
+  },
+  "tabMore": "More",
+  "@tabMore": {
+    "description": "Bottom tab and title of the account/settings page."
+  },
+
+  "comingSoon": "Coming soon",
+  "@comingSoon": {
+    "description": "Title on placeholder pages for not-yet-built features."
+  },
+  "tablesPlaceholder": "Table grid with sessions, item payment ticking and bills — next chunk of Phase 1.",
+  "@tablesPlaceholder": {
+    "description": "Roadmap note on the Tables placeholder page."
+  },
+  "productsPlaceholder": "Catalog with one-tap sold-out toggles — next chunk of Phase 1.",
+  "@productsPlaceholder": {
+    "description": "Roadmap note on the Products placeholder page. 'Sold out' matches the guest menu's wording."
+  },
+  "analyticsPlaceholder": "Business-day sales, top products and service ops — next chunk of Phase 1.",
+  "@analyticsPlaceholder": {
+    "description": "Roadmap note on the Analytics placeholder page."
+  },
+
+  "currencyChip": "Currency {symbol}",
+  "@currencyChip": {
+    "description": "Chip on the More page showing the venue's currency symbol.",
+    "placeholders": {
+      "symbol": {
+        "type": "String",
+        "example": "€"
+      }
+    }
+  },
+  "languageLabel": "Language",
+  "@languageLabel": {
+    "description": "Title of the language picker on the More page."
+  },
+  "languageSystem": "System",
+  "@languageSystem": {
+    "description": "Language option: follow the device language."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Language option endonym — keep 'English' in every translation."
+  },
+  "languageSpanish": "Español",
+  "@languageSpanish": {
+    "description": "Language option endonym — keep 'Español' in every translation."
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Button ending the staff session."
+  },
+  "forgetServer": "Forget this server",
+  "@forgetServer": {
+    "description": "Button removing the saved server (back to first-run)."
+  },
+  "aboutFooter": "Barmada Staff · Phase 1 scaffold\nSelf-hosted, zero commission, yours.",
+  "@aboutFooter": {
+    "description": "Footer on the More page; second line is the product credo."
+  },
+
+  "boardErrorTitle": "Cannot reach the server",
+  "@boardErrorTitle": {
+    "description": "Title when the board poll fails."
+  },
+  "boardErrorRetryHint": "Pull down to retry.",
+  "@boardErrorRetryHint": {
+    "description": "Hint under the board error explaining pull-to-refresh."
+  },
+  "boardQuietTitle": "All quiet",
+  "@boardQuietTitle": {
+    "description": "Empty-board title when nothing needs attention."
+  },
+  "boardQuietSubtitle": "No pending orders, approvals or service requests right now.",
+  "@boardQuietSubtitle": {
+    "description": "Empty-board subtitle."
+  },
+  "approveTableChip": "Approve table {table}",
+  "@approveTableChip": {
+    "description": "Attention chip: a table's first guest is waiting for approval. Tapping approves.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+  "newGuestChip": "New guest · table {table}",
+  "@newGuestChip": {
+    "description": "Attention chip: an additional guest wants to join an open table. Tapping approves.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+  "billChip": "Bill · table {table}",
+  "@billChip": {
+    "description": "Attention chip: a guest asked for the bill. Tapping marks it handled.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+  "waiterChip": "Waiter · table {table}",
+  "@waiterChip": {
+    "description": "Attention chip: a guest called a waiter. Tapping marks it handled.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+  "noPendingOrders": "No pending orders",
+  "@noPendingOrders": {
+    "description": "Shown when alerts exist but no orders are pending."
+  },
+  "orderTableTitle": "Table {table}",
+  "@orderTableTitle": {
+    "description": "Order card title: which table ordered.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+  "delivered": "Delivered",
+  "@delivered": {
+    "description": "Order card action marking the order as delivered. The guest web app translates the matching status as 'Entregado'."
+  },
+
+  "errorNetwork": "Could not reach the server. Check the address and your connection.",
+  "@errorNetwork": {
+    "description": "Transport failure: DNS, refused connection, timeout, no network."
+  },
+  "errorRequestFailed": "Request failed ({status}).",
+  "@errorRequestFailed": {
+    "description": "HTTP error without a server-provided message.",
+    "placeholders": {
+      "status": {
+        "type": "int",
+        "example": "500"
+      }
+    }
+  },
+  "errorSessionExpired": "Your session has expired. Please sign in again.",
+  "@errorSessionExpired": {
+    "description": "The API token is no longer valid."
+  },
+  "errorNotBarmadaServer": "That address responded, but it does not look like a Barmada server.",
+  "@errorNotBarmadaServer": {
+    "description": "The address answered /meta but did not identify as Barmada."
+  },
+  "errorAddServerFirst": "Add a server first.",
+  "@errorAddServerFirst": {
+    "description": "An action needed a configured server but none exists."
+  },
+  "errorNotSignedIn": "Not signed in.",
+  "@errorNotSignedIn": {
+    "description": "An action needed an authed session but nobody is signed in."
+  }
+}

@@ -62,6 +62,7 @@ Sign in with an editor or staff account from your server (`/register` on the web
 - **Login** (Sanctum token per device, stored in the keystore), logout, forget server
 - **Live board**: pending orders with the overdue chronometer, grouped items and notes; approval requests (first-guest and additional-guest); service requests — polling every 5 s with one-tap **Delivered / Approve / Done** actions
 - Dark Barmada theme by default (light theme included), 5-tab shell
+- **Bilingual UI (English / Español)**: follows the device language, with a live in-app override under **More → Language**
 
 ## Roadmap (next chunks of Phase 1)
 
@@ -71,8 +72,36 @@ Sign in with an editor or staff account from your server (`/register` on the web
 4. Analytics screens; settings; QR-scan-to-table; print/share
 5. Store packaging (icons, splash, signing, CI)
 
+## Localization (i18n)
+
+The staff app ships in **English and Spanish** via Flutter's first-party
+`gen-l10n` pipeline. It follows the device language by default; **More →
+Language** forces System / English / Español, persisted per device and applied
+live. The app language is deliberately independent of the venue's
+*guest-language* setting — that one governs the QR web flow; this one is
+whatever the staffer holding the phone reads best.
+
+How it's wired:
+
+- Catalogs: `apps/staff/lib/l10n/app_en.arb` (template, with translator notes)
+  and `app_es.arb`. Generated `app_localizations*.dart` files are committed;
+  regenerate with `dart run melos run l10n` (also happens on `flutter pub get`).
+- Spanish vocabulary intentionally matches the web guest flow's `lang/es.json`
+  (Pedido, Mesa, Cuenta, Mesero, Entregado…). Keep them aligned.
+- **Adding a string**: add it to *both* ARB files, regenerate, use
+  `AppLocalizations.of(context).yourKey`. The `l10n_parity_test` fails if the
+  catalogs drift (missing keys, mismatched `{placeholders}`, empty values).
+- **Adding a language**: drop in `app_xx.arb` with the same keys, list it in
+  `l10n_parity_test.dart`, add a `LocaleSetting` entry + picker segment, and
+  declare it in `ios/Runner/Info.plist` (`CFBundleLocalizations`).
+- Error texts: messages invented by the client carry an `ApiErrorCode`
+  (`barmada_api`) and are rendered through the `ApiErrorL10n` extension;
+  server-provided messages (validation/domain errors) display verbatim.
+  `barmada_ui` stays locale-agnostic — widgets take their texts as parameters.
+
 ## Conventions
 
 - `flutter analyze` must stay clean; `dart format .` before committing
-- No code generation (no build_runner) — keep the clone-and-run loop instant
-- Melos scripts available: `dart run melos run analyze | test | format`
+- No code generation except `gen-l10n` (no build_runner) — keep the
+  clone-and-run loop instant
+- Melos scripts available: `dart run melos run analyze | test | format | l10n`

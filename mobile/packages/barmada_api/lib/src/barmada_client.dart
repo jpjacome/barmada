@@ -70,10 +70,13 @@ class BarmadaClient {
       return ApiException(
         message ?? 'Request failed ($status).',
         statusCode: status,
+        // Only coded when the text is ours; a server message passes through.
+        code: message == null ? ApiErrorCode.requestFailed : null,
       );
     }
     return ApiException(
       'Could not reach the server. Check the address and your connection.',
+      code: ApiErrorCode.network,
     );
   }
 
@@ -151,14 +154,12 @@ class BarmadaClient {
   }) async =>
       _orderFrom(await _request('POST', '/orders', data: {
         'table_id': tableId,
-        'products':
-            products.map((id, qty) => MapEntry(id.toString(), qty)),
+        'products': products.map((id, qty) => MapEntry(id.toString(), qty)),
         if (note != null && note.isNotEmpty) 'note': note,
       }));
 
-  Future<OrderInfo> setOrderStatus(int id, String status) async =>
-      _orderFrom(await _request('PATCH', '/orders/$id/status',
-          data: {'status': status}));
+  Future<OrderInfo> setOrderStatus(int id, String status) async => _orderFrom(
+      await _request('PATCH', '/orders/$id/status', data: {'status': status}));
 
   Future<OrderInfo> deliverOrder(int id) => setOrderStatus(id, 'delivered');
   Future<OrderInfo> reopenOrder(int id) => setOrderStatus(id, 'pending');

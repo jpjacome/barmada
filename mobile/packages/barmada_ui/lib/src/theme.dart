@@ -98,8 +98,7 @@ ColorScheme _lightScheme() => const ColorScheme(
 /// Builds the Barmada theme. Dark is the default identity: bars are dim,
 /// and the aubergine-and-sage look IS the brand.
 ThemeData buildBarmadaTheme(Brightness brightness) {
-  final scheme =
-      brightness == Brightness.dark ? _darkScheme() : _lightScheme();
+  final scheme = brightness == Brightness.dark ? _darkScheme() : _lightScheme();
   final status = brightness == Brightness.dark
       ? BarmadaStatusColors.dark
       : BarmadaStatusColors.light;

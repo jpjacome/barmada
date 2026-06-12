@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   barmada_api:
     path: ../../packages/barmada_api
   barmada_core:
@@ -17,6 +19,8 @@ dependencies:
   barmada_ui:
     path: ../../packages/barmada_ui
   flutter_riverpod: ^2.6.1
+  intl: ^0.20.2
+  shared_preferences: ^2.3.0
 
 dev_dependencies:
   flutter_lints: ^5.0.0
@@ -25,3 +29,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Regenerates lib/l10n/app_localizations*.dart from the ARB files on
+  # `flutter pub get` / build. `melos run l10n` does it on demand.
+  generate: true

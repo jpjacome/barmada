@@ -6,6 +6,8 @@ import 'package:barmada_ui/barmada_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/api_error_l10n.dart';
+import '../../l10n/app_localizations.dart';
 import 'board_providers.dart';
 
 /// The live orders board — the staff app's home screen.
@@ -45,8 +47,8 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
       await action(client);
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context).errorMessage(e))));
       }
     } finally {
       ref.invalidate(boardProvider);
@@ -115,16 +117,15 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final message =
-        error is ApiException ? (error as ApiException).message : '$error';
+    final l10n = AppLocalizations.of(context);
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         const SizedBox(height: 120),
         EmptyState(
           icon: Icons.wifi_off_outlined,
-          title: 'Cannot reach the server',
-          subtitle: '$message\nPull down to retry.',
+          title: l10n.boardErrorTitle,
+          subtitle: '${l10n.errorMessage(error)}\n${l10n.boardErrorRetryHint}',
         ),
       ],
     );
@@ -146,18 +147,18 @@ class _BoardList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final status = Theme.of(context).statusColors;
 
     if (snapshot.isQuiet) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        children: const [
-          SizedBox(height: 120),
+        children: [
+          const SizedBox(height: 120),
           EmptyState(
             icon: Icons.nightlife_outlined,
-            title: 'All quiet',
-            subtitle:
-                'No pending orders, approvals or service requests right now.',
+            title: l10n.boardQuietTitle,
+            subtitle: l10n.boardQuietSubtitle,
           ),
         ],
       );
@@ -178,8 +179,10 @@ class _BoardList extends StatelessWidget {
                   icon: Icons.person_add_alt_outlined,
                   color: status.pending,
                   label: request.isFirstGuest
-                      ? 'Approve table ${request.tableNumber ?? request.tableId}'
-                      : 'New guest · table ${request.tableNumber ?? request.tableId}',
+                      ? l10n.approveTableChip(
+                          request.tableNumber ?? request.tableId)
+                      : l10n
+                          .newGuestChip(request.tableNumber ?? request.tableId),
                   onTap: () => onApprove(request),
                 ),
               for (final request in snapshot.serviceRequests)
@@ -188,8 +191,9 @@ class _BoardList extends StatelessWidget {
                       ? Icons.receipt_long_outlined
                       : Icons.notifications_active_outlined,
                   color: status.info,
-                  label:
-                      '${request.isBill ? 'Bill' : 'Waiter'} · table ${request.tableNumber ?? '?'}',
+                  label: request.isBill
+                      ? l10n.billChip(request.tableNumber ?? '?')
+                      : l10n.waiterChip(request.tableNumber ?? '?'),
                   onTap: () => onServiceDone(request),
                 ),
             ],
@@ -201,11 +205,11 @@ class _BoardList extends StatelessWidget {
           const SizedBox(height: 12),
         ],
         if (snapshot.pendingOrders.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(top: 32),
+          Padding(
+            padding: const EdgeInsets.only(top: 32),
             child: EmptyState(
               icon: Icons.check_circle_outline,
-              title: 'No pending orders',
+              title: l10n.noPendingOrders,
             ),
           ),
       ],
@@ -221,6 +225,7 @@ class _OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final status = theme.statusColors;
     final dimmed = theme.colorScheme.onSurface.withValues(alpha: 0.55);
@@ -237,15 +242,14 @@ class _OrderCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                'Table ${order.tableNumber ?? order.tableId}',
+                l10n.orderTableTitle(order.tableNumber ?? order.tableId),
                 style: theme.textTheme.titleLarge
                     ?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(width: 8),
               Text('#${order.id}', style: TextStyle(color: dimmed)),
               const Spacer(),
-              if (order.createdAt != null)
-                OrderTimer(since: order.createdAt!),
+              if (order.createdAt != null) OrderTimer(since: order.createdAt!),
             ],
           ),
           const SizedBox(height: 10),
@@ -280,7 +284,7 @@ class _OrderCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                 ),
                 icon: const Icon(Icons.check, size: 18),
-                label: const Text('Delivered'),
+                label: Text(l10n.delivered),
               ),
             ],
           ),

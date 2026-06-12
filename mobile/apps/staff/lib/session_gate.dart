@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/setup/add_server_screen.dart';
+import 'l10n/api_error_l10n.dart';
+import 'l10n/app_localizations.dart';
 
 /// Routes the app by session state:
 /// no server -> add server, server -> login, token -> home.
@@ -17,8 +19,7 @@ class SessionGate extends ConsumerWidget {
 
     return switch (session) {
       AsyncData(value: SetupRequired()) => const AddServerScreen(),
-      AsyncData(value: LoggedOut(:final server)) =>
-        LoginScreen(server: server),
+      AsyncData(value: LoggedOut(:final server)) => LoginScreen(server: server),
       AsyncData(value: Authed()) => const HomeShell(),
       AsyncError(:final error) => _StartupError(error: error),
       _ => const _Splash(),
@@ -36,8 +37,8 @@ class _Splash extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Barmada',
-                style: Theme.of(context).textTheme.displayMedium),
+            // The wordmark, not a phrase — identical in every language.
+            Text('Barmada', style: Theme.of(context).textTheme.displayMedium),
             const SizedBox(height: 24),
             const SizedBox(
               width: 28,
@@ -58,6 +59,7 @@ class _StartupError extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -65,14 +67,14 @@ class _StartupError extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Something went wrong',
+            Text(l10n.startupErrorTitle,
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 12),
-            Text('$error'),
+            Text(l10n.errorMessage(error)),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: () => ref.invalidate(sessionControllerProvider),
-              child: const Text('Try again'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
