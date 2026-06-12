@@ -40,8 +40,9 @@ Barmada is a self-hosted, multi-tenant QR-ordering and table-management platform
 
 ## Requirements
 
-- PHP ≥ 8.2 (sqlite/mysql PDO, gd, mbstring, xml)
+- PHP ≥ 8.2 (sqlite/mysql PDO, gd, mbstring, xml, openssl)
 - Composer
+- Node.js ≥ 20 + npm (one-time asset build)
 - Any web server pointing its document root at `public/` (see `docs/SECURITY-DEPLOYMENT.md`)
 
 ## Installation
@@ -50,9 +51,10 @@ Barmada is a self-hosted, multi-tenant QR-ordering and table-management platform
 git clone https://github.com/jpjacome/barmada.git
 cd barmada
 composer install
+npm install && npm run build   # auth pages use the Vite bundle
 cp .env.example .env
 php artisan key:generate
-# configure DB_* in .env (sqlite works out of the box)
+# configure DB_* in .env (sqlite works out of the box: touch database/database.sqlite)
 php artisan migrate
 php artisan user:create-admin admin@example.com   # prompts for password
 ```
