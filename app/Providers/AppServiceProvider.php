@@ -2,18 +2,35 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Blade;
-use Livewire\Livewire;
-use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\EnsureUserIsEditor;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // Push delivery driver (proposal §5.3): direct FCM with the
+        // venue's own service account, the hosted payload-light relay,
+        // or nothing at all (the default — the app then relies on
+        // foreground polling).
+        $this->app->bind(\App\Push\Contracts\PushSender::class, function () {
+            return match (config('push.driver', 'none')) {
+                'fcm' => new \App\Push\FcmDirectSender(
+                    config('push.fcm.project_id'),
+                    config('push.fcm.credentials'),
+                    (bool) config('push.include_content', true),
+                ),
+                'relay' => new \App\Push\RelaySender(
+                    config('push.relay.url'),
+                    config('push.relay.key'),
+                ),
+                default => new \App\Push\NullSender,
+            };
+        });
     }
 
     public function boot(): void
@@ -35,9 +52,10 @@ class AppServiceProvider extends ServiceProvider
         --------------------------------------------------------------*/
         if (class_exists(Livewire::class)) {
             Blade::directive('fixedLivewireScripts', function () {
-                $src    = asset('vendor/livewire/livewire.js');
-                $csrf   = csrf_token();
+                $src = asset('vendor/livewire/livewire.js');
+                $csrf = csrf_token();
                 $update = url('livewire/update');            // honours forceRootUrl
+
                 return <<<HTML
 <script src="{$src}"
         data-csrf="{$csrf}"
@@ -52,6 +70,7 @@ HTML;
         --------------------------------------------------------------*/
         \Illuminate\Http\UploadedFile::macro('isSvg', function () {
             $mimeType = $this->getMimeType();
+
             return $mimeType === 'image/svg+xml'
                 || $mimeType === 'text/plain'
                 || $mimeType === 'application/xml'

@@ -91,7 +91,7 @@ class GuestSessionController extends Controller
 
         if ($session) {
             // One open request per type per session — repeat taps are a no-op.
-            ServiceRequest::firstOrCreate([
+            $serviceRequest = ServiceRequest::firstOrCreate([
                 'table_session_id' => $session->id,
                 'type' => $validated['type'],
                 'status' => 'pending',
@@ -99,6 +99,15 @@ class GuestSessionController extends Controller
                 'table_id' => $table->id,
                 'editor_id' => $table->editor_id,
             ]);
+
+            // Push only the FIRST tap of a type per session — the dedup
+            // above already absorbs repeats.
+            if ($serviceRequest->wasRecentlyCreated) {
+                \App\Support\Push::venue($table->editor_id, 'service.requested', [
+                    'table_number' => $table->table_number,
+                    'type' => $validated['type'],
+                ]);
+            }
         }
 
         return redirect()->route('order.session', ['unique_token' => $unique_token]);

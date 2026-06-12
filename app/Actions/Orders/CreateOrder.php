@@ -106,6 +106,13 @@ class CreateOrder
             'amount_left' => $totalAmount,
         ]);
 
+        // Every order placed — guest QR, staff form or API — alerts the
+        // venue's registered staff devices.
+        \App\Support\Push::venue($table->editor_id, 'order.created', [
+            'order_id' => $order->id,
+            'table_number' => $table->table_number,
+        ]);
+
         return $order->refresh()->load('items.product');
     }
 }
