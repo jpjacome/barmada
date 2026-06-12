@@ -67,6 +67,14 @@ Serve locally with `php artisan serve`. Each venue registers itself at `/registe
 php artisan test
 ```
 
+## Mobile (Flutter)
+
+The **Barmada Staff** app lives in [`mobile/`](mobile/) — a Flutter
+workspace with the typed `/api/v1` client, the design-system UI package
+and the staff app (add server → sign in → live orders board). See
+[`mobile/README.md`](mobile/README.md) for setup; the API it consumes is
+described by [`openapi/api-v1.json`](openapi/api-v1.json).
+
 ## Documentation
 
 - `docs/SECURITY-DEPLOYMENT.md` — production deployment & security runbook (web root, secret rotation, cookies)

@@ -1,0 +1,27 @@
+name: barmada_staff
+description: Barmada Staff - run the bar from your pocket.
+version: 0.1.0+1
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  barmada_api:
+    path: ../../packages/barmada_api
+  barmada_core:
+    path: ../../packages/barmada_core
+  barmada_ui:
+    path: ../../packages/barmada_ui
+  flutter_riverpod: ^2.6.1
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

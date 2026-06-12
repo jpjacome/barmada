@@ -1,0 +1,14 @@
+name: barmada_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+workspace:
+  - packages/barmada_api
+  - packages/barmada_core
+  - packages/barmada_ui
+  - apps/staff
+
+dev_dependencies:
+  melos: ^6.3.2

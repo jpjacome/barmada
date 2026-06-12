@@ -1,0 +1,20 @@
+name: barmada_mobile
+
+packages:
+  - packages/*
+  - apps/*
+
+command:
+  bootstrap:
+    runPubGetInParallel: false
+
+scripts:
+  analyze:
+    description: Static analysis across every package.
+    run: flutter analyze
+  test:
+    description: Run all package and app tests.
+    run: melos exec --dir-exists=test -- flutter test
+  format:
+    description: Verify formatting.
+    run: dart format --set-exit-if-changed .
