@@ -145,13 +145,22 @@
 
                                     <div class="order-card-footer">
                                         <div class="order-card-actions">
-                                            <button 
-                                                wire:click="toggleStatus({{ $pendingOrder['id'] }})" 
+                                            <button
+                                                wire:click="toggleStatus({{ $pendingOrder['id'] }})"
                                                 class="order-status-button order-status-pending"
                                                 wire:loading.attr="disabled"
                                                 wire:key="status-{{ $pendingOrder['id'] }}"
                                             >
                                                 Pending
+                                            </button>
+                                            <button
+                                                wire:click="cancelOrder({{ $pendingOrder['id'] }})"
+                                                class="orders-action-button orders-delete-button"
+                                                title="Cancel order (kept in history, excluded from revenue)"
+                                                onclick="return confirm('Cancel this order?')"
+                                                wire:key="cancel-{{ $pendingOrder['id'] }}"
+                                            >
+                                                <i class="bi bi-x-circle"></i>
                                             </button>
                                         </div>
                                     </div>

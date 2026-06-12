@@ -25,7 +25,13 @@
                         <strong>{{ __('Order') }} #{{ $order->id }}</strong>
                         <span class="session-order-time">{{ $order->created_at->format('H:i') }}</span>
                         <span class="session-order-status status-{{ $order->status }}">
-                            {{ $order->status === 'pending' ? __('Being prepared') : __('Delivered') }}
+                            @if($order->status === 'pending')
+                                {{ __('Being prepared') }}
+                            @elseif($order->status === 'cancelled')
+                                {{ __('Cancelled') }}
+                            @else
+                                {{ __('Delivered') }}
+                            @endif
                         </span>
                     </div>
                     <ul class="session-order-items">

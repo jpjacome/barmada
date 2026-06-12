@@ -17,6 +17,7 @@ class TablesList extends Component
     use AuthorizesRequests;
 
     public $tables = [];
+    public $archivedTables = [];
     public $lastUpdated;
     public $status = 'Loading tables...';
     public $refreshInterval = 10; // in seconds
@@ -59,17 +60,56 @@ class TablesList extends Component
     public function loadTables()
     {
         $user = Auth::user();
+        $query = Table::whereNull('archived_at')->orderBy('table_number');
+        $archivedQuery = Table::whereNotNull('archived_at')->orderBy('table_number');
         if ($user->is_admin) {
-            $this->tables = Table::orderBy('table_number')->get();
+            // no extra scoping
         } else if ($user->is_editor) {
-            $this->tables = Table::where('editor_id', $user->id)->orderBy('table_number')->get();
+            $query->where('editor_id', $user->id);
+            $archivedQuery->where('editor_id', $user->id);
         } else if ($user->is_staff) {
-            $this->tables = Table::where('editor_id', $user->editor_id)->orderBy('table_number')->get();
+            $query->where('editor_id', $user->editor_id);
+            $archivedQuery->where('editor_id', $user->editor_id);
         } else {
             $this->tables = collect();
+            $this->archivedTables = collect();
+            return;
         }
+        $this->tables = $query->get();
+        $this->archivedTables = $archivedQuery->get();
         $this->lastUpdated = now()->format('H:i:s');
         $this->status = 'Tables updated at ' . $this->lastUpdated;
+    }
+
+    /**
+     * Retire a table that has order history [#5]: hidden from the grid and
+     * the QR flow, kept in the database so reporting joins stay intact.
+     * Only closed (fully settled) tables can be archived.
+     */
+    public function archiveTable($tableId)
+    {
+        $table = Table::findOrFail($tableId);
+        $this->authorize('update', $table);
+
+        if ($table->status !== 'closed') {
+            $this->errorMessage = 'Close table ' . ($table->table_number ?? $tableId)
+                . ' (all items paid) before archiving it.';
+            $this->showErrorModal = true;
+            return;
+        }
+
+        $table->forceFill(['archived_at' => now()])->save();
+        $this->status = 'Table ' . ($table->table_number ?? $tableId) . ' archived.';
+        $this->loadTables();
+    }
+
+    public function restoreTable($tableId)
+    {
+        $table = Table::findOrFail($tableId);
+        $this->authorize('update', $table);
+        $table->forceFill(['archived_at' => null])->save();
+        $this->status = 'Table ' . ($table->table_number ?? $tableId) . ' restored.';
+        $this->loadTables();
     }
 
     private function loadProducts()
@@ -116,7 +156,6 @@ class TablesList extends Component
             $nextTableNumber++;
         }
         $data = [
-            'orders' => 0,
             'editor_id' => $editorId,
             'table_number' => $nextTableNumber,
         ];
@@ -137,7 +176,7 @@ class TablesList extends Component
         if ($hasOrderHistory) {
             $this->errorMessage = 'Table ' . ($table->table_number ?? $tableId)
                 . ' has recorded orders, so it cannot be deleted — its history is kept for reporting.'
-                . ' You can keep it closed and reuse it later instead.';
+                . ' Use Archive instead to retire it from service.';
             $this->showErrorModal = true;
             return;
         }
@@ -171,7 +210,8 @@ class TablesList extends Component
                 ->first();
         }
         if ($currentSession) {
-            $orders = Order::where('table_id', $this->selectedTable)
+            $orders = Order::countable() // cancelled orders carry no balance [#12]
+                ->where('table_id', $this->selectedTable)
                 ->where('table_session_id', $currentSession->id)
                 ->with(['items.product'])
                 ->orderBy('created_at', 'desc')
@@ -351,7 +391,7 @@ class TablesList extends Component
         }
         $this->authorize('update', $table);
 
-        $orders = Order::where('table_id', $table->id)->get();
+        $orders = Order::countable()->where('table_id', $table->id)->get();
         $allItems = OrderItem::whereIn('order_id', $orders->pluck('id'))->get();
         // Always mark all items as paid
         $totalAmount = 0;
@@ -434,7 +474,7 @@ class TablesList extends Component
 
     public function isTableFullyPaid($tableId)
     {
-        $orders = Order::where('table_id', $tableId)->get();
+        $orders = Order::countable()->where('table_id', $tableId)->get();
         $totalLeft = $orders->sum(function ($order) {
             return $order->items->sum(function ($item) {
                 return $item->is_paid ? 0 : $item->price;

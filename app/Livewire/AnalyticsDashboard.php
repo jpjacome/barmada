@@ -131,7 +131,7 @@ class AnalyticsDashboard extends Component
             [$from, $to, $date] = BusinessDay::monthRangeUtc($user, $i);
             $month = $date->month;
             $year = $date->year;
-            $query = \App\Models\Order::query()
+            $query = \App\Models\Order::query()->countable()
                 ->where('editor_id', $editorId)
                 ->where('created_at', '>=', $from)
                 ->where('created_at', '<', $to);
@@ -182,7 +182,7 @@ class AnalyticsDashboard extends Component
         $user = auth()->user();
         foreach ($periods as $key => $period) {
             [$from, $to] = BusinessDay::rangeUtc($user, $key);
-            $orders = \App\Models\Order::where('editor_id', $editorId)
+            $orders = \App\Models\Order::countable()->where('editor_id', $editorId)
                 ->where('created_at', '>=', $from)
                 ->where('created_at', '<', $to)
                 ->with('items.product')
@@ -215,7 +215,7 @@ class AnalyticsDashboard extends Component
         $editorId = $user ? $user->id : null;
         // Ranges follow the venue's business day (timezone + cutoff). [F-22]
         [$from, $to] = BusinessDay::rangeUtc($user, $range);
-        $query = \App\Models\Order::query()->where('editor_id', $editorId)
+        $query = \App\Models\Order::query()->countable()->where('editor_id', $editorId)
             ->where('created_at', '>=', $from)
             ->where('created_at', '<', $to);
         $orders = $query->with(['items.product'])->get();
@@ -254,7 +254,7 @@ class AnalyticsDashboard extends Component
         $user = auth()->user();
         $editorId = $user ? $user->id : null;
         [$from, $to] = BusinessDay::rangeUtc($user, $range);
-        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId)
+        $orderQuery = \App\Models\Order::query()->countable()->where('editor_id', $editorId)
             ->where('created_at', '>=', $from)
             ->where('created_at', '<', $to);
         $orders = $orderQuery->with(['items.product'])->get();
@@ -309,7 +309,7 @@ class AnalyticsDashboard extends Component
         [$from, $to] = BusinessDay::rangeUtc($user, $range);
         $sessionQuery = \App\Models\TableSession::query()->where('editor_id', $editorId)
             ->where('opened_at', '>=', $from)->where('opened_at', '<', $to);
-        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId)
+        $orderQuery = \App\Models\Order::query()->countable()->where('editor_id', $editorId)
             ->where('created_at', '>=', $from)->where('created_at', '<', $to);
         $activityQuery = \App\Models\ActivityLog::query()->where('editor_id', $editorId)
             ->where('created_at', '>=', $from)->where('created_at', '<', $to);
@@ -409,7 +409,7 @@ class AnalyticsDashboard extends Component
         for ($i = 0; $i < 7; $i++) {
             $dayLocal = $startOfWeek->copy()->addDays($i)->addHours($user->dayCutoffHour());
             $labels[] = $dayLocal->format('D');
-            $total = \App\Models\Order::where('editor_id', $editorId)
+            $total = \App\Models\Order::countable()->where('editor_id', $editorId)
                 ->where('created_at', '>=', $dayLocal->copy()->setTimezone('UTC'))
                 ->where('created_at', '<', $dayLocal->copy()->addDay()->setTimezone('UTC'))
                 ->sum('total_amount');
@@ -453,7 +453,7 @@ class AnalyticsDashboard extends Component
         for ($i = 0; $i < 7; $i++) {
             $dayLocal = $startOfLastWeek->copy()->addDays($i)->addHours($user->dayCutoffHour());
             $labels[] = $dayLocal->format('D');
-            $total = \App\Models\Order::where('editor_id', $editorId)
+            $total = \App\Models\Order::countable()->where('editor_id', $editorId)
                 ->where('created_at', '>=', $dayLocal->copy()->setTimezone('UTC'))
                 ->where('created_at', '<', $dayLocal->copy()->addDay()->setTimezone('UTC'))
                 ->sum('total_amount');
@@ -496,7 +496,7 @@ class AnalyticsDashboard extends Component
         for ($i = 29; $i >= 0; $i--) {
             [$from, $to, $dayLocal] = BusinessDay::dayRangeUtc($user, $i);
             $labels[] = $dayLocal->format('M j');
-            $total = \App\Models\Order::where('editor_id', $editorId)
+            $total = \App\Models\Order::countable()->where('editor_id', $editorId)
                 ->where('created_at', '>=', $from)
                 ->where('created_at', '<', $to)
                 ->sum('total_amount');
@@ -566,7 +566,7 @@ class AnalyticsDashboard extends Component
         $result = [];
         foreach ($periods as $key => $period) {
             [$from, $to] = BusinessDay::rangeUtc($user, $rangeKeys[$key] ?? 'today');
-            $orders = \App\Models\Order::where('editor_id', $editorId)
+            $orders = \App\Models\Order::countable()->where('editor_id', $editorId)
                 ->where('created_at', '>=', $from)
                 ->where('created_at', '<', $to)
                 ->with('items.product')

@@ -43,6 +43,9 @@ class GuestSessionController extends Controller
         $total = 0;
         $paid = 0;
         foreach ($orders as $order) {
+            if ($order->status === 'cancelled') {
+                continue; // shown in the list, excluded from the bill [#12]
+            }
             $total += $order->items->sum('price');
             $paid += $order->items->where('is_paid', true)->sum('price');
         }

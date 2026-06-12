@@ -160,12 +160,6 @@ class OrderController extends Controller
             'amount_left' => $totalAmount
         ]);
         
-        // Update table order count
-        $table->update([
-            'orders' => $table->orders + 1,
-            'status' => 'open', // Set status to open when a new order is added
-        ]);
-        
         return redirect()->route('orders.confirmation')->with('success', 'Your order has been submitted!');
     }
     
@@ -326,6 +320,7 @@ class OrderController extends Controller
         }
         $table = Table::where('editor_id', $editor->id)
             ->where('table_number', $table_number)
+            ->whereNull('archived_at') // archived tables are retired from the QR flow [#5]
             ->first();
         if (!$table) {
             abort(404, 'Table not found.');

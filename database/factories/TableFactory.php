@@ -18,7 +18,6 @@ class TableFactory extends Factory
     {
         return [
             'table_number' => $this->faker->unique()->numberBetween(1, 200),
-            'orders' => 0,
             'reference' => $this->faker->optional()->uuid,
             'editor_id' => 1, // Always set in seeder for correct user
         ];

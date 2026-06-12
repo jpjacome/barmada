@@ -46,5 +46,6 @@
     "Call a waiter": "Llamar al mesero",
     "Waiter called — on the way": "Mesero llamado — en camino",
     "Order more": "Pedir más",
-    "“:name” is sold out.": "“:name” está agotado."
+    "“:name” is sold out.": "“:name” está agotado.",
+    "Cancelled": "Cancelado"
 }

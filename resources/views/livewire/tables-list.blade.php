@@ -81,8 +81,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
-                        <button 
-                            class="table-qr-button" 
+                        <button
+                            class="table-qr-button"
+                            wire:click="archiveTable({{ $table->id }})"
+                            title="Archive table (retire from service, keep history)"
+                            onclick="return confirm('Archive this table? It disappears from the grid and the QR flow; its order history is kept.')"
+                        >
+                            <i class="bi bi-archive"></i>
+                        </button>
+                        <button
+                            class="table-qr-button"
                             wire:click="openQrModal({{ $table->id }}, {{ $table->table_number ?? $table->id }})"
                             title="Show QR Code"
                         >
@@ -108,6 +116,25 @@
         @endforelse
     </div>
     
+    <!-- Archived tables (retired from service, history kept) -->
+    @if(count($archivedTables) > 0)
+        <details style="margin-top:1.25rem;">
+            <summary style="cursor:pointer;color:var(--color-accents,#777);">
+                Archived tables ({{ count($archivedTables) }})
+            </summary>
+            <div style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.75rem;">
+                @foreach($archivedTables as $archived)
+                    <div style="border:1px dashed var(--color-accents2,#ccc);border-radius:8px;padding:0.5rem 0.9rem;display:flex;align-items:center;gap:0.6rem;opacity:0.8;" wire:key="archived-{{ $archived->id }}">
+                        <span>Table {{ $archived->table_number ?? $archived->id }}</span>
+                        <button wire:click="restoreTable({{ $archived->id }})" class="table-qr-button" title="Restore table">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                @endforeach
+            </div>
+        </details>
+    @endif
+
     <!-- Add Table Button -->
     <div class="tables-add-button-container">
         <button wire:click="addTable" class="tables-add-button">
