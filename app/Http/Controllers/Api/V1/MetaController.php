@@ -15,6 +15,30 @@ class MetaController extends Controller
 
     public function __invoke()
     {
+        $features = [
+            'board',
+            'orders',
+            'order-notes',
+            'item-payments',
+            'tables',
+            'sessions',
+            'client-invoices',
+            'approvals',
+            'service-requests',
+            'product-availability',
+            'devices',
+            'catalog-management',
+            'staff-management',
+            'settings',
+            'analytics',
+        ];
+
+        // Advertised only when a delivery driver is configured, so the
+        // app knows whether to expect wake-ups or rely on polling.
+        if (config('push.driver', 'none') !== 'none') {
+            $features[] = 'push';
+        }
+
         return response()->json([
             'product' => 'barmada',
             'name' => config('app.name'),
@@ -22,19 +46,7 @@ class MetaController extends Controller
                 'version' => self::API_VERSION,
                 'auth' => 'sanctum-bearer',
             ],
-            'features' => [
-                'board',
-                'orders',
-                'order-notes',
-                'item-payments',
-                'tables',
-                'sessions',
-                'client-invoices',
-                'approvals',
-                'service-requests',
-                'product-availability',
-                'devices',
-            ],
+            'features' => $features,
             'min_app_version' => null,
             'server_time' => now()->toIso8601String(),
         ]);

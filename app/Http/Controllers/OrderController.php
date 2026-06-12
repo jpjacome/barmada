@@ -339,6 +339,9 @@ class OrderController extends Controller
                         'status' => 'pending',
                         'requested_at' => now(),
                     ]);
+                    \App\Support\Push::venue($table->editor_id, 'approval.requested', [
+                        'table_number' => $table->table_number,
+                    ]);
                 }
                 // If already approved, redirect to order page
                 $approved = $this->scopeToDevice(
@@ -376,6 +379,9 @@ class OrderController extends Controller
                 'device_token' => $device,
                 'status' => 'pending',
                 'requested_at' => now(),
+            ]);
+            \App\Support\Push::venue($table->editor_id, 'approval.requested', [
+                'table_number' => $table->table_number,
             ]);
         }
         return view('orders.waiting-approval', ['table' => $table]);
@@ -470,6 +476,9 @@ class OrderController extends Controller
                                 'device_token' => $device,
                                 'status' => 'pending',
                                 'requested_at' => now(),
+                            ]);
+                            \App\Support\Push::venue($table->editor_id, 'approval.requested', [
+                                'table_number' => $table->table_number,
                             ]);
                         }
                     }

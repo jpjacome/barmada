@@ -1658,7 +1658,7 @@
                                             "prefixItems": [
                                                 {
                                                     "type": "string",
-                                                    "const": "board"
+                                                    "const": "push"
                                                 },
                                                 {
                                                     "type": "string",
@@ -1699,10 +1699,26 @@
                                                 {
                                                     "type": "string",
                                                     "const": "devices"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "catalog-management"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "staff-management"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "settings"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "analytics"
                                                 }
                                             ],
-                                            "minItems": 11,
-                                            "maxItems": 11,
+                                            "minItems": 15,
+                                            "maxItems": 15,
                                             "additionalItems": false
                                         },
                                         "min_app_version": {
