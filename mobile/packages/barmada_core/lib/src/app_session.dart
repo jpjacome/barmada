@@ -22,14 +22,17 @@ class LoggedOut extends AppSession {
 
 /// Signed in and ready: [client] carries the bearer token.
 class Authed extends AppSession {
-  const Authed({required this.server, required this.user, required this.client});
+  const Authed(
+      {required this.server, required this.user, required this.client});
   final ServerInfo server;
   final ApiUser user;
   final BarmadaClient client;
 }
 
-final serverRegistryProvider = Provider<ServerRegistry>((ref) => ServerRegistry());
-final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository());
+final serverRegistryProvider =
+    Provider<ServerRegistry>((ref) => ServerRegistry());
+final authRepositoryProvider =
+    Provider<AuthRepository>((ref) => AuthRepository());
 
 final sessionControllerProvider =
     AsyncNotifierProvider<SessionController, AppSession>(SessionController.new);
@@ -79,7 +82,8 @@ class SessionController extends AsyncNotifier<AppSession> {
     final meta = await BarmadaClient(baseUrl: normalized).meta();
     if (!meta.isBarmada) {
       throw ApiException(
-          'That address responded, but it does not look like a Barmada server.');
+          'That address responded, but it does not look like a Barmada server.',
+          code: ApiErrorCode.notBarmadaServer);
     }
     await _registry.saveServer(ServerInfo(url: normalized, name: meta.name));
     state = AsyncData(LoggedOut(ServerInfo(url: normalized, name: meta.name)));
@@ -98,7 +102,8 @@ class SessionController extends AsyncNotifier<AppSession> {
       _ => await _registry.activeServer(),
     };
     if (server == null) {
-      throw ApiException('Add a server first.');
+      throw ApiException('Add a server first.',
+          code: ApiErrorCode.noActiveServer);
     }
     final result = await _auth.signIn(
       server: server,
