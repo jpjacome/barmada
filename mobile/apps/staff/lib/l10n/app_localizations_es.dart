@@ -75,10 +75,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get comingSoon => 'Muy pronto';
 
   @override
-  String get productsPlaceholder =>
-      'Catálogo con marcado de agotado de un toque — el siguiente bloque de la fase 1.';
-
-  @override
   String get analyticsPlaceholder =>
       'Ventas por día de negocio, productos más vendidos y operación de servicio — el siguiente bloque de la fase 1.';
 
@@ -248,6 +244,34 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get waiterCalledChip => 'Mesero llamado';
+
+  @override
+  String get soldOut => 'Agotado';
+
+  @override
+  String get searchProducts => 'Buscar productos…';
+
+  @override
+  String get categoryOthers => 'Otros';
+
+  @override
+  String get noProductsYet => 'Aún no hay productos';
+
+  @override
+  String get noProductsSubtitle => 'Crea tu catálogo en el panel web.';
+
+  @override
+  String get noSearchMatches => 'Ningún producto coincide con tu búsqueda.';
+
+  @override
+  String productMarkedSoldOut(String name) {
+    return '$name marcado como agotado.';
+  }
+
+  @override
+  String productBackOnSale(String name) {
+    return '$name vuelve a estar a la venta.';
+  }
 
   @override
   String get errorNetwork =>

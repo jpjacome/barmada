@@ -96,10 +96,6 @@
   "@comingSoon": {
     "description": "Title on placeholder pages for not-yet-built features."
   },
-  "productsPlaceholder": "Catalog with one-tap sold-out toggles — next chunk of Phase 1.",
-  "@productsPlaceholder": {
-    "description": "Roadmap note on the Products placeholder page. 'Sold out' matches the guest menu's wording."
-  },
   "analyticsPlaceholder": "Business-day sales, top products and service ops — next chunk of Phase 1.",
   "@analyticsPlaceholder": {
     "description": "Roadmap note on the Analytics placeholder page."
@@ -352,6 +348,51 @@
   "waiterCalledChip": "Waiter called",
   "@waiterCalledChip": {
     "description": "Session-screen chip: a guest called a waiter. Tapping marks it handled."
+  },
+
+  "soldOut": "Sold out",
+  "@soldOut": {
+    "description": "Chip on an 86'd product — the guest menu shows the same word ('Agotado')."
+  },
+  "searchProducts": "Search products…",
+  "@searchProducts": {
+    "description": "Hint in the catalog search field."
+  },
+  "categoryOthers": "Others",
+  "@categoryOthers": {
+    "description": "Bucket for uncategorized products — the guest menu uses the same bucket ('Otros')."
+  },
+  "noProductsYet": "No products yet",
+  "@noProductsYet": {
+    "description": "Empty catalog title."
+  },
+  "noProductsSubtitle": "Create your catalog in the web dashboard.",
+  "@noProductsSubtitle": {
+    "description": "Empty catalog hint — product creation is web-only for now."
+  },
+  "noSearchMatches": "No products match your search.",
+  "@noSearchMatches": {
+    "description": "Search found nothing."
+  },
+  "productMarkedSoldOut": "{name} marked sold out.",
+  "@productMarkedSoldOut": {
+    "description": "Snackbar after 86ing a product.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Pilsener"
+      }
+    }
+  },
+  "productBackOnSale": "{name} is back on sale.",
+  "@productBackOnSale": {
+    "description": "Snackbar after un-86ing a product.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Pilsener"
+      }
+    }
   },
 
   "errorNetwork": "Could not reach the server. Check the address and your connection.",
