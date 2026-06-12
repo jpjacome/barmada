@@ -71,10 +71,10 @@ class OrderController extends Controller
         }
         $products = Product::where('editor_id', $editorId)->orderBy('name')->get();
         $tables = Table::where('editor_id', $editorId)->orderBy('table_number')->get();
-        
+
         // Get the table ID from the query parameter
         $selectedTableId = request()->query('table');
-        
+
         // Validate the table ID if provided
         if ($selectedTableId) {
             $table = Table::find($selectedTableId);
@@ -82,9 +82,28 @@ class OrderController extends Controller
                 return redirect()->route('orders.create')->with('error', 'Invalid table selected.');
             }
         }
-        
+
         $currentEditorId = $editorId;
-        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'currentEditorId'));
+        $currency = $this->applyVenuePresentation($editorId, $user);
+        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'currentEditorId', 'currency'));
+    }
+
+    /**
+     * Apply a venue's presentation settings (locale for the menu pages,
+     * currency symbol for prices). Returns the currency symbol.
+     */
+    private function applyVenuePresentation(?int $editorId, ?User $fallback = null): string
+    {
+        $venue = $editorId ? User::find($editorId) : null;
+        $venue = $venue ?: $fallback;
+
+        if ($venue) {
+            app()->setLocale($venue->guestLocale());
+
+            return $venue->currencySymbol();
+        }
+
+        return '$';
     }
 
     /**
@@ -109,7 +128,8 @@ class OrderController extends Controller
         $tables = Table::where('editor_id', $editorId)->orderBy('table_number')->get();
         $selectedTableId = null;
         $currentEditorId = $editorId;
-        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'currentEditorId'));
+        $currency = $this->applyVenuePresentation($editorId, $user);
+        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'currentEditorId', 'currency'));
     }
 
     /**
@@ -214,10 +234,26 @@ class OrderController extends Controller
     
     /**
      * Display order confirmation page.
+     *
+     * Guests arrive here from the stateless order submission with their
+     * table token in `t`, which lets the page speak the venue's language
+     * and name the table. Staff arrive without it after manual entry.
      */
-    public function confirmation()
+    public function confirmation(Request $request)
     {
-        return view('orders.confirmation');
+        $tableNumber = null;
+
+        if ($token = $request->query('t')) {
+            $table = Table::where('unique_token', $token)->first();
+            if ($table && $table->editor) {
+                app()->setLocale($table->editor->guestLocale());
+                $tableNumber = $table->table_number;
+            }
+        } elseif ($user = Auth::user()) {
+            $this->applyVenuePresentation($user->is_admin ? $user->id : $user->effectiveEditorId(), $user);
+        }
+
+        return view('orders.confirmation', compact('tableNumber'));
     }
     
     /**
@@ -439,6 +475,9 @@ class OrderController extends Controller
             return redirect()->route('order.redirect', ['unique_token' => $table->unique_token]);
         }
         // Table is closed or no token: show a message
+        if ($table->editor) {
+            app()->setLocale($table->editor->guestLocale());
+        }
         return response()->view('orders.table-closed', ['table' => $table]);
     }
 
@@ -458,6 +497,7 @@ class OrderController extends Controller
             abort(404, 'Table not found.');
         }
         $ip = request()->ip();
+        app()->setLocale($editor->guestLocale());
         // If table is open and has a unique token, handle session request
         if ($table->status === 'open' && $table->unique_token) {
             $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
@@ -467,6 +507,7 @@ class OrderController extends Controller
                 if (!$existingRequest) {
                     \App\Models\TableSessionRequest::create([
                         'table_session_id' => $currentSession->id,
+                        'table_id' => $table->id,
                         'ip_address' => $ip,
                         'status' => 'pending',
                         'requested_at' => now(),
@@ -486,7 +527,23 @@ class OrderController extends Controller
             $table->status = 'pending_approval';
             $table->save();
         }
-        // Do NOT create a TableSessionRequest until the table is open and a session exists
+        // Record the scanning device NOW (without a session): staff approval
+        // adopts these requests into the session created when the table
+        // opens, so the first customer is approved in one step. [F-1]
+        $alreadyRequested = \App\Models\TableSessionRequest::whereNull('table_session_id')
+            ->where('table_id', $table->id)
+            ->where('ip_address', $ip)
+            ->where('status', 'pending')
+            ->whereDate('created_at', now()->toDateString())
+            ->exists();
+        if (! $alreadyRequested) {
+            \App\Models\TableSessionRequest::create([
+                'table_id' => $table->id,
+                'ip_address' => $ip,
+                'status' => 'pending',
+                'requested_at' => now(),
+            ]);
+        }
         return view('orders.waiting-approval', ['table' => $table]);
     }
 
@@ -523,6 +580,37 @@ class OrderController extends Controller
                             'status' => 'open',
                             'redirect_url' => route('order.redirect', ['unique_token' => $table->unique_token])
                         ]);
+                    }
+
+                    // Self-healing registration [F-1]: a guest polling an open
+                    // table must always end up visible to staff. Adopt the
+                    // device's pre-session request into the current session,
+                    // or register a fresh pending request if none exists —
+                    // without this, guests who scanned while the table was
+                    // closed could wait forever with staff seeing nothing.
+                    $known = $currentSession->sessionRequests()
+                        ->where('ip_address', $ip)
+                        ->whereIn('status', ['pending', 'approved'])
+                        ->exists();
+                    if (! $known) {
+                        $orphan = \App\Models\TableSessionRequest::whereNull('table_session_id')
+                            ->where('table_id', $table->id)
+                            ->where('ip_address', $ip)
+                            ->where('status', 'pending')
+                            ->latest('requested_at')
+                            ->first();
+                        if ($orphan) {
+                            $orphan->table_session_id = $currentSession->id;
+                            $orphan->save();
+                        } else {
+                            \App\Models\TableSessionRequest::create([
+                                'table_session_id' => $currentSession->id,
+                                'table_id' => $table->id,
+                                'ip_address' => $ip,
+                                'status' => 'pending',
+                                'requested_at' => now(),
+                            ]);
+                        }
                     }
                 }
                 // Not approved: keep waiting

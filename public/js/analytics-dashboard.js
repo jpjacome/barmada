@@ -26,10 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 let stats = window.monthlyStatsData || {};
                 let s = stats[key] || {total_sales:'N/A',order_count:'N/A',top_product:'-',average_order_value:'-',peak_hour:'-'};
                 prevMonthStats.innerHTML = `
-                    <li>Sales for ${label}: <strong>€${s.total_sales !== undefined ? Number(s.total_sales).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : 'N/A'}</strong></li>
+                    <li>Sales for ${label}: <strong>${window.BARMADA_CURRENCY || "€"}${s.total_sales !== undefined ? Number(s.total_sales).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : 'N/A'}</strong></li>
                     <li>Orders for ${label}: <strong>${s.order_count ?? 'N/A'}</strong></li>
                     <li>Top Product: <strong>${s.top_product ?? '-'}</strong></li>
-                    <li>Average Order Value: <strong>€${s.average_order_value !== undefined ? Number(s.average_order_value).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : '-'}</strong></li>
+                    <li>Average Order Value: <strong>${window.BARMADA_CURRENCY || "€"}${s.average_order_value !== undefined ? Number(s.average_order_value).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : '-'}</strong></li>
                     <li>Peak Hour: <strong>${s.peak_hour ?? '-'}</strong></li>
                 `;
                 prevMonthDropdown.style.display = 'none';

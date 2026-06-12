@@ -157,6 +157,7 @@ Route::middleware('auth')->group(function () {
     // Settings routes
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/logo', [SettingsController::class, 'updateLogo'])->name('settings.update-logo');
+    Route::post('/settings/business', [SettingsController::class, 'updateBusiness'])->name('settings.update-business');
 });
 
 // Make theme toggle available to all (guests and users)

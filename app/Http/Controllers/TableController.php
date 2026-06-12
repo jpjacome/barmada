@@ -122,15 +122,24 @@ class TableController extends Controller
     {
         $table = Table::where('unique_token', $unique_token)->first();
         if (!$table || $table->status !== 'open') {
+            if ($table && $table->editor) {
+                app()->setLocale($table->editor->guestLocale());
+            }
             return response()->view('orders.table-closed', ['table' => $table]);
         }
+        // Speak the venue's language and currency on the guest menu.
+        $editor = $table->editor;
+        if ($editor) {
+            app()->setLocale($editor->guestLocale());
+        }
+        $currency = $editor ? $editor->currencySymbol() : '$';
         // Only load products and tables for the correct editor
         $products = Product::where('editor_id', $table->editor_id)->orderBy('name')->get();
         $tables = Table::where('editor_id', $table->editor_id)->orderBy('table_number')->get();
         $selectedTableId = $table->id;
         $currentEditorId = $table->editor_id;
         // Render the order creation view with the table preselected and correct editor context
-        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'unique_token', 'currentEditorId'));
+        return view('orders.create', compact('products', 'tables', 'selectedTableId', 'unique_token', 'currentEditorId', 'currency'));
     }
 
     /**
@@ -220,7 +229,9 @@ class TableController extends Controller
 
         $order->update(['total_amount' => $totalAmount]);
 
-        // Redirect to the confirmation page
-        return redirect()->route('orders.confirmation')->with('success', 'Your order has been submitted!');
+        // Redirect to the confirmation page. The table token travels along
+        // so the (stateless) confirmation can use the venue's language and
+        // show the table number.
+        return redirect()->route('orders.confirmation', ['t' => $unique_token]);
     }
 }

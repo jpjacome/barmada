@@ -22,10 +22,10 @@
                     <div class="analytics-card-group-title month-title">{{ $now->format('F') }}</div>
                     <div class="analytics-card month-stats-col">
                         <ul>
-                            <li>Sales for {{ $now->format('F') }}: <strong>€{{ number_format($monthlyStats[$currentMonthKey]['total_sales'] ?? 0, 2) }}</strong></li>
+                            <li>Sales for {{ $now->format('F') }}: <strong>{{ $currency }}{{ number_format($monthlyStats[$currentMonthKey]['total_sales'] ?? 0, 2) }}</strong></li>
                             <li>Orders for {{ $now->format('F') }}: <strong>{{ $monthlyStats[$currentMonthKey]['order_count'] ?? 0 }}</strong></li>
                             <li>Top Product: <strong>{{ $monthlyStats[$currentMonthKey]['top_product'] ?? '—' }}</strong></li>
-                            <li>Average Order Value: <strong>€{{ number_format($monthlyStats[$currentMonthKey]['average_order_value'] ?? 0, 2) }}</strong></li>
+                            <li>Average Order Value: <strong>{{ $currency }}{{ number_format($monthlyStats[$currentMonthKey]['average_order_value'] ?? 0, 2) }}</strong></li>
                             <li>Peak Hour: <strong>{{ $monthlyStats[$currentMonthKey]['peak_hour'] ?? '—' }}</strong></li>
                         </ul>
                     </div>
@@ -46,10 +46,10 @@
                             @endfor
                         </div>
                         <ul id="prevMonthStats">
-                            <li>Sales for {{ $prevMonth->format('F') }}: <strong>€{{ number_format($monthlyStats[$prevMonthKey]['total_sales'] ?? 0, 2) }}</strong></li>
+                            <li>Sales for {{ $prevMonth->format('F') }}: <strong>{{ $currency }}{{ number_format($monthlyStats[$prevMonthKey]['total_sales'] ?? 0, 2) }}</strong></li>
                             <li>Orders for {{ $prevMonth->format('F') }}: <strong>{{ $monthlyStats[$prevMonthKey]['order_count'] ?? 0 }}</strong></li>
                             <li>Top Product: <strong>{{ $monthlyStats[$prevMonthKey]['top_product'] ?? '—' }}</strong></li>
-                            <li>Average Order Value: <strong>€{{ number_format($monthlyStats[$prevMonthKey]['average_order_value'] ?? 0, 2) }}</strong></li>
+                            <li>Average Order Value: <strong>{{ $currency }}{{ number_format($monthlyStats[$prevMonthKey]['average_order_value'] ?? 0, 2) }}</strong></li>
                             <li>Peak Hour: <strong>{{ $monthlyStats[$prevMonthKey]['peak_hour'] ?? '—' }}</strong></li>
                         </ul>
                     </div>
@@ -66,10 +66,10 @@
                         </div>
                         <div class="analytics-card">
                             <ul>
-                                <li>Total Sales: <strong>€{{ number_format($stats[$range]['total_sales'], 2) }}</strong></li>
+                                <li>Total Sales: <strong>{{ $currency }}{{ number_format($stats[$range]['total_sales'], 2) }}</strong></li>
                                 <li>Orders: <strong>{{ $stats[$range]['order_count'] }}</strong></li>
                                 <li>Top Product: <strong>{{ $stats[$range]['top_product'] ?? '—' }}</strong></li>
-                                <li>Average Order Value: <strong>€{{ number_format($stats[$range]['average_order_value'], 2) }}</strong></li>
+                                <li>Average Order Value: <strong>{{ $currency }}{{ number_format($stats[$range]['average_order_value'], 2) }}</strong></li>
                                 <li>Peak Hour: <strong>{{ $stats[$range]['peak_hour'] ?? '—' }}</strong></li>
                             </ul>
                         </div>
@@ -78,10 +78,10 @@
                         <div class="analytics-card-group-title">Today</div>
                         <div class="analytics-card">
                             <ul>
-                                <li>Total Sales: <strong>€{{ number_format($stats['today']['total_sales'], 2) }}</strong></li>
+                                <li>Total Sales: <strong>{{ $currency }}{{ number_format($stats['today']['total_sales'], 2) }}</strong></li>
                                 <li>Orders: <strong>{{ $stats['today']['order_count'] }}</strong></li>
                                 <li>Top Product: <strong>{{ $stats['today']['top_product'] ?? '—' }}</strong></li>
-                                <li>Average Order Value: <strong>€{{ number_format($stats['today']['average_order_value'], 2) }}</strong></li>
+                                <li>Average Order Value: <strong>{{ $currency }}{{ number_format($stats['today']['average_order_value'], 2) }}</strong></li>
                                 <li>Peak Hour: <strong>{{ $stats['today']['peak_hour'] ?? '—' }}</strong></li>
                             </ul>
                         </div>
@@ -90,10 +90,10 @@
                         <div class="analytics-card-group-title">Last 7 Days</div>
                         <div class="analytics-card">
                             <ul>
-                                <li>Total Sales: <strong>€{{ number_format($stats['7days']['total_sales'], 2) }}</strong></li>
+                                <li>Total Sales: <strong>{{ $currency }}{{ number_format($stats['7days']['total_sales'], 2) }}</strong></li>
                                 <li>Orders: <strong>{{ $stats['7days']['order_count'] }}</strong></li>
                                 <li>Top Product: <strong>{{ $stats['7days']['top_product'] ?? '—' }}</strong></li>
-                                <li>Average Order Value: <strong>€{{ number_format($stats['7days']['average_order_value'], 2) }}</strong></li>
+                                <li>Average Order Value: <strong>{{ $currency }}{{ number_format($stats['7days']['average_order_value'], 2) }}</strong></li>
                                 <li>Peak Hour: <strong>{{ $stats['7days']['peak_hour'] ?? '—' }}</strong></li>
                             </ul>
                         </div>
@@ -102,10 +102,10 @@
                         <div class="analytics-card-group-title">Last 30 Days</div>
                         <div class="analytics-card">
                             <ul>
-                                <li>Total Sales: <strong>€{{ number_format($stats['30days']['total_sales'], 2) }}</strong></li>
+                                <li>Total Sales: <strong>{{ $currency }}{{ number_format($stats['30days']['total_sales'], 2) }}</strong></li>
                                 <li>Orders: <strong>{{ $stats['30days']['order_count'] }}</strong></li>
                                 <li>Top Product: <strong>{{ $stats['30days']['top_product'] ?? '—' }}</strong></li>
-                                <li>Average Order Value: <strong>€{{ number_format($stats['30days']['average_order_value'], 2) }}</strong></li>
+                                <li>Average Order Value: <strong>{{ $currency }}{{ number_format($stats['30days']['average_order_value'], 2) }}</strong></li>
                                 <li>Peak Hour: <strong>{{ $stats['30days']['peak_hour'] ?? '—' }}</strong></li>
                             </ul>
                         </div>
@@ -144,14 +144,14 @@
                         <div class="analytics-card">Top Selling Products:
                             <ul>
                                 @foreach ($productCategoryStats['month']['top_products'] as $prod)
-                                    <li><strong>{{ $prod['name'] }}</strong> (€{{ number_format($prod['revenue'], 2) }})</li>
+                                    <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
                         <div class="analytics-card">Least Selling Products:
                             <ul>
                                 @foreach ($productCategoryStats['month']['least_products'] as $prod)
-                                    <li><strong>{{ $prod['name'] }}</strong> (€{{ number_format($prod['revenue'], 2) }})</li>
+                                    <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
@@ -163,14 +163,14 @@
                         <div class="analytics-card">Top Selling Products:
                             <ul>
                                 @foreach ($productCategoryStats['today']['top_products'] as $prod)
-                                    <li><strong>{{ $prod['name'] }}</strong> (€{{ number_format($prod['revenue'], 2) }})</li>
+                                    <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
                         <div class="analytics-card">Least Selling Products:
                             <ul>
                                 @foreach ($productCategoryStats['today']['least_products'] as $prod)
-                                    <li><strong>{{ $prod['name'] }}</strong> (€{{ number_format($prod['revenue'], 2) }})</li>
+                                    <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
@@ -180,14 +180,14 @@
                         <div class="analytics-card">Top Selling Products:
                             <ul>
                                 @foreach ($productCategoryStats['7days']['top_products'] as $prod)
-                                    <li><strong>{{ $prod['name'] }}</strong> (€{{ number_format($prod['revenue'], 2) }})</li>
+                                    <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
                         <div class="analytics-card">Least Selling Products:
                             <ul>
                                 @foreach ($productCategoryStats['7days']['least_products'] as $prod)
-                                    <li><strong>{{ $prod['name'] }}</strong> (€{{ number_format($prod['revenue'], 2) }})</li>
+                                    <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
@@ -197,14 +197,14 @@
                         <div class="analytics-card">Top Selling Products:
                             <ul>
                                 @foreach ($productCategoryStats['30days']['top_products'] as $prod)
-                                    <li><strong>{{ $prod['name'] }}</strong> (€{{ number_format($prod['revenue'], 2) }})</li>
+                                    <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
                         <div class="analytics-card">Least Selling Products:
                             <ul>
                                 @foreach ($productCategoryStats['30days']['least_products'] as $prod)
-                                    <li><strong>{{ $prod['name'] }}</strong> (€{{ number_format($prod['revenue'], 2) }})</li>
+                                    <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
@@ -372,6 +372,7 @@
     ];
 @endphp
 <script>
+    window.BARMADA_CURRENCY = @json($currency);
     window.salesChartData = @json($this->getSalesChartData());
     window.salesLastWeekChartData = @json($this->getSalesLastWeekChartData());
     window.salesLastMonthChartData = @json($this->getSalesLastMonthChartData());

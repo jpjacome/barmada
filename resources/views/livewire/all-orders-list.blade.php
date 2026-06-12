@@ -44,7 +44,13 @@
         <div class="orders-data">
             <!-- Pending Orders Panel -->
             <div class="orders-panel">
-                <h3 class="orders-panel-title">Pending Orders</h3>
+                <h3 class="orders-panel-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+                    <span>Pending Orders</span>
+                    <button type="button" id="barmada-sound-toggle" title="New-order sound alerts"
+                            style="background:transparent;border:none;cursor:pointer;font-size:1.1em;line-height:1;">
+                        <i class="bi bi-bell-fill"></i>
+                    </button>
+                </h3>
                 <div class="orders-panel-content" wire:poll.5s="refreshPendingOrders">
                     <div class="orders-scroll-container">
                         @if(count($pendingOrders) > 0)
@@ -438,5 +444,95 @@ const OrderTimer = {
 
 // Initialize when the page loads
 document.addEventListener('livewire:initialized', () => OrderTimer.init());
+
+// ---- Staff alerts: chime + title flash on new orders / approval requests ----
+const BarmadaAlerts = {
+    enabled: localStorage.getItem('barmada_sound') !== 'off',
+    ctx: null,
+    flashTimer: null,
+    origTitle: document.title,
+
+    chime(freqs) {
+        if (!this.enabled) return;
+        try {
+            this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+            const t = this.ctx.currentTime;
+            freqs.forEach((freq, i) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                const start = t + i * 0.18;
+                gain.gain.setValueAtTime(0.0001, start);
+                gain.gain.exponentialRampToValueAtTime(0.35, start + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.4);
+                osc.start(start);
+                osc.stop(start + 0.45);
+            });
+        } catch (e) { /* audio unavailable */ }
+    },
+
+    flash(message) {
+        clearInterval(this.flashTimer);
+        let shown = false;
+        this.flashTimer = setInterval(() => {
+            document.title = shown ? this.origTitle : '🔔 ' + message;
+            shown = !shown;
+        }, 1000);
+        const stop = () => {
+            clearInterval(this.flashTimer);
+            document.title = this.origTitle;
+        };
+        window.addEventListener('focus', stop, { once: true });
+        document.addEventListener('click', stop, { once: true });
+    },
+
+    notify(freqs, message) {
+        this.chime(freqs);
+        if (document.hidden || !document.hasFocus()) this.flash(message);
+    },
+
+    toggle() {
+        this.enabled = !this.enabled;
+        localStorage.setItem('barmada_sound', this.enabled ? 'on' : 'off');
+        this.renderToggle();
+        if (this.enabled) this.chime([880]);
+    },
+
+    renderToggle() {
+        const btn = document.getElementById('barmada-sound-toggle');
+        if (btn) btn.innerHTML = this.enabled ? '<i class="bi bi-bell-fill"></i>' : '<i class="bi bi-bell-slash"></i>';
+    }
+};
+
+document.addEventListener('livewire:initialized', () => {
+    BarmadaAlerts.renderToggle();
+    const toggleBtn = document.getElementById('barmada-sound-toggle');
+    if (toggleBtn) toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); BarmadaAlerts.toggle(); });
+
+    // Unlock the AudioContext on the first interaction (browser autoplay policy).
+    document.addEventListener('click', () => {
+        try {
+            BarmadaAlerts.ctx = BarmadaAlerts.ctx || new (window.AudioContext || window.webkitAudioContext)();
+            if (BarmadaAlerts.ctx.state === 'suspended') BarmadaAlerts.ctx.resume();
+        } catch (e) { /* noop */ }
+    }, { once: true });
+
+    Livewire.on('orderDetailsUpdated', (payload) => {
+        const changes = (payload && payload.changes) ? payload.changes
+            : (Array.isArray(payload) && payload[0] && payload[0].changes) ? payload[0].changes
+            : payload;
+        if (changes && Object.values(changes).includes('new')) {
+            BarmadaAlerts.notify([880, 1175], 'New order!');
+        }
+    });
+
+    Livewire.on('new-approval-request', () => {
+        BarmadaAlerts.notify([660, 660], 'Table approval request');
+    });
+});
 </script>
 @endpush

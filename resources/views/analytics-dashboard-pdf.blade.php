@@ -20,10 +20,10 @@
         <div class="section-title">Sales & Revenue ({{ $now->format('F Y') }})</div>
         <table class="stats-table">
             <tr><th>Metric</th><th>Value</th></tr>
-            <tr><td>Sales</td><td>€{{ number_format($monthlyStats[$currentMonthKey]['total_sales'] ?? 0, 2) }}</td></tr>
+            <tr><td>Sales</td><td>{{ $currency ?? '$' }}{{ number_format($monthlyStats[$currentMonthKey]['total_sales'] ?? 0, 2) }}</td></tr>
             <tr><td>Orders</td><td>{{ $monthlyStats[$currentMonthKey]['order_count'] ?? 0 }}</td></tr>
             <tr><td>Top Product</td><td>{{ $monthlyStats[$currentMonthKey]['top_product'] ?? '—' }}</td></tr>
-            <tr><td>Average Order Value</td><td>€{{ number_format($monthlyStats[$currentMonthKey]['average_order_value'] ?? 0, 2) }}</td></tr>
+            <tr><td>Average Order Value</td><td>{{ $currency ?? '$' }}{{ number_format($monthlyStats[$currentMonthKey]['average_order_value'] ?? 0, 2) }}</td></tr>
             <tr><td>Peak Hour</td><td>{{ $monthlyStats[$currentMonthKey]['peak_hour'] ?? '—' }}</td></tr>
         </table>
     </div>
@@ -59,7 +59,7 @@
         <div class="section-title">Top Selling Products (This Month)</div>
         <ul>
             @foreach ($productCategoryStats['month']['top_products'] as $prod)
-                <li>{{ $prod['name'] }} (€{{ number_format($prod['revenue'], 2) }})</li>
+                <li>{{ $prod['name'] }} ({{ $currency ?? '$' }}{{ number_format($prod['revenue'], 2) }})</li>
             @endforeach
         </ul>
     </div>
@@ -68,7 +68,7 @@
         <div class="section-title">Least Selling Products (This Month)</div>
         <ul>
             @foreach ($productCategoryStats['month']['least_products'] as $prod)
-                <li>{{ $prod['name'] }} (€{{ number_format($prod['revenue'], 2) }})</li>
+                <li>{{ $prod['name'] }} ({{ $currency ?? '$' }}{{ number_format($prod['revenue'], 2) }})</li>
             @endforeach
         </ul>
     </div>

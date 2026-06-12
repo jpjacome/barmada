@@ -93,6 +93,31 @@ class SettingsController extends Controller
             ->with('error', 'No file was uploaded.');
     }
 
+    /**
+     * Per-venue presentation settings: the currency symbol used anywhere
+     * money is rendered and the language of the guest-facing (QR) pages.
+     * Editors only — staff inherit their venue's settings. [F-9, F-10]
+     */
+    public function updateBusiness(Request $request)
+    {
+        $user = $request->user();
+        abort_unless($user && $user->is_editor, 403);
+
+        $validated = $request->validate([
+            'currency_symbol' => ['required', 'string', 'max:5', 'regex:/^[^<>"\']+$/u'],
+            'locale' => ['required', 'in:en,es'],
+        ]);
+
+        // Not mass-assignable by design; set explicitly from validated input.
+        $user->forceFill([
+            'currency_symbol' => $validated['currency_symbol'],
+            'locale' => $validated['locale'],
+        ])->save();
+
+        return redirect()->route('settings.index')
+            ->with('success', 'Business settings updated.');
+    }
+
     public function toggleTheme(Request $request)
     {
         $currentTheme = session('theme', 'light');

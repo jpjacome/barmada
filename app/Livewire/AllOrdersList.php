@@ -30,6 +30,7 @@ class AllOrdersList extends Component
     public $lastUpdated;
     public $orderDetails = [];
     public $perPage = 15;
+    public $lastPendingClientsCount = null;
 
     public function mount()
     {
@@ -62,8 +63,10 @@ class AllOrdersList extends Component
                     ->where('status', 'pending')
                     ->get();
             } else {
-                // For pending_approval, get requests not linked to a session
+                // For pending_approval, get this TABLE's requests recorded
+                // before a session exists. [F-1]
                 $pendingClients = TableSessionRequest::whereNull('table_session_id')
+                    ->where('table_id', $table->id)
                     ->where('status', 'pending')
                     ->whereDate('created_at', now()->toDateString())
                     ->get();
@@ -76,6 +79,13 @@ class AllOrdersList extends Component
                 'pending_clients' => $pendingClients,
             ];
         });
+
+        // Alert staff when a new device asks to join a table.
+        $pendingNow = $this->activeTables->sum(fn ($table) => $table['pending_clients']->count());
+        if ($this->lastPendingClientsCount !== null && $pendingNow > $this->lastPendingClientsCount) {
+            $this->dispatch('new-approval-request');
+        }
+        $this->lastPendingClientsCount = $pendingNow;
     }
 
     public function loadOrders()
@@ -469,23 +479,37 @@ class AllOrdersList extends Component
         $table = Table::find($tableId);
         if ($table && $table->status === 'pending_approval') {
             $this->authorize('update', $table);
-            // Open the table
+            // Open the table (the Table model hook creates the new session
+            // and rotates the QR token).
             $table->status = 'open';
             $table->save();
 
-            // Approve the first pending TableSessionRequest for this table
-            $pendingRequest = TableSessionRequest::whereHas('tableSession', function ($query) use ($table) {
-                $query->where('table_id', $table->id);
-            })
-            ->whereNull('table_session_id')
-            ->where('status', 'pending')
-            ->orderBy('created_at')
-            ->first();
+            // Adopt the device requests recorded while the table was closed
+            // into the fresh session, approving the first requester so the
+            // waiting customer gets in without rescanning. Later requesters
+            // stay pending and appear in the open table's client list. [F-1]
+            $session = $table->sessions()
+                ->whereIn('status', ['open', 'reopened'])
+                ->latest('opened_at')
+                ->first();
 
-            if ($pendingRequest) {
-                $pendingRequest->status = 'approved';
-                $pendingRequest->approved_at = now();
-                $pendingRequest->save();
+            if ($session) {
+                $orphans = TableSessionRequest::whereNull('table_session_id')
+                    ->where('table_id', $table->id)
+                    ->where('status', 'pending')
+                    ->whereDate('created_at', now()->toDateString())
+                    ->orderBy('requested_at')
+                    ->orderBy('id')
+                    ->get();
+
+                foreach ($orphans as $index => $request) {
+                    $request->table_session_id = $session->id;
+                    if ($index === 0) {
+                        $request->status = 'approved';
+                        $request->approved_at = now();
+                    }
+                    $request->save();
+                }
             }
         }
         $this->loadTables();

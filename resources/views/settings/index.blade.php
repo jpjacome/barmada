@@ -36,6 +36,41 @@
                 </div>
             </div>
         </div>
+        @if(auth()->user() && auth()->user()->is_editor)
+        <div class="settings-section">
+            <h3 class="settings-section-title">Business Settings</h3>
+            <div class="settings-card">
+                <p class="settings-card-description">Currency and language used on your guest (QR) ordering pages, payment screens, analytics and exports.</p>
+                <form action="{{ route('settings.update-business') }}" method="POST" class="settings-form">
+                    @csrf
+                    <div class="settings-form-group">
+                        <label for="currency_symbol" class="settings-form-label">Currency symbol</label>
+                        <select name="currency_symbol" id="currency_symbol" class="settings-form-input">
+                            @foreach(['$', '€', '£', 'S/', 'Bs.', 'Q', '₡', 'MX$', 'COP$', 'AR$'] as $symbol)
+                                <option value="{{ $symbol }}" {{ auth()->user()->currencySymbol() === $symbol ? 'selected' : '' }}>{{ $symbol }}</option>
+                            @endforeach
+                        </select>
+                        @error('currency_symbol')
+                            <p class="settings-form-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="settings-form-group">
+                        <label for="locale" class="settings-form-label">Guest menu language</label>
+                        <select name="locale" id="locale" class="settings-form-input">
+                            <option value="es" {{ auth()->user()->guestLocale() === 'es' ? 'selected' : '' }}>Español</option>
+                            <option value="en" {{ auth()->user()->guestLocale() === 'en' ? 'selected' : '' }}>English</option>
+                        </select>
+                        @error('locale')
+                            <p class="settings-form-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="settings-form-actions">
+                        <button type="submit" class="settings-button">Save Business Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endif
         @if(auth()->user() && auth()->user()->is_admin)
         <div class="settings-section">
             <h3 class="settings-section-title">Logo Settings</h3>
