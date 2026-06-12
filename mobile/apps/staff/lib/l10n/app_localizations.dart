@@ -224,12 +224,6 @@ abstract class AppLocalizations {
   /// **'Coming soon'**
   String get comingSoon;
 
-  /// Roadmap note on the Products placeholder page. 'Sold out' matches the guest menu's wording.
-  ///
-  /// In en, this message translates to:
-  /// **'Catalog with one-tap sold-out toggles — next chunk of Phase 1.'**
-  String get productsPlaceholder;
-
   /// Roadmap note on the Analytics placeholder page.
   ///
   /// In en, this message translates to:
@@ -517,6 +511,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Waiter called'**
   String get waiterCalledChip;
+
+  /// Chip on an 86'd product — the guest menu shows the same word ('Agotado').
+  ///
+  /// In en, this message translates to:
+  /// **'Sold out'**
+  String get soldOut;
+
+  /// Hint in the catalog search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search products…'**
+  String get searchProducts;
+
+  /// Bucket for uncategorized products — the guest menu uses the same bucket ('Otros').
+  ///
+  /// In en, this message translates to:
+  /// **'Others'**
+  String get categoryOthers;
+
+  /// Empty catalog title.
+  ///
+  /// In en, this message translates to:
+  /// **'No products yet'**
+  String get noProductsYet;
+
+  /// Empty catalog hint — product creation is web-only for now.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your catalog in the web dashboard.'**
+  String get noProductsSubtitle;
+
+  /// Search found nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No products match your search.'**
+  String get noSearchMatches;
+
+  /// Snackbar after 86ing a product.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} marked sold out.'**
+  String productMarkedSoldOut(String name);
+
+  /// Snackbar after un-86ing a product.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is back on sale.'**
+  String productBackOnSale(String name);
 
   /// Transport failure: DNS, refused connection, timeout, no network.
   ///

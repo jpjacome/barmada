@@ -27,7 +27,6 @@
   "tabMore": "Más",
 
   "comingSoon": "Muy pronto",
-  "productsPlaceholder": "Catálogo con marcado de agotado de un toque — el siguiente bloque de la fase 1.",
   "analyticsPlaceholder": "Ventas por día de negocio, productos más vendidos y operación de servicio — el siguiente bloque de la fase 1.",
 
   "currencyChip": "Moneda {symbol}",
@@ -79,6 +78,15 @@
   "orderStatusCancelled": "Cancelado",
   "billRequestedChip": "Cuenta solicitada",
   "waiterCalledChip": "Mesero llamado",
+
+  "soldOut": "Agotado",
+  "searchProducts": "Buscar productos…",
+  "categoryOthers": "Otros",
+  "noProductsYet": "Aún no hay productos",
+  "noProductsSubtitle": "Crea tu catálogo en el panel web.",
+  "noSearchMatches": "Ningún producto coincide con tu búsqueda.",
+  "productMarkedSoldOut": "{name} marcado como agotado.",
+  "productBackOnSale": "{name} vuelve a estar a la venta.",
 
   "errorNetwork": "No se pudo conectar con el servidor. Revisa la dirección y tu conexión.",
   "errorRequestFailed": "La solicitud falló ({status}).",

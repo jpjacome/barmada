@@ -75,10 +75,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get comingSoon => 'Coming soon';
 
   @override
-  String get productsPlaceholder =>
-      'Catalog with one-tap sold-out toggles — next chunk of Phase 1.';
-
-  @override
   String get analyticsPlaceholder =>
       'Business-day sales, top products and service ops — next chunk of Phase 1.';
 
@@ -247,6 +243,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get waiterCalledChip => 'Waiter called';
+
+  @override
+  String get soldOut => 'Sold out';
+
+  @override
+  String get searchProducts => 'Search products…';
+
+  @override
+  String get categoryOthers => 'Others';
+
+  @override
+  String get noProductsYet => 'No products yet';
+
+  @override
+  String get noProductsSubtitle => 'Create your catalog in the web dashboard.';
+
+  @override
+  String get noSearchMatches => 'No products match your search.';
+
+  @override
+  String productMarkedSoldOut(String name) {
+    return '$name marked sold out.';
+  }
+
+  @override
+  String productBackOnSale(String name) {
+    return '$name is back on sale.';
+  }
 
   @override
   String get errorNetwork =>

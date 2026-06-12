@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../board/board_screen.dart';
+import '../products/products_screen.dart';
 import '../tables/tables_screen.dart';
 import 'more_screen.dart';
 import 'placeholder_screen.dart';
@@ -27,11 +28,7 @@ class _HomeShellState extends State<HomeShell> {
     final pages = <Widget>[
       const BoardScreen(),
       const TablesScreen(),
-      PlaceholderScreen(
-        title: l10n.tabProducts,
-        icon: Icons.local_bar_outlined,
-        message: l10n.productsPlaceholder,
-      ),
+      const ProductsScreen(),
       PlaceholderScreen(
         title: l10n.tabAnalytics,
         icon: Icons.query_stats_outlined,
