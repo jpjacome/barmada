@@ -1,0 +1,61 @@
+{
+  "@@locale": "es",
+
+  "appTitle": "Barmada Staff",
+
+  "startupErrorTitle": "Algo salió mal",
+  "retry": "Reintentar",
+
+  "setupTagline": "Maneja el bar desde tu bolsillo.",
+  "setupServerLabel": "Tu servidor",
+  "setupServerHint": "https://bar.example  ·  http://10.0.2.2:8000",
+  "setupEmulatorTip": "Consejo: ¿probando contra `php artisan serve` en tu computadora? Usa http://10.0.2.2:8000 desde el emulador de Android, o la IP local de tu computadora desde un teléfono real.",
+  "setupEmptyUrl": "Escribe la dirección de tu servidor.",
+  "setupConnected": "Conectado a {serverName}.",
+  "connect": "Conectar",
+
+  "emailLabel": "Correo electrónico",
+  "passwordLabel": "Contraseña",
+  "signIn": "Iniciar sesión",
+  "useDifferentServer": "Usar otro servidor",
+  "defaultDeviceName": "Teléfono del personal",
+
+  "tabBoard": "Tablero",
+  "tabTables": "Mesas",
+  "tabProducts": "Productos",
+  "tabAnalytics": "Estadísticas",
+  "tabMore": "Más",
+
+  "comingSoon": "Muy pronto",
+  "tablesPlaceholder": "Cuadrícula de mesas con sesiones, cobro artículo por artículo y cuentas — el siguiente bloque de la fase 1.",
+  "productsPlaceholder": "Catálogo con marcado de agotado de un toque — el siguiente bloque de la fase 1.",
+  "analyticsPlaceholder": "Ventas por día de negocio, productos más vendidos y operación de servicio — el siguiente bloque de la fase 1.",
+
+  "currencyChip": "Moneda {symbol}",
+  "languageLabel": "Idioma",
+  "languageSystem": "Sistema",
+  "languageEnglish": "English",
+  "languageSpanish": "Español",
+  "signOut": "Cerrar sesión",
+  "forgetServer": "Olvidar este servidor",
+  "aboutFooter": "Barmada Staff · Estructura de la fase 1\nAutoalojado, cero comisiones, tuyo.",
+
+  "boardErrorTitle": "No hay conexión con el servidor",
+  "boardErrorRetryHint": "Desliza hacia abajo para reintentar.",
+  "boardQuietTitle": "Todo tranquilo",
+  "boardQuietSubtitle": "No hay pedidos pendientes, aprobaciones ni solicitudes de servicio ahora mismo.",
+  "approveTableChip": "Aprobar mesa {table}",
+  "newGuestChip": "Cliente nuevo · mesa {table}",
+  "billChip": "Cuenta · mesa {table}",
+  "waiterChip": "Mesero · mesa {table}",
+  "noPendingOrders": "No hay pedidos pendientes",
+  "orderTableTitle": "Mesa {table}",
+  "delivered": "Entregado",
+
+  "errorNetwork": "No se pudo conectar con el servidor. Revisa la dirección y tu conexión.",
+  "errorRequestFailed": "La solicitud falló ({status}).",
+  "errorSessionExpired": "Tu sesión ha expirado. Inicia sesión de nuevo.",
+  "errorNotBarmadaServer": "Esa dirección respondió, pero no parece un servidor de Barmada.",
+  "errorAddServerFirst": "Primero agrega un servidor.",
+  "errorNotSignedIn": "No has iniciado sesión."
+}

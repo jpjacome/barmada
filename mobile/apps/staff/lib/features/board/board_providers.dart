@@ -13,7 +13,7 @@ final apiClientProvider = Provider<BarmadaClient?>((ref) {
 final boardProvider = FutureProvider.autoDispose<BoardSnapshot>((ref) async {
   final client = ref.watch(apiClientProvider);
   if (client == null) {
-    throw ApiException('Not signed in.');
+    throw ApiException('Not signed in.', code: ApiErrorCode.notSignedIn);
   }
   return client.board();
 });

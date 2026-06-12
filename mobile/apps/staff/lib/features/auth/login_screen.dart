@@ -3,6 +3,9 @@ import 'package:barmada_core/barmada_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/api_error_l10n.dart';
+import '../../l10n/app_localizations.dart';
+
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key, required this.server});
 
@@ -16,7 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _busy = false;
-  String? _error;
+  ApiException? _error;
 
   @override
   void dispose() {
@@ -26,6 +29,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _signIn() async {
+    // Resolved before the await: the device label travels to the server.
+    final deviceName = AppLocalizations.of(context).defaultDeviceName;
     setState(() {
       _busy = true;
       _error = null;
@@ -34,10 +39,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(sessionControllerProvider.notifier).signIn(
             email: _email.text.trim(),
             password: _password.text,
-            deviceName: 'Staff phone',
+            deviceName: deviceName,
           );
     } on ApiException catch (e) {
-      setState(() => _error = e.message);
+      setState(() => _error = e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -45,6 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
     final dimmed =
         Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
@@ -68,22 +74,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     enabled: !_busy,
                     keyboardType: TextInputType.emailAddress,
                     autocorrect: false,
-                    decoration: const InputDecoration(labelText: 'Email'),
+                    decoration: InputDecoration(labelText: l10n.emailLabel),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _password,
                     enabled: !_busy,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Password'),
+                    decoration: InputDecoration(labelText: l10n.passwordLabel),
                     onSubmitted: (_) => _signIn(),
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 12),
                     Text(
-                      _error!,
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.error),
+                      l10n.errorMessage(_error!),
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   ],
                   const SizedBox(height: 24),
@@ -93,10 +99,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child:
-                                CircularProgressIndicator(strokeWidth: 2.5),
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
                           )
-                        : const Text('Sign in'),
+                        : Text(l10n.signIn),
                   ),
                   const SizedBox(height: 12),
                   TextButton(
@@ -105,7 +110,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         : () => ref
                             .read(sessionControllerProvider.notifier)
                             .forgetServer(),
-                    child: const Text('Use a different server'),
+                    child: Text(l10n.useDifferentServer),
                   ),
                 ],
               ),

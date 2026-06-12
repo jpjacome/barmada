@@ -3,6 +3,13 @@ import 'package:barmada_core/barmada_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/api_error_l10n.dart';
+import '../../l10n/app_localizations.dart';
+
+/// Resolves an error message against the *current* locale at build time,
+/// so text on screen follows a live language switch.
+typedef _ErrorText = String Function(AppLocalizations l10n);
+
 /// First-run: point the app at a Barmada server (self-hosting is the
 /// product, so the address is the user's, not ours).
 class AddServerScreen extends ConsumerStatefulWidget {
@@ -15,7 +22,7 @@ class AddServerScreen extends ConsumerStatefulWidget {
 class _AddServerScreenState extends ConsumerState<AddServerScreen> {
   final _controller = TextEditingController();
   bool _busy = false;
-  String? _error;
+  _ErrorText? _error;
 
   @override
   void dispose() {
@@ -26,7 +33,7 @@ class _AddServerScreenState extends ConsumerState<AddServerScreen> {
   Future<void> _connect() async {
     final url = _controller.text.trim();
     if (url.isEmpty) {
-      setState(() => _error = 'Enter your server address.');
+      setState(() => _error = (l10n) => l10n.setupEmptyUrl);
       return;
     }
     setState(() {
@@ -39,10 +46,12 @@ class _AddServerScreenState extends ConsumerState<AddServerScreen> {
           .addServer(url.startsWith('http') ? url : 'https://$url');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Connected to ${meta.name}.')),
+        SnackBar(
+            content:
+                Text(AppLocalizations.of(context).setupConnected(meta.name))),
       );
     } on ApiException catch (e) {
-      setState(() => _error = e.message);
+      setState(() => _error = (l10n) => l10n.errorMessage(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -50,6 +59,7 @@ class _AddServerScreenState extends ConsumerState<AddServerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       body: SafeArea(
@@ -61,10 +71,11 @@ class _AddServerScreenState extends ConsumerState<AddServerScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // The wordmark — identical in every language.
                   Text('Barmada', style: textTheme.displayMedium),
                   const SizedBox(height: 4),
                   Text(
-                    'Run the bar from your pocket.',
+                    l10n.setupTagline,
                     style: textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context)
                           .colorScheme
@@ -73,23 +84,21 @@ class _AddServerScreenState extends ConsumerState<AddServerScreen> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  Text('Your server', style: textTheme.titleMedium),
+                  Text(l10n.setupServerLabel, style: textTheme.titleMedium),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _controller,
                     keyboardType: TextInputType.url,
                     autocorrect: false,
                     enabled: !_busy,
-                    decoration: const InputDecoration(
-                      hintText: 'https://bar.example  ·  http://10.0.2.2:8000',
+                    decoration: InputDecoration(
+                      hintText: l10n.setupServerHint,
                     ),
                     onSubmitted: (_) => _connect(),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Tip: testing against `php artisan serve` on your laptop? '
-                    'Use http://10.0.2.2:8000 from the Android emulator, or '
-                    'your laptop\'s LAN IP from a real phone.',
+                    l10n.setupEmulatorTip,
                     style: textTheme.bodySmall?.copyWith(
                       color: Theme.of(context)
                           .colorScheme
@@ -100,9 +109,9 @@ class _AddServerScreenState extends ConsumerState<AddServerScreen> {
                   if (_error != null) ...[
                     const SizedBox(height: 12),
                     Text(
-                      _error!,
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.error),
+                      _error!(l10n),
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   ],
                   const SizedBox(height: 24),
@@ -112,10 +121,9 @@ class _AddServerScreenState extends ConsumerState<AddServerScreen> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child:
-                                CircularProgressIndicator(strokeWidth: 2.5),
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
                           )
-                        : const Text('Connect'),
+                        : Text(l10n.connect),
                   ),
                 ],
               ),
