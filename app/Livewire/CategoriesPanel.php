@@ -48,12 +48,7 @@ class CategoriesPanel extends Component
         ]);
         $this->authorize('create', Category::class);
         $tenantId = $user->is_admin ? $user->id : $user->effectiveEditorId();
-        $maxOrder = Category::where('editor_id', $tenantId)->max('sort_order') ?? 0;
-        Category::create([
-            'name' => $this->newCategoryName,
-            'editor_id' => $tenantId,
-            'sort_order' => $maxOrder + 1,
-        ]);
+        app(\App\Actions\Categories\CreateCategory::class)->handle($tenantId, $this->newCategoryName);
         $this->newCategoryName = '';
         $this->status = 'Category added successfully!';
         $this->loadCategories();
@@ -68,9 +63,9 @@ class CategoriesPanel extends Component
             return;
         }
         $this->authorize('delete', $category);
-        $category->delete();
+        app(\App\Actions\Categories\DeleteCategory::class)->handle($category);
         $this->status = 'Category deleted successfully!';
-        $this->resequenceSortOrder();
+        $this->loadCategories();
     }
 
     public function moveUp($id)

@@ -25,10 +25,7 @@ class CategoryController extends Controller
             ],
         ]);
 
-        $data = $validated;
-        $data['editor_id'] = $editorId;
-
-        $category = Category::create($data);
+        app(\App\Actions\Categories\CreateCategory::class)->handle((int) $editorId, $validated['name']);
 
         return redirect()->back();
     }
@@ -37,7 +34,7 @@ class CategoryController extends Controller
     {
         $this->authorize('delete', $category);
 
-        $category->delete();
+        app(\App\Actions\Categories\DeleteCategory::class)->handle($category);
 
         return redirect()->back();
     }
@@ -47,19 +44,7 @@ class CategoryController extends Controller
         $this->authorize('update', $category);
 
         // Swap only within the category's own tenant.
-        $previousCategory = Category::where('sort_order', '<', $category->sort_order)
-            ->where('editor_id', $category->editor_id)
-            ->orderBy('sort_order', 'desc')
-            ->first();
-
-        if ($previousCategory) {
-            $tempOrder = $category->sort_order;
-            $category->sort_order = $previousCategory->sort_order;
-            $previousCategory->sort_order = $tempOrder;
-
-            $category->save();
-            $previousCategory->save();
-        }
+        app(\App\Actions\Categories\MoveCategory::class)->handle($category, 'up');
 
         return redirect()->back();
     }
@@ -69,19 +54,7 @@ class CategoryController extends Controller
         $this->authorize('update', $category);
 
         // Swap only within the category's own tenant.
-        $nextCategory = Category::where('sort_order', '>', $category->sort_order)
-            ->where('editor_id', $category->editor_id)
-            ->orderBy('sort_order', 'asc')
-            ->first();
-
-        if ($nextCategory) {
-            $tempOrder = $category->sort_order;
-            $category->sort_order = $nextCategory->sort_order;
-            $nextCategory->sort_order = $tempOrder;
-
-            $category->save();
-            $nextCategory->save();
-        }
+        app(\App\Actions\Categories\MoveCategory::class)->handle($category, 'down');
 
         return redirect()->back();
     }

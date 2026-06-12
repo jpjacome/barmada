@@ -1,13 +1,18 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\EstablishmentController;
+use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\ApprovalRequestController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BoardController;
+use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\MetaController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ServiceRequestController;
+use App\Http\Controllers\Api\V1\SettingsController;
+use App\Http\Controllers\Api\V1\StaffController;
 use App\Http\Controllers\Api\V1\TableController;
 use Illuminate\Support\Facades\Route;
 
@@ -71,5 +76,42 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/products', [ProductController::class, 'index']);
         Route::post('/products/{product}/toggle-availability', [ProductController::class, 'toggleAvailability']);
+
+        // Catalog management. Updates use POST so multipart photo/icon
+        // uploads work from mobile HTTP clients.
+        Route::post('/products', [ProductController::class, 'store']);
+        Route::post('/products/{product}', [ProductController::class, 'update']);
+        Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+
+        Route::get('/categories', [CategoryController::class, 'index']);
+        Route::post('/categories', [CategoryController::class, 'store']);
+        Route::patch('/categories/{category}', [CategoryController::class, 'update']);
+        Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
+        Route::post('/categories/{category}/move', [CategoryController::class, 'move']);
+
+        // Staff accounts (editor-only via UserPolicy).
+        Route::get('/staff', [StaffController::class, 'index']);
+        Route::post('/staff', [StaffController::class, 'store']);
+        Route::patch('/staff/{id}', [StaffController::class, 'update'])->whereNumber('id');
+        Route::delete('/staff/{id}', [StaffController::class, 'destroy'])->whereNumber('id');
+
+        // Business settings (editor-only).
+        Route::get('/settings', [SettingsController::class, 'show']);
+        Route::patch('/settings', [SettingsController::class, 'update']);
+
+        // Analytics (editor-only), business-day bucketed.
+        Route::prefix('analytics')->group(function () {
+            Route::get('/summary', [AnalyticsController::class, 'summary']);
+            Route::get('/products', [AnalyticsController::class, 'products']);
+            Route::get('/service-ops', [AnalyticsController::class, 'serviceOps']);
+            Route::get('/monthly', [AnalyticsController::class, 'monthly']);
+            Route::get('/product-matrix', [AnalyticsController::class, 'productMatrix']);
+        });
+
+        // Platform admin.
+        Route::prefix('admin')->group(function () {
+            Route::get('/establishments', [EstablishmentController::class, 'index']);
+            Route::delete('/establishments/{id}', [EstablishmentController::class, 'destroy'])->whereNumber('id');
+        });
     });
 });

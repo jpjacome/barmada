@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Products\SaveProduct;
 use App\Actions\Products\ToggleProductAvailability;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
@@ -11,6 +12,17 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     use AuthorizesRequests;
+
+    private const RULES = [
+        'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
+        'price' => 'required|numeric|min:0.01',
+        'icon_type' => 'nullable|in:bootstrap,svg',
+        'bootstrap_icon' => ['nullable', 'regex:/^[a-z0-9 -]+$/i'],
+        'icon' => 'nullable|file|max:1024',
+        'photo' => ['nullable', 'file', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:1024'],
+        'category_id' => 'nullable|integer',
+        'description' => 'nullable|string|max:1000',
+    ];
 
     /**
      * The catalog as live service needs it: names, prices, categories and
@@ -37,6 +49,77 @@ class ProductController extends Controller
         return response()->json([
             'products' => $query->get()->map(fn (Product $product) => $this->productRow($product)),
         ]);
+    }
+
+    /**
+     * Create a catalog product. Multipart: optional "photo" (raster
+     * image) and "icon" (script-free SVG when icon_type=svg) uploads —
+     * stored under random names with forced safe extensions, exactly
+     * like the web form.
+     */
+    public function store(Request $request, SaveProduct $saveProduct)
+    {
+        $validated = $request->validate(self::RULES);
+
+        $this->authorize('create', Product::class);
+
+        $product = $saveProduct->handle(
+            $request->user(),
+            [
+                'name' => $validated['name'],
+                'price' => $validated['price'],
+                'icon_type' => $validated['icon_type'] ?? 'bootstrap',
+                'bootstrap_icon' => $validated['bootstrap_icon'] ?? 'bi-box',
+                'category_id' => $validated['category_id'] ?? null,
+                'description' => $validated['description'] ?? null,
+            ],
+            $request->file('icon'),
+            $request->file('photo'),
+        );
+
+        return response()->json(
+            ['product' => $this->productRow($product->load('category'))],
+            201
+        );
+    }
+
+    /**
+     * Update a product. POST (not PATCH) so multipart uploads work from
+     * mobile HTTP clients.
+     */
+    public function update(Request $request, Product $product, SaveProduct $saveProduct)
+    {
+        $validated = $request->validate(self::RULES);
+
+        $this->authorize('update', $product);
+
+        $saveProduct->handle(
+            $request->user(),
+            [
+                'name' => $validated['name'],
+                'price' => $validated['price'],
+                'icon_type' => $validated['icon_type'] ?? $product->icon_type ?? 'bootstrap',
+                'bootstrap_icon' => $validated['bootstrap_icon'] ?? ($product->icon_type === 'bootstrap' ? $product->icon_value : 'bi-box'),
+                'icon_value_fallback' => $product->icon_value,
+                'category_id' => array_key_exists('category_id', $validated) ? $validated['category_id'] : $product->category_id,
+                'description' => $validated['description'] ?? $product->description,
+                'photo_fallback' => $product->photo,
+            ],
+            $request->file('icon'),
+            $request->file('photo'),
+            $product,
+        );
+
+        return response()->json(['product' => $this->productRow($product->refresh()->load('category'))]);
+    }
+
+    public function destroy(Product $product)
+    {
+        $this->authorize('delete', $product);
+
+        $product->delete();
+
+        return response()->json(['message' => __('Product deleted.')]);
     }
 
     /**
