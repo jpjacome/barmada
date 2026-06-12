@@ -1,136 +1,75 @@
-# Barmada - Bar & Restaurant Management Platform
+# Barmada — Bar & Restaurant Management Platform
 
-Barmada is a modern, multi-tenant management dashboard for bars and restaurants, built with Laravel and Livewire. It enables independent businesses ("editors") to manage their own tables, products, and orders, while providing a global admin with oversight and analytics. The platform supports real-time operations, QR-based table flows, and robust data isolation for each editor.
+Barmada is a self-hosted, multi-tenant QR-ordering and table-management platform for small bars and restaurants, built with **Laravel 12 + Livewire 3**. Guests scan a printed QR at their table and order from their phone — **no app, no account, no payment wall**. Staff watch a live board, get sound alerts, and track payment item by item. Each venue ("editor") runs in a fully isolated tenant; a platform admin oversees all of them.
 
----
+**Why Barmada instead of a commercial QR-ordering SaaS?**
+
+> Order without paying online, with no commission ever, on hardware you already own, on a server you control.
+
+- **No forced guest payment** — guests order freely; the bar collects cash or card the way it always has. Fits tab-and-rounds bar culture that payment-first products fight against.
+- **No commission, no subscription** — self-hosted on commodity PHP hosting; the venue keeps 100% of revenue and owns its data.
+- **No hardware lock-in** — any browser is the staff board; printing uses the browser's print dialog.
+- **Per-session security on permanent QRs** — printed codes never change, but each table session rotates a token and every guest device is staff-approved (device cookie, NAT/CGNAT-safe).
 
 ## Features
 
-- **Multi-Editor (Multi-Tenant) Support:**  
-  Each editor (bar/restaurant owner/manager) has a fully isolated environment: their own tables, products, categories, and orders. Admins can view and manage all editors and their data.
-- **Table Management:**  
-  Real-time table status, per-editor table numbering, reference notes, and QR-based table request/approval flow.
-- **Order Management:**  
-  Create, update, and track orders per table. Track order status and individual item payments. Export order history (XML).
-- **Product & Category Management:**  
-  CRUD for products and categories, custom icons, and pricing.
-- **User & Role Management:**  
-  Role-based access (Admin, Editor, Staff), staff accounts, and activity logging.
-- **Analytics & Reporting:**  
-  Sales and activity reports per editor, global admin reports, and export functionality.
-- **Real-Time UI:**  
-  Livewire-powered real-time updates for tables, orders, and products.
-- **Responsive Design:**  
-  Mobile-friendly, with theme support (light/dark).
+### Guests (QR flow)
+- Scan → device-approval waiting room → visual menu (photos, descriptions, prices) in the venue's language and currency
+- Sticky cart with running total, order review with optional notes ("no ice"), sold-out items clearly marked
+- **"My table" page**: orders this session with live statuses, running bill (total / paid / remaining), **request the bill** and **call a waiter** buttons
 
----
+### Venue (editor + staff accounts)
+- 3-step self-serve onboarding (tables auto-created), per-bar table numbering, table reference labels
+- Live orders board: pending orders with chronometers, **sound + tab-flash alerts** (mutable), device-approval queue, guest **service-request panel**, cancellable orders
+- Item-level payment tracking (tap items as they're paid), per-order and whole-table settle, explicit table close
+- Product catalog with categories, photos, icons, descriptions and a one-tap **availability (86) toggle**
+- **Client invoice capture** per session (name, tax ID, …) printed on the bill — built for LatAm/EU invoice requests
+- **Printing via the browser**: per-table bill, per-order ticket, and a bulk all-tables QR sheet
+- Staff accounts (create / edit / delete), scoped to the venue
+- Analytics: sales, AOV, top/least products, category mix, peak hours (venue clock), session durations, table turnover, QR-scan conversion, staff order counts — bucketed on the venue's **business day** (timezone + cutoff hour), exportable to PDF and CSV
+- Business settings: currency symbol, guest-menu language (EN/ES), timezone, business-day cutoff
+- Table archiving (retire a table, keep its reporting history), order archive (XML) with owner-only downloads
 
-## Folder Structure
+### Platform admin
+- Establishments list, one-click impersonation, transactional tenant deletion, global theme logos
 
-- **app/**: Main application code (controllers, models, Livewire components, events, providers, etc.)
-- **bootstrap/**: Laravel bootstrap files.
-- **config/**: Application configuration files.
-- **database/**: Migrations, seeders, and factories.
-- **docs/**: Project documentation (payment system, live refresh, etc.)
-- **public/**: Public assets (CSS, JS, images, build output, entry point).
-- **resources/**: Blade views, source CSS/JS, and components.
-- **routes/**: Route definitions (web, API, console, etc.)
-- **storage/**: App, framework, and log storage.
-- **tests/**: Feature and unit tests.
-- **vendor/**: Composer dependencies (auto-generated).
+### Engineering
+- Enforced multi-tenant isolation: global query scope + policies on every model and Livewire action
+- Guest endpoints rate-limited; uploads validated and stored safely; device approval middleware on all tokenized routes
+- **Test suite: 115+ tests** covering tenant isolation, authorization, the full first-customer flow, device cookies, availability, notes, analytics exports and more
 
-For a detailed breakdown of every folder and file, see:
-- `APP_STRUCTURE_REFERENCE.txt`
-- `APP_STRUCTURE_REFERENCE_PART_2.txt`
-- `APP_STRUCTURE_EXPLAINED.txt`
+## Requirements
 
----
+- PHP ≥ 8.2 (sqlite/mysql PDO, gd, mbstring, xml)
+- Composer
+- Any web server pointing its document root at `public/` (see `docs/SECURITY-DEPLOYMENT.md`)
 
 ## Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/yourusername/barmada.git
-   cd barmada
-   ```
-2. **Install PHP dependencies:**
-   ```bash
-   composer install
-   ```
-3. **Install JavaScript dependencies:**
-   ```bash
-   npm install
-   ```
-4. **Create environment file:**
-   ```bash
-   cp .env.example .env
-   ```
-5. **Generate application key:**
-   ```bash
-   php artisan key:generate
-   ```
-6. **Configure your database in `.env`.**
-7. **Run migrations:**
-   ```bash
-   php artisan migrate
-   ```
-8. **Create an admin user:**
-   ```bash
-   php artisan user:create-admin admin@example.com your_password
-   ```
-9. **Start the development server:**
-   ```bash
-   php artisan serve
-   ```
-10. **Start asset compilation:**
-    ```bash
-    npm run dev
-    ```
+```bash
+git clone https://github.com/jpjacome/barmada.git
+cd barmada
+composer install
+cp .env.example .env
+php artisan key:generate
+# configure DB_* in .env (sqlite works out of the box)
+php artisan migrate
+php artisan user:create-admin admin@example.com   # prompts for password
+```
 
----
+Serve locally with `php artisan serve`. Each venue registers itself at `/register`; print the QR sheet from the Tables page and you're in business.
 
-## Usage
+## Tests
 
-- Access the app at `http://localhost:8000`
-- Admins manage editors and view global data
-- Editors manage their own tables, products, and orders
-- Customers interact via QR codes for table requests and ordering
+```bash
+php artisan test
+```
 
----
+## Documentation
 
-## Upgrading
-
-- Run all new migrations for schema changes and multi-editor support.
-- See `implementation_plan_multi_editor.txt` for migration and data assignment details.
-- QR links use `/qr-entry/{editorname}/{table_number}` for per-editor uniqueness.
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
+- `docs/SECURITY-DEPLOYMENT.md` — production deployment & security runbook (web root, secret rotation, cookies)
+- `docs/tables-payment-system.md` — order/payment data model
 
 ## License
 
-This project is source-available and licensed under a custom End User License Agreement (EULA) by DR PIXEL.  
-See the [EULA.txt](EULA.txt) file for details.
-
----
-
-## Support & Security
-
-- For support, open an issue or contact the maintainer.
-- For security vulnerabilities, email the maintainer directly.
-
----
-
-## More Information
-
-- For a full breakdown of the app structure, see the `APP_STRUCTURE_REFERENCE.txt` and related docs in the repo.
-- For payment and table session logic, see `docs/tables-payment-system.md`.
+Proprietary — see `EULA.txt`. © DR PIXEL.

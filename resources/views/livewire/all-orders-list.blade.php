@@ -153,6 +153,11 @@
                                             >
                                                 Pending
                                             </button>
+                                            <a href="{{ url('/orders/'.$pendingOrder['id'].'/ticket') }}" target="_blank" rel="noopener"
+                                               class="orders-action-button orders-edit-button" title="Print ticket"
+                                               wire:key="ticket-{{ $pendingOrder['id'] }}">
+                                                <i class="bi bi-printer"></i>
+                                            </a>
                                             <button
                                                 wire:click="cancelOrder({{ $pendingOrder['id'] }})"
                                                 class="orders-action-button orders-delete-button"

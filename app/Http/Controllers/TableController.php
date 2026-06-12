@@ -60,6 +60,85 @@ class TableController extends Controller
     }
 
     /**
+     * Print-friendly bill for the table's current session: grouped lines,
+     * totals, optional client invoice details. Browser print is the
+     * printer integration for v1.
+     */
+    public function bill(Table $table)
+    {
+        $this->authorize('view', $table);
+
+        $session = $table->sessions()
+            ->whereIn('status', ['open', 'reopened'])
+            ->latest('opened_at')
+            ->first();
+
+        $orders = $session
+            ? \App\Models\Order::countable()
+                ->where('table_id', $table->id)
+                ->where('table_session_id', $session->id)
+                ->with(['items.product'])
+                ->orderBy('created_at')
+                ->get()
+            : collect();
+
+        $lines = [];
+        $total = 0;
+        $paid = 0;
+        foreach ($orders as $order) {
+            foreach ($order->items as $item) {
+                $name = $item->product->name ?? '—';
+                $lines[$name] = $lines[$name] ?? ['qty' => 0, 'amount' => 0];
+                $lines[$name]['qty'] += 1;
+                $lines[$name]['amount'] += $item->price;
+                $total += $item->price;
+                if ($item->is_paid) {
+                    $paid += $item->price;
+                }
+            }
+        }
+
+        $venue = $table->editor;
+        $invoice = $session
+            ? \App\Models\ClientInvoice::where('table_session_id', $session->id)->first()
+            : null;
+
+        return view('tables.bill', [
+            'table' => $table,
+            'venue' => $venue,
+            'currency' => $venue ? $venue->currencySymbol() : '$',
+            'lines' => $lines,
+            'total' => $total,
+            'paid' => $paid,
+            'left' => $total - $paid,
+            'invoice' => $invoice,
+            'session' => $session,
+        ]);
+    }
+
+    /**
+     * Printable sheet with every active table's QR code — one trip to
+     * the printer instead of one per table.
+     */
+    public function qrSheet()
+    {
+        $user = Auth::user();
+        $editorId = $user->is_admin ? $user->id : $user->effectiveEditorId();
+        abort_unless($editorId, 403);
+
+        $venue = \App\Models\User::find($editorId);
+        $tables = Table::where('editor_id', $editorId)
+            ->whereNull('archived_at')
+            ->orderBy('table_number')
+            ->get();
+
+        return view('tables.qr-sheet', [
+            'tables' => $tables,
+            'venue' => $venue,
+        ]);
+    }
+
+    /**
      * Generate a QR code image for the table's order link.
      */
     public function qrImage($tableId)

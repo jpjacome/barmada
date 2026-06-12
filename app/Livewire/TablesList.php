@@ -46,6 +46,15 @@ class TablesList extends Component
     public $qrTableId = null;
     public $qrTableNumber = null;
 
+    // Client invoice capture (per current session) [#6 done right]
+    public $showInvoiceModal = false;
+    public $invoiceTableId = null;
+    public $invName = '';
+    public $invTaxId = '';
+    public $invAddress = '';
+    public $invEmail = '';
+    public $invPhone = '';
+
     protected $listeners = [
         'openQrModal',
         'closeQrModal',
@@ -496,6 +505,78 @@ class TablesList extends Component
         $this->showQrModal = false;
         $this->qrTableId = null;
         $this->qrTableNumber = null;
+    }
+
+    /**
+     * Capture (or edit) the client's tax-invoice details for the table's
+     * CURRENT session — printed on the bill. The real version of the
+     * decorative form removed during the trust-layer cleanup. [#6]
+     */
+    public function openInvoiceModal($tableId)
+    {
+        $table = Table::findOrFail($tableId);
+        $this->authorize('update', $table);
+
+        $session = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
+        if (! $session) {
+            $this->errorMessage = 'Open the table first — invoice details attach to the current session.';
+            $this->showErrorModal = true;
+            return;
+        }
+
+        $existing = \App\Models\ClientInvoice::where('table_session_id', $session->id)->first();
+        $this->invName = $existing->name ?? '';
+        $this->invTaxId = $existing->tax_id ?? '';
+        $this->invAddress = $existing->address ?? '';
+        $this->invEmail = $existing->email ?? '';
+        $this->invPhone = $existing->phone ?? '';
+
+        $this->invoiceTableId = $tableId;
+        $this->showInvoiceModal = true;
+    }
+
+    public function saveInvoice()
+    {
+        $table = Table::findOrFail($this->invoiceTableId);
+        $this->authorize('update', $table);
+
+        $this->validate([
+            'invName' => 'required|string|max:255',
+            'invTaxId' => 'required|string|max:64',
+            'invAddress' => 'nullable|string|max:255',
+            'invEmail' => 'nullable|email|max:255',
+            'invPhone' => 'nullable|string|max:32',
+        ]);
+
+        $session = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
+        if (! $session) {
+            $this->closeInvoiceModal();
+            return;
+        }
+
+        \App\Models\ClientInvoice::updateOrCreate(
+            ['table_session_id' => $session->id],
+            [
+                'table_id' => $table->id,
+                'editor_id' => $table->editor_id,
+                'name' => strip_tags($this->invName),
+                'tax_id' => strip_tags($this->invTaxId),
+                'address' => $this->invAddress ? strip_tags($this->invAddress) : null,
+                'email' => $this->invEmail ?: null,
+                'phone' => $this->invPhone ? strip_tags($this->invPhone) : null,
+            ]
+        );
+
+        $this->status = 'Invoice details saved — they print on the bill.';
+        $this->closeInvoiceModal();
+    }
+
+    public function closeInvoiceModal()
+    {
+        $this->showInvoiceModal = false;
+        $this->invoiceTableId = null;
+        $this->invName = $this->invTaxId = $this->invAddress = $this->invEmail = $this->invPhone = '';
+        $this->resetValidation();
     }
 
     public function render()

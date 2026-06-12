@@ -164,6 +164,26 @@ class OrderController extends Controller
     }
     
     /**
+     * Print-friendly ticket for one order — for the bar or kitchen pass.
+     */
+    public function ticket(Order $order)
+    {
+        $this->authorize('view', $order);
+        $order->load(['items.product', 'table']);
+
+        $lines = [];
+        foreach ($order->items as $item) {
+            $name = $item->product->name ?? '—';
+            $lines[$name] = ($lines[$name] ?? 0) + 1;
+        }
+
+        return view('orders.ticket', [
+            'order' => $order,
+            'lines' => $lines,
+        ]);
+    }
+
+    /**
      * Display order confirmation page.
      *
      * Guests arrive here from the stateless order submission with their

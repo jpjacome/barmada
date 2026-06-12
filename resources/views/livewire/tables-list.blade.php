@@ -83,6 +83,13 @@
                         </button>
                         <button
                             class="table-qr-button"
+                            wire:click="openInvoiceModal({{ $table->id }})"
+                            title="Client invoice details (printed on the bill)"
+                        >
+                            <i class="bi bi-receipt"></i>
+                        </button>
+                        <button
+                            class="table-qr-button"
                             wire:click="archiveTable({{ $table->id }})"
                             title="Archive table (retire from service, keep history)"
                             onclick="return confirm('Archive this table? It disappears from the grid and the QR flow; its order history is kept.')"
@@ -137,6 +144,9 @@
 
     <!-- Add Table Button -->
     <div class="tables-add-button-container">
+        <a href="{{ route('tables.qr-sheet') }}" target="_blank" rel="noopener" class="tables-add-button" style="text-decoration:none;">
+            <i class="bi bi-printer"></i> Print all QR codes
+        </a>
         <button wire:click="addTable" class="tables-add-button">
             <svg xmlns="http://www.w3.org/2000/svg" class="tables-add-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -292,7 +302,10 @@
                             </div>
                         </div>
                         <div class="footer-actions">
-                            <button 
+                            <a href="{{ url('/tables/'.$selectedTable.'/bill') }}" target="_blank" rel="noopener" class="modal-button" style="text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;">
+                                <i class="bi bi-printer"></i> Print bill
+                            </a>
+                            <button
                                 class="modal-button"
                                 wire:click="payAndCloseTable"
                                 onclick="return confirm('Are you sure you want to mark all items as paid and close this table?')"
@@ -330,7 +343,49 @@
         </div>
     @endif
 
-    {{-- The decorative "client invoice info" modal was removed [F-6]: its
-         Save button stored nothing. Proper invoice capture is tracked as a
-         real feature on the backlog. --}}
+    <!-- Client Invoice Modal (the real one — saves and prints on the bill) -->
+    @if($showInvoiceModal)
+    <div class="modal-wrapper">
+        <div class="modal-backdrop" wire:click="closeInvoiceModal">
+            <div class="modal" wire:click.stop>
+                <div class="modal-header">
+                    <h3 class="modal-title">Client invoice details</h3>
+                    <button wire:click="closeInvoiceModal" class="modal-close"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p style="color:#666;font-size:0.9em;margin-bottom:0.8rem;">
+                        Saved for this table's current session and printed on the bill.
+                    </p>
+                    <div class="mb-3">
+                        <label class="block font-semibold mb-1">Full name or business name *</label>
+                        <input type="text" class="reference-input w-full" wire:model="invName">
+                        @error('invName')<div style="color:var(--color-danger,#c0392b);font-size:0.85em;">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="block font-semibold mb-1">Tax ID (RUC, NIF, VAT…) *</label>
+                        <input type="text" class="reference-input w-full" wire:model="invTaxId">
+                        @error('invTaxId')<div style="color:var(--color-danger,#c0392b);font-size:0.85em;">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="block font-semibold mb-1">Address</label>
+                        <input type="text" class="reference-input w-full" wire:model="invAddress">
+                    </div>
+                    <div class="mb-3">
+                        <label class="block font-semibold mb-1">Email</label>
+                        <input type="email" class="reference-input w-full" wire:model="invEmail">
+                        @error('invEmail')<div style="color:var(--color-danger,#c0392b);font-size:0.85em;">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="block font-semibold mb-1">Phone</label>
+                        <input type="tel" class="reference-input w-full" wire:model="invPhone">
+                    </div>
+                    <div class="reference-actions">
+                        <button type="button" class="reference-cancel" wire:click="closeInvoiceModal">Cancel</button>
+                        <button type="button" class="reference-save" wire:click="saveInvoice">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
