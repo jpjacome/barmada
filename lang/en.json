@@ -30,5 +30,21 @@
     "Table Closed": "Table Closed",
     "Table #:number is currently closed and cannot accept new orders.": "Table #:number is currently closed and cannot accept new orders.",
     "Please contact a staff member if you believe this is an error.": "Please contact a staff member if you believe this is an error.",
-    "Return to Home": "Return to Home"
+    "Return to Home": "Return to Home",
+    "My table & bill": "My table & bill",
+    "Sold out": "Sold out",
+    "Any special requests? (optional)": "Any special requests? (optional)",
+    "Order": "Order",
+    "Being prepared": "Being prepared",
+    "Delivered": "Delivered",
+    "No orders yet this session.": "No orders yet this session.",
+    "Table total": "Table total",
+    "Paid": "Paid",
+    "Remaining": "Remaining",
+    "Request the bill": "Request the bill",
+    "Bill requested — on its way": "Bill requested — on its way",
+    "Call a waiter": "Call a waiter",
+    "Waiter called — on the way": "Waiter called — on the way",
+    "Order more": "Order more",
+    "“:name” is sold out.": "“:name” is sold out."
 }

@@ -30,5 +30,21 @@
     "Table Closed": "Mesa Cerrada",
     "Table #:number is currently closed and cannot accept new orders.": "La Mesa #:number está cerrada y no puede aceptar nuevos pedidos.",
     "Please contact a staff member if you believe this is an error.": "Por favor, contacta a un miembro del personal si crees que es un error.",
-    "Return to Home": "Volver al Inicio"
+    "Return to Home": "Volver al Inicio",
+    "My table & bill": "Mi mesa y cuenta",
+    "Sold out": "Agotado",
+    "Any special requests? (optional)": "¿Alguna petición especial? (opcional)",
+    "Order": "Pedido",
+    "Being prepared": "En preparación",
+    "Delivered": "Entregado",
+    "No orders yet this session.": "Aún no hay pedidos en esta sesión.",
+    "Table total": "Total de la mesa",
+    "Paid": "Pagado",
+    "Remaining": "Pendiente",
+    "Request the bill": "Pedir la cuenta",
+    "Bill requested — on its way": "Cuenta solicitada — en camino",
+    "Call a waiter": "Llamar al mesero",
+    "Waiter called — on the way": "Mesero llamado — en camino",
+    "Order more": "Pedir más",
+    "“:name” is sold out.": "“:name” está agotado."
 }

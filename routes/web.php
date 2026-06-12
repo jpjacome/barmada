@@ -1,18 +1,18 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\NumberController;
+use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\TableController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use App\Models\Number;
 use App\Models\User;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Controllers\EditorController;
+use App\Http\Controllers\GuestSessionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ImpersonateController;
-use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AnalyticsPdfController;
 
 /*
@@ -34,16 +34,16 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-// Tables Management Routes (accessible to both admins and editors)
-Route::resource('tables', TableController::class)->middleware(['auth']);
-Route::get('/tables/{table}/qr', [\App\Http\Controllers\TableController::class, 'qrImage'])->name('tables.qr');
+// Tables Management Routes (accessible to both admins and editors).
+// Only the index page exists — all table actions live in the Livewire
+// component; the old create/show/edit resource leftovers are gone.
+Route::resource('tables', TableController::class)->only(['index'])->middleware(['auth']);
+Route::get('/tables/{table}/qr', [TableController::class, 'qrImage'])->name('tables.qr');
 
 // Products route (accessible to both admins and editors)
-Route::get('/products', [NumberController::class, 'livewire'])->middleware(['auth'])->name('products.index');
+Route::get('/products', [ProductsController::class, 'index'])->middleware(['auth'])->name('products.index');
 
-// Orders routes (accessible to both admins and editors)
-Route::get('/orders', [OrderController::class, 'index'])->middleware(['auth'])->name('orders.index');
-Route::patch('/orders/{order}', [OrderController::class, 'update'])->middleware(['auth'])->name('orders.update');
+// Orders: the live board is the single orders page.
 Route::get('/orders/archive', [OrderController::class, 'archive'])->middleware(['auth', 'editor'])->name('orders.archive');
 // Owner-only archive download. Filename is constrained to the editor's own
 // naming pattern in the controller; the where() blocks path separators.
@@ -51,7 +51,6 @@ Route::get('/orders/archive/download/{filename}', [OrderController::class, 'down
     ->middleware(['auth', 'editor'])
     ->where('filename', '[A-Za-z0-9._-]+')
     ->name('orders.archive.download');
-Route::get('/orders/create', [OrderController::class, 'create'])->middleware(['auth'])->name('orders.create.form');
 
 // Editor/Admin order creation (NO ip.approved middleware)
 Route::get('/order', [OrderController::class, 'orderEntry'])->middleware(['auth'])->name('orders.create');
@@ -59,8 +58,8 @@ Route::post('/order', [OrderController::class, 'store'])->middleware(['auth'])->
 Route::get('/order/confirmation', [OrderController::class, 'confirmation'])->name('orders.confirmation');
 
 // Guest-accessible (QR/unique token) order flows. The informational
-// waiting page is public; the order form and submission are gated by
-// device approval (ip.approved) and the submission is rate limited.
+// waiting page is public; the order form, the session/bill page and all
+// submissions are gated by device approval (ip.approved) and rate limited.
 Route::get('/orders/waiting-approval', function () {
     return view('orders.waiting-approval');
 })->name('orders.waiting-approval');
@@ -68,6 +67,16 @@ Route::post('/order/{unique_token}', [TableController::class, 'storeGuestOrder']
     ->withoutMiddleware(['web'])
     ->middleware(['ip.approved', 'throttle:60,1'])
     ->name('order.guest.store');
+
+// Guest "my table" page: orders this session + running bill.
+Route::get('/order/{unique_token}/session', [GuestSessionController::class, 'show'])
+    ->middleware(['ip.approved', 'throttle:60,1'])
+    ->name('order.session');
+// Guest service signals: request the bill / call a waiter.
+Route::post('/order/{unique_token}/service', [GuestSessionController::class, 'requestService'])
+    ->withoutMiddleware(['web'])
+    ->middleware(['ip.approved', 'throttle:10,1'])
+    ->name('order.service');
 
 // Admin-only routes
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -80,6 +89,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         return view('admin.editors', compact('editors'));
     })->name('admin.editors');
     Route::post('/admin/impersonate/{id}', [ImpersonateController::class, 'impersonate'])->whereNumber('id')->name('admin.impersonate');
+    // Delete an establishment and all of its data.
+    Route::delete('/admin/editors/{id}', [EditorController::class, 'destroy'])->whereNumber('id')->name('admin.editors.destroy');
 });
 
 // Leaving impersonation must be reachable while authenticated as the
@@ -99,35 +110,10 @@ Route::middleware(['auth', 'editor'])->group(function () {
 // Analytics dashboard route for editors
 Route::middleware(['auth', 'editor'])->group(function () {
     Route::get('/analytics', \App\Livewire\AnalyticsDashboard::class)->name('analytics.dashboard');
-});
-
-// Analytics API endpoints for Livewire dashboard
-Route::middleware(['auth', 'editor'])->group(function () {
-    Route::get('/analytics/sales-stats', [\App\Http\Controllers\AnalyticsController::class, 'getSalesAndRevenueStats'])->name('analytics.sales-stats');
-    Route::get('/analytics/product-category-stats', [\App\Http\Controllers\AnalyticsController::class, 'getProductCategoryAnalytics'])->name('analytics.product-category-stats');
-    Route::get('/analytics/service-ops-stats', [\App\Http\Controllers\AnalyticsController::class, 'getServiceOperationsStats'])->name('analytics.service-ops-stats');
     Route::get('/analytics/pdf', [AnalyticsPdfController::class, 'export'])->name('analytics.pdf.export');
-    Route::post('/analytics/pdf-with-charts', [\App\Http\Controllers\AnalyticsPdfController::class, 'exportWithCharts'])->name('analytics.pdf.export.withcharts');
-    Route::get('/analytics/csv', [\App\Http\Controllers\AnalyticsPdfController::class, 'exportCsv'])->name('analytics.csv.export');
+    Route::post('/analytics/pdf-with-charts', [AnalyticsPdfController::class, 'exportWithCharts'])->name('analytics.pdf.export.withcharts');
+    Route::get('/analytics/csv', [AnalyticsPdfController::class, 'exportCsv'])->name('analytics.csv.export');
 });
-
-// Remove unused Number routes
-// Redirect old routes to avoid errors
-Route::get('/numbers', function() {
-    return redirect()->route('dashboard');
-})->name('numbers.index');
-
-Route::get('/numbers/create', function() {
-    return redirect()->route('dashboard');
-})->name('numbers.create');
-
-Route::get('/numbers/live', function() {
-    return redirect()->route('dashboard');
-})->name('numbers.live');
-
-Route::get('/numbers/livewire', function() {
-    return redirect()->route('products.index');
-})->name('numbers.livewire');
 
 // Order form via unique token: device approval enforced
 Route::get('/order/{unique_token}', [TableController::class, 'redirectToOrder'])
@@ -144,16 +130,12 @@ Route::get('/qr-entry/{editorname}/{table_number}', [OrderController::class, 'qr
 Route::get('/poll-table-status/{table}', [OrderController::class, 'pollTableStatus'])
     ->middleware(['throttle:120,1']);
 
-// API route for fetching order data (authenticated; ownership enforced in controller)
-Route::get('/api/orders/{order}', [OrderController::class, 'getOrderData'])->middleware(['auth']);
-Route::put('/orders/{order}', [OrderController::class, 'updateOrder'])->middleware(['auth'])->name('orders.updateAjax');
-
 // Auth routes
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     // Settings routes
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/logo', [SettingsController::class, 'updateLogo'])->name('settings.update-logo');
@@ -162,28 +144,6 @@ Route::middleware('auth')->group(function () {
 
 // Make theme toggle available to all (guests and users)
 Route::post('/settings/toggle-theme', [SettingsController::class, 'toggleTheme'])->name('settings.toggle-theme');
-
-// API proxy for numbers - kept for numbers creation functionality
-Route::get('/api-numbers', function (Request $request) {
-    $afterId = (int)$request->query('after', 0);
-    
-    \Log::info("Web API proxy: numbers after ID: {$afterId}");
-    
-    $numbers = Number::where('id', '>', $afterId)
-                    ->orderBy('id', 'desc')
-                    ->get();
-    
-    $result = [
-        'numbers' => $numbers,
-        'count' => $numbers->count(),
-        'timestamp' => now()->toIso8601String(),
-        'requested_after_id' => $afterId
-    ];
-    
-    \Log::info("Web API proxy: Returning {$numbers->count()} numbers");
-    
-    return response()->json($result);
-});
 
 Route::get('/all-orders', function () {
     return view('all-orders');

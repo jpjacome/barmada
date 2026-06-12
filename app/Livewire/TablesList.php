@@ -45,9 +45,6 @@ class TablesList extends Component
     public $qrTableId = null;
     public $qrTableNumber = null;
 
-    public $showClientInfoModal = false;
-    public $clientInfoTableId = null;
-
     protected $listeners = [
         'openQrModal',
         'closeQrModal',
@@ -133,10 +130,14 @@ class TablesList extends Component
     {
         $table = Table::findOrFail($tableId);
         $this->authorize('delete', $table);
-        // Check if the table has any active orders
-        $hasActiveOrders = Order::where('table_id', $tableId)->exists();
-        if ($hasActiveOrders) {
-            $this->errorMessage = 'Cannot delete table #' . $tableId . ' because it has active orders.';
+        // Orders reference tables with a foreign key (no cascade), and the
+        // sales history must survive for reporting — so tables with any
+        // recorded orders cannot be deleted. Say so honestly. [F-5]
+        $hasOrderHistory = Order::where('table_id', $tableId)->exists();
+        if ($hasOrderHistory) {
+            $this->errorMessage = 'Table ' . ($table->table_number ?? $tableId)
+                . ' has recorded orders, so it cannot be deleted — its history is kept for reporting.'
+                . ' You can keep it closed and reuse it later instead.';
             $this->showErrorModal = true;
             return;
         }
@@ -455,18 +456,6 @@ class TablesList extends Component
         $this->showQrModal = false;
         $this->qrTableId = null;
         $this->qrTableNumber = null;
-    }
-
-    public function openClientInfoModal($tableId)
-    {
-        $this->showClientInfoModal = true;
-        $this->clientInfoTableId = $tableId;
-    }
-
-    public function closeClientInfoModal()
-    {
-        $this->showClientInfoModal = false;
-        $this->clientInfoTableId = null;
     }
 
     public function render()

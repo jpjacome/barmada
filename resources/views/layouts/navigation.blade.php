@@ -65,11 +65,13 @@
                 </div>
                 
                 @auth
-                @if(Auth::user()->is_admin || Auth::user()->is_editor)
+                {{-- Staff & Analytics are editor-only pages; showing them to
+                     admins produced 403s. [F-4] --}}
+                @if(Auth::user()->is_editor)
                 <a href="{{ route('staff.index') }}" class="dropdown-trigger" title="Staff">
                     <i class="bi bi-person"></i>
                 </a>
-                <a href="{{ route('analytics.dashboard', ['editor' => Auth::user()->id]) }}" class="dropdown-trigger" title="Analytics">
+                <a href="{{ route('analytics.dashboard') }}" class="dropdown-trigger" title="Analytics">
                     <i class="bi bi-bar-chart"></i>
                 </a>
                 @endif

@@ -28,6 +28,13 @@
                         <p>{{ __('A staff member will serve your order as soon as possible.') }}</p>
                         <p>{{ __('Please remain at your table.') }}</p>
                     </div>
+                    @if(request()->query('t'))
+                        <p style="margin-top:1rem;">
+                            <a href="{{ route('order.session', ['unique_token' => request()->query('t')]) }}" class="page-link">
+                                <i class="bi bi-receipt"></i> {{ __('My table & bill') }}
+                            </a>
+                        </p>
+                    @endif
                 </div>
             </div>
         </div>

@@ -21,6 +21,8 @@ class Order extends Model
         'table_id',
         'table_session_id',
         'status',
+        'note',
+        'created_by',
         'total_amount',
         'amount_paid',
         'amount_left',

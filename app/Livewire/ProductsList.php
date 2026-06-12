@@ -369,6 +369,22 @@ class ProductsList extends Component
         $this->deleteProduct();
     }
     
+    /**
+     * 86 an item (or bring it back) during service. Unavailable products
+     * show as sold out on the guest menu and are rejected server-side.
+     */
+    public function toggleAvailability($id)
+    {
+        $product = Product::findOrFail($id);
+        $this->authorize('update', $product);
+        $product->is_available = ! $product->is_available;
+        $product->save();
+        $this->status = $product->is_available
+            ? "'{$product->name}' is available again."
+            : "'{$product->name}' marked as sold out.";
+        $this->loadProducts();
+    }
+
     // Toggle icon type between bootstrap and svg
     public function toggleIconType()
     {
@@ -444,8 +460,10 @@ class ProductsList extends Component
         } else {
             $products = collect();
         }
+        $tenant = $user->is_admin ? $user : \App\Models\User::find($user->effectiveEditorId());
         return view('livewire.products-list', [
             'products' => $products,
+            'currency' => $tenant ? $tenant->currencySymbol() : '$',
         ]);
     }
 }

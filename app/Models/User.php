@@ -93,6 +93,23 @@ class User extends Authenticatable
         return $this->locale ?: 'es';
     }
 
+    /**
+     * IANA timezone the venue operates in (analytics bucketing).
+     */
+    public function businessTimezone(): string
+    {
+        return $this->business_timezone ?: 'UTC';
+    }
+
+    /**
+     * Hour (0-12, venue-local) at which the venue's business day starts —
+     * a bar's Friday includes the small hours of Saturday.
+     */
+    public function dayCutoffHour(): int
+    {
+        return max(0, min(12, (int) ($this->day_cutoff_hour ?? 0)));
+    }
+
     public function tables()
     {
         return $this->hasMany(Table::class, 'editor_id');

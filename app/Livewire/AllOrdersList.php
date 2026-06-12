@@ -31,6 +31,8 @@ class AllOrdersList extends Component
     public $orderDetails = [];
     public $perPage = 15;
     public $lastPendingClientsCount = null;
+    public $serviceRequests = [];
+    public $lastServiceRequestCount = null;
 
     public function mount()
     {
@@ -86,6 +88,50 @@ class AllOrdersList extends Component
             $this->dispatch('new-approval-request');
         }
         $this->lastPendingClientsCount = $pendingNow;
+
+        // Rides the same 5s poll: guest bill / waiter calls.
+        $this->loadServiceRequests();
+    }
+
+    /**
+     * Pending guest service requests (request bill / call waiter).
+     * EditorScope bounds the query to the caller's tenant.
+     */
+    public function loadServiceRequests()
+    {
+        $pending = \App\Models\ServiceRequest::where('status', 'pending')
+            ->with('table')
+            ->orderBy('created_at')
+            ->get();
+
+        $this->serviceRequests = $pending->map(function ($request) {
+            return [
+                'id' => $request->id,
+                'type' => $request->type,
+                'table_number' => $request->table->table_number ?? $request->table_id,
+                'time' => $request->created_at->format('H:i'),
+            ];
+        })->toArray();
+
+        $count = count($this->serviceRequests);
+        if ($this->lastServiceRequestCount !== null && $count > $this->lastServiceRequestCount) {
+            $this->dispatch('new-service-request');
+        }
+        $this->lastServiceRequestCount = $count;
+    }
+
+    public function markServiceRequestDone($requestId)
+    {
+        // Resolved through EditorScope: requests outside the caller's
+        // tenant are invisible. Admins resolve any.
+        $request = \App\Models\ServiceRequest::find($requestId);
+        if ($request && $request->status === 'pending') {
+            $request->status = 'done';
+            $request->resolved_at = now();
+            $request->resolved_by = auth()->id();
+            $request->save();
+        }
+        $this->loadServiceRequests();
     }
 
     public function loadOrders()

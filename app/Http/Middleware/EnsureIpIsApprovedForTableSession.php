@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Table;
+use App\Support\DeviceToken;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -16,8 +17,10 @@ class EnsureIpIsApprovedForTableSession
      * table is open and either:
      *  - the caller is an authenticated member of the table's tenant
      *    (or the admin), or
-     *  - the caller's device (IP) holds an approved request on the
-     *    table's current open session.
+     *  - the caller's device holds an approved request on the table's
+     *    current open session. Devices are identified by the device
+     *    cookie when present, with the IP address as a fallback for
+     *    requests recorded before the cookie existed. [F-18]
      *
      * Designed to run on stateless guest routes: no session is required.
      */
@@ -44,9 +47,23 @@ class EnsureIpIsApprovedForTableSession
             abort(403, 'No open session for this table.');
         }
 
+        $device = DeviceToken::fromRequest($request);
+
         $approved = $session->sessionRequests()
-            ->where('ip_address', $request->ip())
             ->where('status', 'approved')
+            ->where(function ($query) use ($request, $device) {
+                if ($device) {
+                    $query->where('device_token', $device);
+                    // Legacy/transition rows without a device token fall
+                    // back to IP matching.
+                    $query->orWhere(function ($q) use ($request) {
+                        $q->whereNull('device_token')
+                          ->where('ip_address', $request->ip());
+                    });
+                } else {
+                    $query->where('ip_address', $request->ip());
+                }
+            })
             ->exists();
 
         if (! $approved) {

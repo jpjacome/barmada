@@ -1,4 +1,4 @@
-<div class="product-card">
+<div class="product-card {{ $product->is_available ? '' : 'product-sold-out' }}">
     <div class="product-container">
         <div class="product-icon">
             @if($product->icon_type === 'bootstrap')
@@ -22,6 +22,7 @@
             <span class="product-price">{{ $currency }}{{ number_format($product->price, 2) }}</span>
         </div>
     </div>
+    @if($product->is_available)
     <div class="quantity-controls">
         <button type="button" class="quantity-button minus" onclick="decrementQuantity('product_{{ $product->id }}')">-</button>
         <input
@@ -37,4 +38,9 @@
         >
         <button type="button" class="quantity-button plus" onclick="incrementQuantity('product_{{ $product->id }}')">+</button>
     </div>
+    @else
+    <div class="quantity-controls">
+        <span class="sold-out-badge">{{ __('Sold out') }}</span>
+    </div>
+    @endif
 </div>

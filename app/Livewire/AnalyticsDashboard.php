@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Support\BusinessDay;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Http;
@@ -126,13 +127,14 @@ class AnalyticsDashboard extends Component
         $editorId = $user ? $user->id : null;
         $months = [];
         for ($i = 0; $i < 12; $i++) {
-            $date = now()->copy()->subMonths($i);
+            // Business months in the venue's timezone + cutoff. [F-22]
+            [$from, $to, $date] = BusinessDay::monthRangeUtc($user, $i);
             $month = $date->month;
             $year = $date->year;
             $query = \App\Models\Order::query()
                 ->where('editor_id', $editorId)
-                ->whereMonth('created_at', $month)
-                ->whereYear('created_at', $year);
+                ->where('created_at', '>=', $from)
+                ->where('created_at', '<', $to);
             $orders = $query->with(['items.product'])->get();
             $orderCount = $orders->count();
             $totalSales = $orders->sum('total_amount');
@@ -149,7 +151,7 @@ class AnalyticsDashboard extends Component
             $topProduct = $topProductId ? (\App\Models\Product::find($topProductId)->name ?? null) : null;
             $hourCounts = [];
             foreach ($orders as $order) {
-                $hour = $order->created_at->format('H:00');
+                $hour = BusinessDay::localHour($user, $order->created_at);
                 $hourCounts[$hour] = ($hourCounts[$hour] ?? 0) + 1;
             }
             arsort($hourCounts);
@@ -177,10 +179,12 @@ class AnalyticsDashboard extends Component
         ];
         $allProductNames = collect();
         $productSales = [];
+        $user = auth()->user();
         foreach ($periods as $key => $period) {
-            $from = now()->copy()->subDays($period['days'] - 1)->startOfDay();
+            [$from, $to] = BusinessDay::rangeUtc($user, $key);
             $orders = \App\Models\Order::where('editor_id', $editorId)
                 ->where('created_at', '>=', $from)
+                ->where('created_at', '<', $to)
                 ->with('items.product')
                 ->get();
             $stats = [];
@@ -209,15 +213,11 @@ class AnalyticsDashboard extends Component
     {
         $user = auth()->user();
         $editorId = $user ? $user->id : null;
-        $now = now();
-        $query = \App\Models\Order::query()->where('editor_id', $editorId);
-        switch ($range) {
-            case 'today': $query->whereDate('created_at', $now->toDateString()); break;
-            case '7days': $query->where('created_at', '>=', $now->copy()->subDays(7)->startOfDay()); break;
-            case '30days': $query->where('created_at', '>=', $now->copy()->subDays(30)->startOfDay()); break;
-            case 'month': $query->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year); break;
-            default: $query->whereDate('created_at', $now->toDateString());
-        }
+        // Ranges follow the venue's business day (timezone + cutoff). [F-22]
+        [$from, $to] = BusinessDay::rangeUtc($user, $range);
+        $query = \App\Models\Order::query()->where('editor_id', $editorId)
+            ->where('created_at', '>=', $from)
+            ->where('created_at', '<', $to);
         $orders = $query->with(['items.product'])->get();
         $orderCount = $orders->count();
         $totalSales = $orders->sum('total_amount');
@@ -234,7 +234,8 @@ class AnalyticsDashboard extends Component
         $topProduct = $topProductId ? (\App\Models\Product::find($topProductId)->name ?? null) : null;
         $hourCounts = [];
         foreach ($orders as $order) {
-            $hour = $order->created_at->format('H:00');
+            // Peak hour in the venue's own clock.
+            $hour = BusinessDay::localHour($user, $order->created_at);
             $hourCounts[$hour] = ($hourCounts[$hour] ?? 0) + 1;
         }
         arsort($hourCounts);
@@ -252,15 +253,10 @@ class AnalyticsDashboard extends Component
     {
         $user = auth()->user();
         $editorId = $user ? $user->id : null;
-        $now = now();
-        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId);
-        switch ($range) {
-            case 'today': $orderQuery->whereDate('created_at', $now->toDateString()); break;
-            case '7days': $orderQuery->where('created_at', '>=', $now->copy()->subDays(7)->startOfDay()); break;
-            case '30days': $orderQuery->where('created_at', '>=', $now->copy()->subDays(30)->startOfDay()); break;
-            case 'month': $orderQuery->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year); break;
-            default: $orderQuery->whereDate('created_at', $now->toDateString());
-        }
+        [$from, $to] = BusinessDay::rangeUtc($user, $range);
+        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId)
+            ->where('created_at', '>=', $from)
+            ->where('created_at', '<', $to);
         $orders = $orderQuery->with(['items.product'])->get();
         $productStats = [];
         $categoryStats = [];
@@ -310,17 +306,13 @@ class AnalyticsDashboard extends Component
     {
         $user = auth()->user();
         $editorId = $user ? $user->id : null;
-        $now = now();
-        $sessionQuery = \App\Models\TableSession::query()->where('editor_id', $editorId);
-        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId);
-        $activityQuery = \App\Models\ActivityLog::query()->where('editor_id', $editorId);
-        switch ($range) {
-            case 'today': $sessionQuery->whereDate('opened_at', $now->toDateString()); $orderQuery->whereDate('created_at', $now->toDateString()); $activityQuery->whereDate('created_at', $now->toDateString()); break;
-            case '7days': $sessionQuery->where('opened_at', '>=', $now->copy()->subDays(7)->startOfDay()); $orderQuery->where('created_at', '>=', $now->copy()->subDays(7)->startOfDay()); $activityQuery->where('created_at', '>=', $now->copy()->subDays(7)->startOfDay()); break;
-            case '30days': $sessionQuery->where('opened_at', '>=', $now->copy()->subDays(30)->startOfDay()); $orderQuery->where('created_at', '>=', $now->copy()->subDays(30)->startOfDay()); $activityQuery->where('created_at', '>=', $now->copy()->subDays(30)->startOfDay()); break;
-            case 'month': $sessionQuery->whereMonth('opened_at', $now->month)->whereYear('opened_at', $now->year); $orderQuery->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year); $activityQuery->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year); break;
-            default: $sessionQuery->whereDate('opened_at', $now->toDateString()); $orderQuery->whereDate('created_at', $now->toDateString()); $activityQuery->whereDate('created_at', $now->toDateString());
-        }
+        [$from, $to] = BusinessDay::rangeUtc($user, $range);
+        $sessionQuery = \App\Models\TableSession::query()->where('editor_id', $editorId)
+            ->where('opened_at', '>=', $from)->where('opened_at', '<', $to);
+        $orderQuery = \App\Models\Order::query()->where('editor_id', $editorId)
+            ->where('created_at', '>=', $from)->where('created_at', '<', $to);
+        $activityQuery = \App\Models\ActivityLog::query()->where('editor_id', $editorId)
+            ->where('created_at', '>=', $from)->where('created_at', '<', $to);
         $sessions = $sessionQuery->get();
         $orders = $orderQuery->with('table')->get();
         $activities = $activityQuery->get();
@@ -360,11 +352,12 @@ class AnalyticsDashboard extends Component
         if (count($qrTimes)) {
             $avgTimeQrToOrder = round(array_sum($qrTimes) / count($qrTimes) / 60, 2);
         }
-        $staffOrderCounts = $orders->groupBy('user_id')->map->count();
+        // Manual orders carry created_by; guest QR orders are grouped as such.
+        $staffOrderCounts = $orders->groupBy('created_by')->map->count();
         $staffOrderCountsArr = [];
         foreach ($staffOrderCounts as $uid => $count) {
-            $user = $uid ? (\App\Models\User::find($uid)->name ?? $uid) : 'Unknown';
-            $staffOrderCountsArr[] = ['name' => $user, 'orders' => $count];
+            $name = $uid ? (\App\Models\User::find($uid)->name ?? ('User #'.$uid)) : 'Guests (QR)';
+            $staffOrderCountsArr[] = ['name' => $name, 'orders' => $count];
         }
         $tableUsage = $orders->groupBy('table_id')->map->count();
         $tableUsageArr = [];
@@ -406,18 +399,19 @@ class AnalyticsDashboard extends Component
     // --- Chart.js Data Providers ---
     public function getSalesChartData()
     {
-        // Sales per day for the current week (Sunday to Saturday)
+        // Sales per business day for the current venue-local week
         $user = auth()->user();
         $editorId = $user ? $user->id : null;
-        $now = now();
-        $startOfWeek = $now->copy()->startOfWeek();
+        $localNow = now()->setTimezone($user->businessTimezone());
+        $startOfWeek = $localNow->copy()->startOfWeek();
         $labels = [];
         $data = [];
         for ($i = 0; $i < 7; $i++) {
-            $date = $startOfWeek->copy()->addDays($i);
-            $labels[] = $date->format('D');
+            $dayLocal = $startOfWeek->copy()->addDays($i)->addHours($user->dayCutoffHour());
+            $labels[] = $dayLocal->format('D');
             $total = \App\Models\Order::where('editor_id', $editorId)
-                ->whereDate('created_at', $date->toDateString())
+                ->where('created_at', '>=', $dayLocal->copy()->setTimezone('UTC'))
+                ->where('created_at', '<', $dayLocal->copy()->addDay()->setTimezone('UTC'))
                 ->sum('total_amount');
             $data[] = (float) $total;
         }
@@ -449,18 +443,19 @@ class AnalyticsDashboard extends Component
 
     public function getSalesLastWeekChartData()
     {
-        // Sales per day for the previous week (Sunday to Saturday)
+        // Sales per business day for the previous venue-local week
         $user = auth()->user();
         $editorId = $user ? $user->id : null;
-        $now = now();
-        $startOfLastWeek = $now->copy()->startOfWeek()->subWeek();
+        $localNow = now()->setTimezone($user->businessTimezone());
+        $startOfLastWeek = $localNow->copy()->startOfWeek()->subWeek();
         $labels = [];
         $data = [];
         for ($i = 0; $i < 7; $i++) {
-            $date = $startOfLastWeek->copy()->addDays($i);
-            $labels[] = $date->format('D');
+            $dayLocal = $startOfLastWeek->copy()->addDays($i)->addHours($user->dayCutoffHour());
+            $labels[] = $dayLocal->format('D');
             $total = \App\Models\Order::where('editor_id', $editorId)
-                ->whereDate('created_at', $date->toDateString())
+                ->where('created_at', '>=', $dayLocal->copy()->setTimezone('UTC'))
+                ->where('created_at', '<', $dayLocal->copy()->addDay()->setTimezone('UTC'))
                 ->sum('total_amount');
             $data[] = (float) $total;
         }
@@ -499,10 +494,11 @@ class AnalyticsDashboard extends Component
         $labels = [];
         $data = [];
         for ($i = 29; $i >= 0; $i--) {
-            $date = $now->copy()->subDays($i);
-            $labels[] = $date->format('M j');
+            [$from, $to, $dayLocal] = BusinessDay::dayRangeUtc($user, $i);
+            $labels[] = $dayLocal->format('M j');
             $total = \App\Models\Order::where('editor_id', $editorId)
-                ->whereDate('created_at', $date->toDateString())
+                ->where('created_at', '>=', $from)
+                ->where('created_at', '<', $to)
                 ->sum('total_amount');
             $data[] = (float) $total;
         }
@@ -566,11 +562,13 @@ class AnalyticsDashboard extends Component
             'rgba(99, 255, 132, 1)',
             'rgba(255, 140, 0, 1)'
         ];
+        $rangeKeys = ['30' => '30days', '7' => '7days', '1' => 'today'];
         $result = [];
         foreach ($periods as $key => $period) {
-            $from = now()->copy()->subDays($period['days'] - 1)->startOfDay();
+            [$from, $to] = BusinessDay::rangeUtc($user, $rangeKeys[$key] ?? 'today');
             $orders = \App\Models\Order::where('editor_id', $editorId)
                 ->where('created_at', '>=', $from)
+                ->where('created_at', '<', $to)
                 ->with('items.product')
                 ->get();
             $productStats = [];

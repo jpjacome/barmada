@@ -53,11 +53,21 @@
                                     {{ $product->category->name ?? 'Uncategorized' }}
                                 </td>
                                 <td class="product-cell product-price">
-                                    ${{ number_format($product->price, 2) }}
+                                    {{ $currency }}{{ number_format($product->price, 2) }}
+                                    @unless($product->is_available)
+                                        <span style="display:inline-block;margin-left:0.4rem;padding:0.1rem 0.5rem;border-radius:999px;background:var(--color-danger,#c0392b);color:#fff;font-size:0.7rem;font-weight:bold;vertical-align:middle;">SOLD OUT</span>
+                                    @endunless
                                 </td>
                                 <td class="product-cell product-actions">
-                                    <button 
-                                        wire:click="editProduct({{ $product->id }})" 
+                                    <button
+                                        wire:click="toggleAvailability({{ $product->id }})"
+                                        class="product-edit-button"
+                                        title="{{ $product->is_available ? 'Mark as sold out (86)' : 'Mark as available' }}"
+                                    >
+                                        <i class="bi {{ $product->is_available ? 'bi-eye' : 'bi-eye-slash' }}"></i>
+                                    </button>
+                                    <button
+                                        wire:click="editProduct({{ $product->id }})"
                                         class="product-edit-button"
                                         title="Edit Product"
                                     >

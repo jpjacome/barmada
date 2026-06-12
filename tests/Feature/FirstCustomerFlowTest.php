@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Livewire\AllOrdersList;
 use App\Models\TableSessionRequest;
+use App\Support\DeviceToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
 use Tests\Concerns\InteractsWithTenants;
 use Tests\TestCase;
@@ -16,23 +18,38 @@ use Tests\TestCase;
  * Previously: scanning a closed table recorded nothing, the staff
  * "Approve" opened the table but approved nobody (its request query was
  * unsatisfiable), and the guest's status poll waited forever.
+ *
+ * Requests in these tests carry the device cookie across calls the way
+ * a real browser does.
  */
 class FirstCustomerFlowTest extends TestCase
 {
     use InteractsWithTenants, RefreshDatabase;
+
+    /** Adopt the device cookie a response set, like a browser would. */
+    private function rememberDevice(TestResponse $response): void
+    {
+        $cookie = $response->getCookie(DeviceToken::COOKIE, false);
+        if ($cookie) {
+            $this->withUnencryptedCookie(DeviceToken::COOKIE, $cookie->getValue());
+        }
+    }
 
     public function test_scanning_a_closed_table_records_the_device(): void
     {
         $editor = $this->makeEditor();
         $table = $this->makeTableFor($editor, ['status' => 'closed', 'table_number' => 4]);
 
-        $this->get('/qr-entry/'.rawurlencode($editor->username).'/4')->assertOk();
+        $this->rememberDevice(
+            $this->get('/qr-entry/'.rawurlencode($editor->username).'/4')->assertOk()
+        );
 
         $this->assertSame('pending_approval', $table->fresh()->status);
         $request = TableSessionRequest::sole();
         $this->assertNull($request->table_session_id);
         $this->assertSame($table->id, $request->table_id);
         $this->assertSame('pending', $request->status);
+        $this->assertNotNull($request->device_token);
 
         // Rescanning while still closed does not pile up duplicates.
         $this->get('/qr-entry/'.rawurlencode($editor->username).'/4')->assertOk();
@@ -45,7 +62,9 @@ class FirstCustomerFlowTest extends TestCase
         $table = $this->makeTableFor($editor, ['status' => 'closed', 'table_number' => 4]);
 
         // Guest scans the printed QR at the closed table.
-        $this->get('/qr-entry/'.rawurlencode($editor->username).'/4')->assertOk();
+        $this->rememberDevice(
+            $this->get('/qr-entry/'.rawurlencode($editor->username).'/4')->assertOk()
+        );
 
         // Staff tap the single Approve button on the orders board.
         $this->actingAs($editor);
@@ -65,7 +84,7 @@ class FirstCustomerFlowTest extends TestCase
         $this->assertSame('approved', $request->status);
 
         // The guest's waiting page poll now tells them to go in…
-        $this->getJson('/poll-table-status/'.$table->id)
+        $this->get('/poll-table-status/'.$table->id)
             ->assertOk()
             ->assertJsonPath('status', 'open')
             ->assertJsonPath('redirect_url', route('order.redirect', ['unique_token' => $table->unique_token]));
@@ -80,9 +99,13 @@ class FirstCustomerFlowTest extends TestCase
         $table = $this->makeTableFor($editor, ['status' => 'closed', 'table_number' => 4]);
 
         // Two different devices scan while the table is closed.
-        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.1'])
+        $deviceA = 'A'.str_repeat('a', 30);
+        $deviceB = 'B'.str_repeat('b', 30);
+        $this->withUnencryptedCookie(DeviceToken::COOKIE, $deviceA)
+            ->withServerVariables(['REMOTE_ADDR' => '10.0.0.1'])
             ->get('/qr-entry/'.rawurlencode($editor->username).'/4')->assertOk();
-        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.2'])
+        $this->withUnencryptedCookie(DeviceToken::COOKIE, $deviceB)
+            ->withServerVariables(['REMOTE_ADDR' => '10.0.0.2'])
             ->get('/qr-entry/'.rawurlencode($editor->username).'/4')->assertOk();
 
         $this->actingAs($editor);
@@ -93,24 +116,24 @@ class FirstCustomerFlowTest extends TestCase
         $this->assertNotNull($session);
 
         // First device approved, second attached but pending staff approval.
-        $first = TableSessionRequest::where('ip_address', '10.0.0.1')->sole();
-        $second = TableSessionRequest::where('ip_address', '10.0.0.2')->sole();
+        $first = TableSessionRequest::where('device_token', $deviceA)->sole();
+        $second = TableSessionRequest::where('device_token', $deviceB)->sole();
         $this->assertSame('approved', $first->status);
         $this->assertSame($session->id, $first->table_session_id);
         $this->assertSame('pending', $second->status);
         $this->assertSame($session->id, $second->table_session_id);
 
         // The second device keeps waiting until individually approved.
-        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.2'])
-            ->getJson('/poll-table-status/'.$table->id)
+        $this->withUnencryptedCookie(DeviceToken::COOKIE, $deviceB)
+            ->get('/poll-table-status/'.$table->id)
             ->assertJsonPath('status', 'waiting_ip_approval');
 
         $this->actingAs($editor);
         Livewire::test(AllOrdersList::class)->call('approveClientRequest', $second->id);
         $this->post(route('logout'));
 
-        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.2'])
-            ->getJson('/poll-table-status/'.$table->id)
+        $this->withUnencryptedCookie(DeviceToken::COOKIE, $deviceB)
+            ->get('/poll-table-status/'.$table->id)
             ->assertJsonPath('status', 'open');
     }
 
@@ -124,15 +147,17 @@ class FirstCustomerFlowTest extends TestCase
 
         $this->assertSame(0, TableSessionRequest::count());
 
-        $this->getJson('/poll-table-status/'.$table->id)
-            ->assertJsonPath('status', 'waiting_ip_approval');
+        $this->rememberDevice(
+            $this->get('/poll-table-status/'.$table->id)
+                ->assertJsonPath('status', 'waiting_ip_approval')
+        );
 
         $request = TableSessionRequest::sole();
         $this->assertSame($session->id, $request->table_session_id);
         $this->assertSame('pending', $request->status);
 
         // Polling again does not duplicate the request.
-        $this->getJson('/poll-table-status/'.$table->id);
+        $this->get('/poll-table-status/'.$table->id);
         $this->assertSame(1, TableSessionRequest::count());
     }
 
@@ -144,7 +169,9 @@ class FirstCustomerFlowTest extends TestCase
         $editor = $this->makeEditor();
         $table = $this->makeTableFor($editor, ['status' => 'closed', 'table_number' => 6]);
 
-        $this->get('/qr-entry/'.rawurlencode($editor->username).'/6')->assertOk();
+        $this->rememberDevice(
+            $this->get('/qr-entry/'.rawurlencode($editor->username).'/6')->assertOk()
+        );
         $orphan = TableSessionRequest::sole();
         $this->assertNull($orphan->table_session_id);
 
@@ -153,7 +180,7 @@ class FirstCustomerFlowTest extends TestCase
         $table->status = 'open';
         $table->save();
 
-        $this->getJson('/poll-table-status/'.$table->id)
+        $this->get('/poll-table-status/'.$table->id)
             ->assertJsonPath('status', 'waiting_ip_approval');
 
         $session = $table->fresh()->sessions()->where('status', 'open')->latest('opened_at')->first();

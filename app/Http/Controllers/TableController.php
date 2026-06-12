@@ -32,90 +32,6 @@ class TableController extends Controller
     }
 
     /**
-     * Show the form for creating a new table.
-     */
-    public function create()
-    {
-        $user = Auth::user();
-        if (!$user->is_admin && !$user->is_editor) {
-            abort(403);
-        }
-        return view('tables.create');
-    }
-
-    /**
-     * Store a newly created table in storage.
-     */
-    public function store(Request $request)
-    {
-        $user = Auth::user();
-        if (!$user->is_admin && !$user->is_editor) {
-            abort(403);
-        }
-        $validated = $request->validate([
-            'name' => 'required|string|max:50|unique:tables,name',
-            'capacity' => 'required|integer|min:1|max:20',
-        ]);
-        $data = [
-            'name' => $validated['name'],
-            'capacity' => $validated['capacity'],
-            'is_occupied' => false,
-        ];
-        if ($user->is_admin) {
-            $data['editor_id'] = $request->input('editor_id', null); // Admin can set or leave null
-        } else {
-            $data['editor_id'] = $user->id;
-        }
-        $table = Table::create($data);
-        return redirect()->route('tables.index')->with('success', 'Table created successfully!');
-    }
-
-    /**
-     * Display the specified table.
-     */
-    public function show(Table $table)
-    {
-        $this->authorize('view', $table);
-
-        return view('tables.show', compact('table'));
-    }
-
-    /**
-     * Show the form for editing the specified table.
-     */
-    public function edit(Table $table)
-    {
-        $this->authorize('update', $table);
-
-        return view('tables.edit', compact('table'));
-    }
-
-    /**
-     * Update the specified table in storage.
-     */
-    public function update(Request $request, Table $table)
-    {
-        $this->authorize('update', $table);
-        $validated = $request->validate([
-            'name' => 'required|string|max:50|unique:tables,name,' . $table->id,
-            'capacity' => 'required|integer|min:1|max:20',
-            'is_occupied' => 'boolean',
-        ]);
-        $table->update($validated);
-        return redirect()->route('tables.index')->with('success', 'Table updated successfully!');
-    }
-
-    /**
-     * Remove the specified table from storage.
-     */
-    public function destroy(Table $table)
-    {
-        $this->authorize('delete', $table);
-        $table->delete();
-        return redirect()->route('tables.index')->with('success', 'Table deleted successfully!');
-    }
-
-    /**
      * Redirect to the order creation page using the unique token.
      */
     public function redirectToOrder($unique_token)
@@ -178,6 +94,7 @@ class TableController extends Controller
         $validated = $request->validate([
             'products' => 'required|array|min:1|max:50',
             'products.*' => 'integer|min:1|max:99',
+            'note' => 'nullable|string|max:280',
         ]);
 
         // Find the current open TableSession for this table
@@ -200,6 +117,10 @@ class TableController extends Controller
             if (! $product) {
                 abort(422, 'Invalid product for this table.');
             }
+            if (! $product->is_available) {
+                // Sold out between page load and submit.
+                abort(422, 'Product not available.');
+            }
             $products[$productId] = $product;
         }
 
@@ -208,6 +129,7 @@ class TableController extends Controller
             'table_id' => $table->id,
             'table_session_id' => $currentSession->id,
             'status' => 'pending',
+            'note' => isset($validated['note']) ? strip_tags($validated['note']) : null,
             'total_amount' => 0, // Calculate total based on products
             'editor_id' => $table->editor_id, // Assign the editor_id from the table
         ]);

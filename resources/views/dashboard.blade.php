@@ -133,7 +133,7 @@
                         <a href="{{ route('orders.create') }}" class="btn btn-primary">
                             <i class="bi bi-plus-circle btn-icon"></i> New Order
                         </a>
-                        <a href="{{ route('orders.index') }}" class="btn btn-outline btn-orders">
+                        <a href="{{ route('all-orders') }}" class="btn btn-outline btn-orders">
                             <i class="bi bi-list-ul btn-icon"></i> View Orders
                         </a>
                         <a href="{{ route('orders.archive') }}" class="btn btn-outline btn-archive">
