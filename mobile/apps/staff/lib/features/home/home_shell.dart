@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../analytics/analytics_screen.dart';
 import '../board/board_screen.dart';
 import '../products/products_screen.dart';
 import '../tables/tables_screen.dart';
 import 'more_screen.dart';
-import 'placeholder_screen.dart';
 
 /// The 5-tab shell from the mockups: Board, Tables, Products,
-/// Analytics, More. Board is home.
+/// Analytics, More. Board is home — and every tab is real now.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -25,16 +25,12 @@ class _HomeShellState extends State<HomeShell> {
 
     // Built per-frame so labels follow the locale; the IndexedStack keeps
     // each tab's State alive across rebuilds (children match by type+slot).
-    final pages = <Widget>[
-      const BoardScreen(),
-      const TablesScreen(),
-      const ProductsScreen(),
-      PlaceholderScreen(
-        title: l10n.tabAnalytics,
-        icon: Icons.query_stats_outlined,
-        message: l10n.analyticsPlaceholder,
-      ),
-      const MoreScreen(),
+    const pages = <Widget>[
+      BoardScreen(),
+      TablesScreen(),
+      ProductsScreen(),
+      AnalyticsScreen(),
+      MoreScreen(),
     ];
 
     return Scaffold(

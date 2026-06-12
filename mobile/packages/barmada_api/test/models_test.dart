@@ -235,6 +235,102 @@ void main() {
         'https://bar.example');
   });
 
+  test('analytics summary parses, incl. hour map and decimal strings', () {
+    final summary = AnalyticsSummary.fromJson({
+      'range': 'today',
+      'currency_symbol': '€',
+      'summary': {
+        'total_sales': '152.50',
+        'order_count': 23,
+        'top_product': 'Pilsener',
+        'average_order_value': 6.63,
+        'peak_hour': 21,
+        // PHP assoc array -> JSON object with string keys.
+        'hour_distribution': {'20': 5, '21': 14, '22': 4},
+      },
+    });
+
+    expect(summary.currencySymbol, '€');
+    expect(summary.totalSales, 152.5);
+    expect(summary.orderCount, 23);
+    expect(summary.peakHour, 21);
+    expect(summary.hourDistribution[21], 14);
+    expect(summary.topProduct, 'Pilsener');
+  });
+
+  test('analytics summary tolerates an empty venue (array-shaped hours)', () {
+    final summary = AnalyticsSummary.fromJson({
+      'range': '7days',
+      'currency_symbol': r'$',
+      'summary': {
+        'total_sales': 0,
+        'order_count': 0,
+        'top_product': null,
+        'average_order_value': 0,
+        'peak_hour': null,
+        // Empty PHP assoc array serializes as a JSON ARRAY.
+        'hour_distribution': [],
+      },
+    });
+
+    expect(summary.orderCount, 0);
+    expect(summary.peakHour, isNull);
+    expect(summary.hourDistribution, isEmpty);
+  });
+
+  test('analytics products and service ops parse the real shapes', () {
+    final products = ProductStats.fromJson({
+      'range': 'today',
+      'products': {
+        'top_products': [
+          {
+            'product_id': 11,
+            'name': 'Pilsener',
+            'quantity': 14,
+            'revenue': '35.00'
+          },
+        ],
+        'least_products': [],
+        'category_sales': [
+          {'category_id': 2, 'name': 'Beers', 'quantity': 18, 'revenue': 47.5},
+        ],
+        'category_orders': [],
+      },
+    });
+    expect(products.topProducts.single.name, 'Pilsener');
+    expect(products.topProducts.single.revenue, 35.0);
+    expect(products.categorySales.single.id, 2);
+
+    final ops = ServiceOpsStats.fromJson({
+      'range': 'today',
+      'service_ops': {
+        'most_used_table': 4,
+        'avg_session_duration': 73.4,
+        'sessions_today': 9,
+        'session_reopenings': 1,
+        'table_turnover': 1.5,
+        'downtime_per_table': null,
+        'qr_scans': 31,
+        'qr_to_order_conversion': 74.2,
+        'avg_time_qr_to_order': 2.4,
+        'staff_order_counts': [
+          {'name': 'Guests (QR)', 'orders': 19},
+          {'name': 'Ana', 'orders': 4},
+        ],
+        'table_usage_distribution': [
+          {'table': 4, 'orders': 11},
+        ],
+      },
+    });
+    expect(ops.sessions, 9);
+    expect(ops.mostUsedTable, '4');
+    expect(ops.avgSessionDurationMinutes, 73.4);
+    expect(ops.downtimePerTableMinutes, isNull);
+    expect(ops.staffOrderCounts.first.label, 'Guests (QR)');
+    expect(ops.staffOrderCounts.first.orders, 19);
+    expect(ops.tableUsage.single.label, '4');
+  });
+
   test('tolerant numeric and boolean coercions', () {
     expect(asDouble('2.50'), 2.5);
     expect(asDouble(3), 3.0);

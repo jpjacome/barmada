@@ -72,13 +72,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabMore => 'More';
 
   @override
-  String get comingSoon => 'Coming soon';
-
-  @override
-  String get analyticsPlaceholder =>
-      'Business-day sales, top products and service ops — next chunk of Phase 1.';
-
-  @override
   String currencyChip(String symbol) {
     return 'Currency $symbol';
   }
@@ -304,6 +297,81 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String productBackOnSale(String name) {
     return '$name is back on sale.';
+  }
+
+  @override
+  String get analyticsOwnerOnlyTitle => 'Owner access only';
+
+  @override
+  String get analyticsOwnerOnlySubtitle =>
+      'Analytics are available to the venue owner\'s account.';
+
+  @override
+  String get rangeToday => 'Today';
+
+  @override
+  String get range7days => '7 days';
+
+  @override
+  String get range30days => '30 days';
+
+  @override
+  String get totalSalesLabel => 'Total sales';
+
+  @override
+  String get ordersLabel => 'Orders';
+
+  @override
+  String get avgOrderLabel => 'Avg order';
+
+  @override
+  String get peakHourLabel => 'Peak hour';
+
+  @override
+  String get topProductLabel => 'Top product';
+
+  @override
+  String get analyticsNoSales => 'No sales in this period yet.';
+
+  @override
+  String get ordersByHourTitle => 'Orders by hour';
+
+  @override
+  String get topProductsTitle => 'Top products';
+
+  @override
+  String get byCategoryTitle => 'By category';
+
+  @override
+  String get serviceTitle => 'Service';
+
+  @override
+  String get sessionsLabel => 'Sessions';
+
+  @override
+  String get avgSessionLabel => 'Avg session';
+
+  @override
+  String get mostUsedTableLabel => 'Busiest table';
+
+  @override
+  String get qrScansLabel => 'QR scans';
+
+  @override
+  String get qrConversionLabel => 'QR → order';
+
+  @override
+  String get turnoverLabel => 'Turnover';
+
+  @override
+  String get whoTookOrdersTitle => 'Who took the orders';
+
+  @override
+  String get guestsQrLabel => 'Guests (QR)';
+
+  @override
+  String minutesShort(String value) {
+    return '$value min';
   }
 
   @override

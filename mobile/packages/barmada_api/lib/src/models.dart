@@ -482,3 +482,178 @@ class ProductInfo {
   final String? categoryName;
   final String? photo;
 }
+
+/// `GET /api/v1/analytics/summary` — the business-day sales headline.
+///
+/// `hour_distribution` is a PHP assoc array: a JSON *object* when it has
+/// entries (`{"21": 14}`) but an empty JSON *array* when it doesn't —
+/// parsing tolerates both.
+class AnalyticsSummary {
+  AnalyticsSummary({
+    required this.range,
+    required this.currencySymbol,
+    required this.totalSales,
+    required this.orderCount,
+    required this.averageOrderValue,
+    required this.hourDistribution,
+    this.topProduct,
+    this.peakHour,
+  });
+
+  factory AnalyticsSummary.fromJson(Map<String, dynamic> json) {
+    final summary = json['summary'];
+    final s = summary is Map<String, dynamic> ? summary : <String, dynamic>{};
+    final hours = <int, int>{};
+    final raw = s['hour_distribution'];
+    if (raw is Map) {
+      raw.forEach((key, value) => hours[asInt(key)] = asInt(value));
+    }
+    return AnalyticsSummary(
+      range: asStringOrNull(json['range']) ?? 'today',
+      currencySymbol: asStringOrNull(json['currency_symbol']) ?? r'$',
+      totalSales: asDouble(s['total_sales']),
+      orderCount: asInt(s['order_count']),
+      averageOrderValue: asDouble(s['average_order_value']),
+      hourDistribution: hours,
+      topProduct: asStringOrNull(s['top_product']),
+      peakHour: s['peak_hour'] == null ? null : asInt(s['peak_hour']),
+    );
+  }
+
+  final String range;
+  final String currencySymbol;
+  final double totalSales;
+  final int orderCount;
+  final double averageOrderValue;
+
+  /// Orders per local hour (0–23), only hours with orders present.
+  final Map<int, int> hourDistribution;
+  final String? topProduct;
+  final int? peakHour;
+}
+
+/// One ranked row of the product/category stats (`product_id` or
+/// `category_id` becomes [id]).
+class RankedStat {
+  RankedStat({
+    required this.id,
+    required this.name,
+    required this.quantity,
+    required this.revenue,
+  });
+
+  factory RankedStat.fromJson(Map<String, dynamic> json) => RankedStat(
+        id: asInt(json['product_id'] ?? json['category_id']),
+        name: asStringOrNull(json['name']) ?? 'Unknown',
+        quantity: asInt(json['quantity']),
+        revenue: asDouble(json['revenue']),
+      );
+
+  final int id;
+  final String name;
+  final int quantity;
+  final double revenue;
+}
+
+/// `GET /api/v1/analytics/products` — sellers and category splits.
+class ProductStats {
+  ProductStats({
+    required this.range,
+    required this.topProducts,
+    required this.leastProducts,
+    required this.categorySales,
+    required this.categoryOrders,
+  });
+
+  factory ProductStats.fromJson(Map<String, dynamic> json) {
+    final products = json['products'];
+    final p = products is Map<String, dynamic> ? products : <String, dynamic>{};
+    List<RankedStat> rows(Object? raw) => (raw as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(RankedStat.fromJson)
+        .toList();
+    return ProductStats(
+      range: asStringOrNull(json['range']) ?? 'today',
+      topProducts: rows(p['top_products']),
+      leastProducts: rows(p['least_products']),
+      categorySales: rows(p['category_sales']),
+      categoryOrders: rows(p['category_orders']),
+    );
+  }
+
+  final String range;
+  final List<RankedStat> topProducts;
+  final List<RankedStat> leastProducts;
+  final List<RankedStat> categorySales;
+  final List<RankedStat> categoryOrders;
+}
+
+/// One "who/where" count row of the service ops (`name` or `table`
+/// becomes [label]).
+class CountRow {
+  CountRow({required this.label, required this.orders});
+
+  factory CountRow.fromJson(Map<String, dynamic> json) => CountRow(
+        label: asStringOrNull(json['name'] ?? json['table']) ?? '?',
+        orders: asInt(json['orders']),
+      );
+
+  final String label;
+  final int orders;
+}
+
+/// `GET /api/v1/analytics/service-ops` — sessions, turnover, QR funnel
+/// and order attribution. Most metrics are null until data exists.
+class ServiceOpsStats {
+  ServiceOpsStats({
+    required this.range,
+    required this.sessions,
+    required this.sessionReopenings,
+    required this.qrScans,
+    required this.staffOrderCounts,
+    required this.tableUsage,
+    this.mostUsedTable,
+    this.avgSessionDurationMinutes,
+    this.tableTurnover,
+    this.downtimePerTableMinutes,
+    this.qrToOrderConversion,
+    this.avgTimeQrToOrderMinutes,
+  });
+
+  factory ServiceOpsStats.fromJson(Map<String, dynamic> json) {
+    final ops = json['service_ops'];
+    final s = ops is Map<String, dynamic> ? ops : <String, dynamic>{};
+    List<CountRow> rows(Object? raw) => (raw as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(CountRow.fromJson)
+        .toList();
+    double? optDouble(Object? value) => value == null ? null : asDouble(value);
+    return ServiceOpsStats(
+      range: asStringOrNull(json['range']) ?? 'today',
+      sessions: asInt(s['sessions_today']),
+      sessionReopenings: asInt(s['session_reopenings']),
+      qrScans: asInt(s['qr_scans']),
+      staffOrderCounts: rows(s['staff_order_counts']),
+      tableUsage: rows(s['table_usage_distribution']),
+      mostUsedTable: asStringOrNull(s['most_used_table']),
+      avgSessionDurationMinutes: optDouble(s['avg_session_duration']),
+      tableTurnover: optDouble(s['table_turnover']),
+      downtimePerTableMinutes: optDouble(s['downtime_per_table']),
+      qrToOrderConversion: optDouble(s['qr_to_order_conversion']),
+      avgTimeQrToOrderMinutes: optDouble(s['avg_time_qr_to_order']),
+    );
+  }
+
+  final String range;
+  final int sessions;
+  final int sessionReopenings;
+  final int qrScans;
+  final List<CountRow> staffOrderCounts;
+  final List<CountRow> tableUsage;
+  final String? mostUsedTable;
+  final double? avgSessionDurationMinutes;
+  final double? tableTurnover;
+  final double? downtimePerTableMinutes;
+  final double? qrToOrderConversion;
+  final double? avgTimeQrToOrderMinutes;
+}
