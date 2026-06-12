@@ -224,12 +224,6 @@ abstract class AppLocalizations {
   /// **'Coming soon'**
   String get comingSoon;
 
-  /// Roadmap note on the Tables placeholder page.
-  ///
-  /// In en, this message translates to:
-  /// **'Table grid with sessions, item payment ticking and bills — next chunk of Phase 1.'**
-  String get tablesPlaceholder;
-
   /// Roadmap note on the Products placeholder page. 'Sold out' matches the guest menu's wording.
   ///
   /// In en, this message translates to:
@@ -355,6 +349,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivered'**
   String get delivered;
+
+  /// Table state chip: the table has a live session. 'Table' is feminine in Spanish (mesa).
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get statusOpen;
+
+  /// Table state chip: no session.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get statusClosed;
+
+  /// Table state chip: a first guest scanned and waits for staff approval.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending approval'**
+  String get statusPendingApproval;
+
+  /// Empty tables grid title.
+  ///
+  /// In en, this message translates to:
+  /// **'No tables yet'**
+  String get noTablesYet;
+
+  /// Empty tables grid hint — table creation is web-only for now.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your tables in the web dashboard; they appear here instantly.'**
+  String get noTablesSubtitle;
+
+  /// When the current session started. {time} arrives pre-formatted for the locale.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened at {time}'**
+  String openedAtTime(String time);
+
+  /// Bill column: session total. The guest web app uses 'Total' too.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get totalLabel;
+
+  /// Bill column: amount already ticked as paid. Guest web app: 'Pagado'.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paidLabel;
+
+  /// Bill column: amount left to pay. Guest web app: 'Pendiente'.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get remainingLabel;
+
+  /// Button starting a new session on a closed table.
+  ///
+  /// In en, this message translates to:
+  /// **'Open table'**
+  String get openTableAction;
+
+  /// Button approving the waiting first guest (also adopts their device).
+  ///
+  /// In en, this message translates to:
+  /// **'Approve table'**
+  String get approveTableAction;
+
+  /// Button ticking every remaining item on the session as paid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all paid'**
+  String get settleAllAction;
+
+  /// Button ending the session.
+  ///
+  /// In en, this message translates to:
+  /// **'Close table'**
+  String get closeTableAction;
+
+  /// Confirm dialog title before closing a table with an unpaid balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Close table {table}?'**
+  String closeTableTitle(Object table);
+
+  /// Dialog body. {amount} arrives formatted with the venue currency symbol.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} is still unpaid on this bill.'**
+  String closeUnpaidWarning(String amount);
+
+  /// Dialog action: mark the remaining balance paid, then close (the web's pay-and-close).
+  ///
+  /// In en, this message translates to:
+  /// **'Settle & close'**
+  String get closeAndSettle;
+
+  /// Dialog action: close leaving the balance unpaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Close anyway'**
+  String get closeWithoutSettling;
+
+  /// Generic dialog dismiss. Guest web app: 'Cancelar'.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// Snackbar after opening a table.
+  ///
+  /// In en, this message translates to:
+  /// **'Table {table} is open.'**
+  String tableOpenedSnack(Object table);
+
+  /// Snackbar after closing a table.
+  ///
+  /// In en, this message translates to:
+  /// **'Table {table} closed.'**
+  String tableClosedSnack(Object table);
+
+  /// Open session with an empty bill. The guest web app translates this exact line as 'Aún no hay pedidos en esta sesión.'
+  ///
+  /// In en, this message translates to:
+  /// **'No orders yet this session.'**
+  String get sessionNoOrders;
+
+  /// Session screen body when the table has no session.
+  ///
+  /// In en, this message translates to:
+  /// **'This table is closed'**
+  String get tableClosedEmptyTitle;
+
+  /// Hint under the closed-table message.
+  ///
+  /// In en, this message translates to:
+  /// **'Open it to start a new session.'**
+  String get tableClosedEmptySubtitle;
+
+  /// Order state chip on the bill. Order is masculine in Spanish (pedido).
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get orderStatusPending;
+
+  /// Order state chip on the bill — matches the guest web app's 'Entregado'.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get orderStatusDelivered;
+
+  /// Order state chip on the bill.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get orderStatusCancelled;
+
+  /// Session-screen chip: a guest asked for the bill. Tapping marks it handled.
+  ///
+  /// In en, this message translates to:
+  /// **'Bill requested'**
+  String get billRequestedChip;
+
+  /// Session-screen chip: a guest called a waiter. Tapping marks it handled.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiter called'**
+  String get waiterCalledChip;
 
   /// Transport failure: DNS, refused connection, timeout, no network.
   ///
