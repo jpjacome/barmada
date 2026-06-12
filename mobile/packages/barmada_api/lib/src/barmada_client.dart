@@ -261,4 +261,22 @@ class BarmadaClient {
         await _request('POST', '/products/$productId/toggle-availability');
     return ProductInfo.fromJson(body['product'] as Map<String, dynamic>);
   }
+
+  // ------------------------------------------------------------ analytics
+  //
+  // Editor-only on the server (staff tokens get 403). Ranges:
+  // today (default) | 7days | 30days | month — business-day bucketed
+  // in the venue's timezone.
+
+  Future<AnalyticsSummary> analyticsSummary({String range = 'today'}) async =>
+      AnalyticsSummary.fromJson(
+          await _request('GET', '/analytics/summary', query: {'range': range}));
+
+  Future<ProductStats> analyticsProducts({String range = 'today'}) async =>
+      ProductStats.fromJson(await _request('GET', '/analytics/products',
+          query: {'range': range}));
+
+  Future<ServiceOpsStats> analyticsServiceOps({String range = 'today'}) async =>
+      ServiceOpsStats.fromJson(await _request('GET', '/analytics/service-ops',
+          query: {'range': range}));
 }
