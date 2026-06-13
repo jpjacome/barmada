@@ -301,24 +301,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get scanQrAction => 'Escanear QR';
-
-  @override
-  String get scanQrTitle => 'Escanear QR de mesa';
-
-  @override
-  String get scanQrHint => 'Apunta la cámara al código QR de la mesa';
-
-  @override
-  String get scanQrInvalidUrl =>
-      'Este código QR no es un código de mesa de Barmada.';
-
-  @override
-  String scanQrSuccess(Object table) {
-    return 'Mesa $table encontrada — abriendo sesión.';
-  }
-
-  @override
   String get businessSettingsTitle => 'Configuración del negocio';
 
   @override
@@ -416,6 +398,24 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String minutesShort(String value) {
     return '$value min';
+  }
+
+  @override
+  String get scanQrAction => 'Escanear QR';
+
+  @override
+  String get scanQrTitle => 'Escanear QR de mesa';
+
+  @override
+  String get scanQrHint => 'Apunta la cámara al código QR de la mesa';
+
+  @override
+  String get scanQrInvalidUrl =>
+      'Este código QR no es un código de mesa de Barmada.';
+
+  @override
+  String scanQrSuccess(Object table) {
+    return 'Mesa $table encontrada — abriendo sesión.';
   }
 
   @override
