@@ -11,6 +11,7 @@ use App\Actions\Tables\SaveClientInvoice;
 use App\Actions\Tables\SettleTable;
 use App\Http\Controllers\Controller;
 use App\Models\Table;
+use App\Models\User;
 use App\Support\TableBill;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -147,6 +148,53 @@ class TableController extends Controller
                 'phone' => $invoice->phone,
             ],
         ]);
+    }
+
+    /**
+     * Resolves a staff QR scan to a table the app can navigate to.
+     *
+     * Staff phones scan the same QR codes guests do
+     * (`/qr-entry/{username}/{table_number}`). The app extracts the
+     * username and table_number from the URL and calls this endpoint to
+     * get the table's `id` and current `status` for direct navigation.
+     *
+     * Cross-venue protection: a staff or editor token can only resolve
+     * tables that belong to their own venue — mismatched venues 403.
+     */
+    public function resolveQr(Request $request)
+    {
+        $validated = $request->validate([
+            'username'     => 'required|string|max:255',
+            'table_number' => 'required|integer|min:1',
+        ]);
+
+        $editor = User::where('username', $validated['username'])
+            ->where('is_editor', true)
+            ->first();
+
+        if (! $editor) {
+            return response()->json(['message' => __('Venue not found.')], 404);
+        }
+
+        // Cross-venue guard: the authenticated user must belong to this editor.
+        $authEditorId = $request->user()->effectiveEditorId();
+        if ($authEditorId !== $editor->id) {
+            return response()->json(
+                ['message' => __('This QR code belongs to a different venue.')],
+                403
+            );
+        }
+
+        $table = Table::where('editor_id', $editor->id)
+            ->where('table_number', (int) $validated['table_number'])
+            ->whereNull('archived_at')
+            ->first();
+
+        if (! $table) {
+            return response()->json(['message' => __('Table not found.')], 404);
+        }
+
+        return response()->json(['table' => $this->tableSummary($table)]);
     }
 
     private function tableSummary(Table $table): array

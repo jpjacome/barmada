@@ -58,6 +58,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/orders/{order}/settle', [OrderController::class, 'settle']);
 
         Route::get('/tables', [TableController::class, 'index']);
+        // Staff QR resolution: the app scans the same codes guests use and
+        // calls this to get the table id for navigation to the session screen.
+        // Must be declared before /{table} to avoid Laravel treating 'scan'
+        // as an implicit model binding id.
+        Route::get('/tables/scan', [TableController::class, 'resolveQr']);
         Route::get('/tables/{table}/session', [TableController::class, 'session']);
         Route::post('/tables/{table}/open', [TableController::class, 'open']);
         Route::post('/tables/{table}/close', [TableController::class, 'close']);
