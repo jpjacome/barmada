@@ -235,6 +235,25 @@ void main() {
         'https://bar.example');
   });
 
+  test('business settings parse the controller payload', () {
+    final settings = BusinessSettings.fromJson({
+      'settings': {
+        'business_name': 'La Cantina',
+        'username': 'cantina',
+        'currency_symbol': '€',
+        'locale': 'es',
+        'business_timezone': 'America/Guayaquil',
+        'day_cutoff_hour': 4,
+      },
+    });
+
+    expect(settings.currencySymbol, '€');
+    expect(settings.locale, 'es');
+    expect(settings.dayCutoffHour, 4);
+    expect(settings.businessTimezone, 'America/Guayaquil');
+    expect(settings.businessName, 'La Cantina');
+  });
+
   test('analytics summary parses, incl. hour map and decimal strings', () {
     final summary = AnalyticsSummary.fromJson({
       'range': 'today',

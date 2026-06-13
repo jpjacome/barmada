@@ -262,6 +262,28 @@ class BarmadaClient {
     return ProductInfo.fromJson(body['product'] as Map<String, dynamic>);
   }
 
+  // ------------------------------------------------------------- settings
+  //
+  // Editor-only on the server (staff tokens get 403); staff inherit the
+  // venue's settings through /auth/user.
+
+  Future<BusinessSettings> settings() async =>
+      BusinessSettings.fromJson(await _request('GET', '/settings'));
+
+  Future<BusinessSettings> updateSettings({
+    required String currencySymbol,
+    required String locale,
+    String? businessTimezone,
+    int? dayCutoffHour,
+  }) async =>
+      BusinessSettings.fromJson(await _request('PATCH', '/settings', data: {
+        'currency_symbol': currencySymbol,
+        'locale': locale,
+        if (businessTimezone != null && businessTimezone.isNotEmpty)
+          'business_timezone': businessTimezone,
+        if (dayCutoffHour != null) 'day_cutoff_hour': dayCutoffHour,
+      }));
+
   // ------------------------------------------------------------ analytics
   //
   // Editor-only on the server (staff tokens get 403). Ranges:

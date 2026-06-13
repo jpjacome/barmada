@@ -60,6 +60,43 @@ class ServerMeta {
   bool supports(String feature) => features.contains(feature);
 }
 
+/// `GET/PATCH /api/v1/settings` — the venue's business settings
+/// (editor-only on the server).
+class BusinessSettings {
+  BusinessSettings({
+    required this.currencySymbol,
+    required this.locale,
+    required this.dayCutoffHour,
+    this.businessName,
+    this.username,
+    this.businessTimezone,
+  });
+
+  factory BusinessSettings.fromJson(Map<String, dynamic> json) {
+    final settings = json['settings'];
+    final s = settings is Map<String, dynamic> ? settings : <String, dynamic>{};
+    return BusinessSettings(
+      currencySymbol: asStringOrNull(s['currency_symbol']) ?? r'$',
+      locale: asStringOrNull(s['locale']) ?? 'es',
+      dayCutoffHour: asInt(s['day_cutoff_hour']),
+      businessName: asStringOrNull(s['business_name']),
+      username: asStringOrNull(s['username']),
+      businessTimezone: asStringOrNull(s['business_timezone']),
+    );
+  }
+
+  final String currencySymbol;
+
+  /// Guest menu language: 'en' or 'es'.
+  final String locale;
+
+  /// 0–12: sales before this hour count toward the previous business day.
+  final int dayCutoffHour;
+  final String? businessName;
+  final String? username;
+  final String? businessTimezone;
+}
+
 /// Per-venue presentation settings, reported with the signed-in user.
 class VenueSettings {
   VenueSettings({
