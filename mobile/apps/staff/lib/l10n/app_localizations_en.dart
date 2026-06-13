@@ -417,6 +417,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get shareBillAction => 'Share bill';
+
+  @override
+  String shareBillFilename(String table) {
+    return 'bill_table_$table.pdf';
+  }
+
+  @override
+  String shareBillSubject(String venueName, String table) {
+    return 'Bill — $venueName table $table';
+  }
+
+  @override
+  String get shareBillError => 'Could not generate the bill PDF.';
+
+  @override
   String get errorNetwork =>
       'Could not reach the server. Check the address and your connection.';
 

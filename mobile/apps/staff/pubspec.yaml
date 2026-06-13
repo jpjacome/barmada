@@ -22,6 +22,9 @@ dependencies:
   mobile_scanner: ^6.0.0
   flutter_riverpod: ^2.6.1
   intl: ^0.20.2
+  path_provider: ^2.1.4
+  pdf: ^3.11.0
+  share_plus: ^10.1.2
   shared_preferences: ^2.3.0
 
 dev_dependencies:
@@ -36,3 +39,6 @@ flutter:
   generate: true
   assets:
     - assets/sounds/
+    # Roboto (Apache 2.0, from the Flutter SDK) embedded in the bill PDF
+    # for full Unicode currency-symbol coverage (€ etc.).
+    - assets/fonts/
