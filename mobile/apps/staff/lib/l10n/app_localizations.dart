@@ -782,6 +782,36 @@ abstract class AppLocalizations {
   /// **'{value} min'**
   String minutesShort(String value);
 
+  /// Button in the Tables AppBar to open the QR-scan screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR'**
+  String get scanQrAction;
+
+  /// Title of the QR camera screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan table QR'**
+  String get scanQrTitle;
+
+  /// Instruction overlay on the scanner viewfinder.
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at a table QR code'**
+  String get scanQrHint;
+
+  /// Shown when the scanned URL doesn't match the expected /qr-entry/{username}/{table} pattern.
+  ///
+  /// In en, this message translates to:
+  /// **'This QR code is not a Barmada table code.'**
+  String get scanQrInvalidUrl;
+
+  /// Brief feedback after resolving the QR.
+  ///
+  /// In en, this message translates to:
+  /// **'Table {table} found — opening session.'**
+  String scanQrSuccess(Object table);
+
   /// Transport failure: DNS, refused connection, timeout, no network.
   ///
   /// In en, this message translates to:

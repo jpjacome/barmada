@@ -1,11 +1,8 @@
 {
   "@@locale": "es",
-
   "appTitle": "Barmada Staff",
-
   "startupErrorTitle": "Algo salió mal",
   "retry": "Reintentar",
-
   "setupTagline": "Maneja el bar desde tu bolsillo.",
   "setupServerLabel": "Tu servidor",
   "setupServerHint": "https://bar.example  ·  http://10.0.2.2:8000",
@@ -13,19 +10,16 @@
   "setupEmptyUrl": "Escribe la dirección de tu servidor.",
   "setupConnected": "Conectado a {serverName}.",
   "connect": "Conectar",
-
   "emailLabel": "Correo electrónico",
   "passwordLabel": "Contraseña",
   "signIn": "Iniciar sesión",
   "useDifferentServer": "Usar otro servidor",
   "defaultDeviceName": "Teléfono del personal",
-
   "tabBoard": "Tablero",
   "tabTables": "Mesas",
   "tabProducts": "Productos",
   "tabAnalytics": "Estadísticas",
   "tabMore": "Más",
-
   "currencyChip": "Moneda {symbol}",
   "languageLabel": "Idioma",
   "languageSystem": "Sistema",
@@ -34,7 +28,6 @@
   "signOut": "Cerrar sesión",
   "forgetServer": "Olvidar este servidor",
   "aboutFooter": "Barmada Staff · Estructura de la fase 1\nAutoalojado, cero comisiones, tuyo.",
-
   "boardErrorTitle": "No hay conexión con el servidor",
   "boardErrorRetryHint": "Desliza hacia abajo para reintentar.",
   "boardQuietTitle": "Todo tranquilo",
@@ -46,7 +39,6 @@
   "noPendingOrders": "No hay pedidos pendientes",
   "orderTableTitle": "Mesa {table}",
   "delivered": "Entregado",
-
   "statusOpen": "Abierta",
   "statusClosed": "Cerrada",
   "statusPendingApproval": "Pendiente de aprobación",
@@ -75,7 +67,6 @@
   "orderStatusCancelled": "Cancelado",
   "billRequestedChip": "Cuenta solicitada",
   "waiterCalledChip": "Mesero llamado",
-
   "newOrderAction": "Nuevo pedido",
   "newOrderSheetTitle": "Nuevo pedido · mesa {table}",
   "itemsCount": "{count, plural, =0{Sin artículos} =1{1 artículo} other{{count} artículos}}",
@@ -83,7 +74,6 @@
   "confirmOrder": "Confirmar pedido",
   "orderNoteHint": "Nota del pedido (opcional)",
   "orderPlacedSnack": "Pedido enviado a la mesa {table}.",
-
   "soldOut": "Agotado",
   "searchProducts": "Buscar productos…",
   "categoryOthers": "Otros",
@@ -92,7 +82,6 @@
   "noSearchMatches": "Ningún producto coincide con tu búsqueda.",
   "productMarkedSoldOut": "{name} marcado como agotado.",
   "productBackOnSale": "{name} vuelve a estar a la venta.",
-
   "businessSettingsTitle": "Configuración del negocio",
   "currencySymbolLabel": "Símbolo de moneda",
   "guestLanguageLabel": "Idioma del menú para clientes",
@@ -101,7 +90,6 @@
   "dayCutoffHelp": "Las ventas después de medianoche cuentan para el día anterior hasta esta hora.",
   "saveSettings": "Guardar",
   "settingsSavedSnack": "Configuración guardada.",
-
   "analyticsOwnerOnlyTitle": "Solo para el propietario",
   "analyticsOwnerOnlySubtitle": "Las estadísticas están disponibles para la cuenta del propietario del local.",
   "rangeToday": "Hoy",
@@ -126,7 +114,11 @@
   "whoTookOrdersTitle": "Quién tomó los pedidos",
   "guestsQrLabel": "Clientes (QR)",
   "minutesShort": "{value} min",
-
+  "scanQrAction": "Escanear QR",
+  "scanQrTitle": "Escanear QR de mesa",
+  "scanQrHint": "Apunta la cámara al código QR de la mesa",
+  "scanQrInvalidUrl": "Este código QR no es un código de mesa de Barmada.",
+  "scanQrSuccess": "Mesa {table} encontrada — abriendo sesión.",
   "errorNetwork": "No se pudo conectar con el servidor. Revisa la dirección y tu conexión.",
   "errorRequestFailed": "La solicitud falló ({status}).",
   "errorSessionExpired": "Tu sesión ha expirado. Inicia sesión de nuevo.",

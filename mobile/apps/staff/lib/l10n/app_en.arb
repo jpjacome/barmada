@@ -1,11 +1,9 @@
 {
   "@@locale": "en",
-
   "appTitle": "Barmada Staff",
   "@appTitle": {
     "description": "App name shown by the OS task switcher."
   },
-
   "startupErrorTitle": "Something went wrong",
   "@startupErrorTitle": {
     "description": "Title when the app fails to restore its session at startup."
@@ -14,7 +12,6 @@
   "@retry": {
     "description": "Generic retry button."
   },
-
   "setupTagline": "Run the bar from your pocket.",
   "@setupTagline": {
     "description": "Tagline under the wordmark on the first-run screen."
@@ -49,7 +46,6 @@
   "@connect": {
     "description": "Button that validates and saves the server address."
   },
-
   "emailLabel": "Email",
   "@emailLabel": {
     "description": "Login email field label."
@@ -70,7 +66,6 @@
   "@defaultDeviceName": {
     "description": "Default device label sent to the server when creating the API token; venues see it in their device list."
   },
-
   "tabBoard": "Board",
   "@tabBoard": {
     "description": "Bottom tab: the live orders board."
@@ -91,7 +86,6 @@
   "@tabMore": {
     "description": "Bottom tab and title of the account/settings page."
   },
-
   "currencyChip": "Currency {symbol}",
   "@currencyChip": {
     "description": "Chip on the More page showing the venue's currency symbol.",
@@ -130,7 +124,6 @@
   "@aboutFooter": {
     "description": "Footer on the More page; second line is the product credo."
   },
-
   "boardErrorTitle": "Cannot reach the server",
   "@boardErrorTitle": {
     "description": "Title when the board poll fails."
@@ -200,7 +193,6 @@
   "@delivered": {
     "description": "Order card action marking the order as delivered. The guest web app translates the matching status as 'Entregado'."
   },
-
   "statusOpen": "Open",
   "@statusOpen": {
     "description": "Table state chip: the table has a live session. 'Table' is feminine in Spanish (mesa)."
@@ -340,7 +332,6 @@
   "@waiterCalledChip": {
     "description": "Session-screen chip: a guest called a waiter. Tapping marks it handled."
   },
-
   "newOrderAction": "New order",
   "@newOrderAction": {
     "description": "Button on an open table starting manual order entry (staff takes the order for guests who don't scan)."
@@ -384,7 +375,6 @@
       }
     }
   },
-
   "soldOut": "Sold out",
   "@soldOut": {
     "description": "Chip on an 86'd product — the guest menu shows the same word ('Agotado')."
@@ -429,7 +419,6 @@
       }
     }
   },
-
   "businessSettingsTitle": "Business settings",
   "@businessSettingsTitle": {
     "description": "More-page entry and screen title for the venue settings (owner accounts)."
@@ -462,7 +451,6 @@
   "@settingsSavedSnack": {
     "description": "Snackbar after the venue settings were stored."
   },
-
   "analyticsOwnerOnlyTitle": "Owner access only",
   "@analyticsOwnerOnlyTitle": {
     "description": "Shown to staff accounts — the analytics endpoints are restricted to the venue owner."
@@ -565,7 +553,31 @@
       }
     }
   },
-
+  "scanQrAction": "Scan QR",
+  "@scanQrAction": {
+    "description": "Button in the Tables AppBar to open the QR-scan screen."
+  },
+  "scanQrTitle": "Scan table QR",
+  "@scanQrTitle": {
+    "description": "Title of the QR camera screen."
+  },
+  "scanQrHint": "Point the camera at a table QR code",
+  "@scanQrHint": {
+    "description": "Instruction overlay on the scanner viewfinder."
+  },
+  "scanQrInvalidUrl": "This QR code is not a Barmada table code.",
+  "@scanQrInvalidUrl": {
+    "description": "Shown when the scanned URL doesn't match the expected /qr-entry/{username}/{table} pattern."
+  },
+  "scanQrSuccess": "Table {table} found — opening session.",
+  "@scanQrSuccess": {
+    "description": "Brief feedback after resolving the QR.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
   "errorNetwork": "Could not reach the server. Check the address and your connection.",
   "@errorNetwork": {
     "description": "Transport failure: DNS, refused connection, timeout, no network."
