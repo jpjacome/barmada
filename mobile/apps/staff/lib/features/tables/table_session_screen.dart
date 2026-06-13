@@ -1,15 +1,20 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:barmada_api/barmada_api.dart';
 import 'package:barmada_core/barmada_core.dart';
 import 'package:barmada_ui/barmada_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../l10n/api_error_l10n.dart';
 import '../../l10n/app_localizations.dart';
 import '../board/board_providers.dart';
+import 'bill_pdf.dart';
 import 'order_composer_screen.dart';
 import 'tables_providers.dart';
 
@@ -74,6 +79,54 @@ class _TableSessionScreenState extends ConsumerState<TableSessionScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
       _refresh();
+    }
+  }
+
+  Future<void> _shareBill(SessionBill bill) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final l10n = AppLocalizations.of(context);
+    final session = ref.read(sessionControllerProvider).value;
+    final venueName = switch (session) {
+      Authed(:final user, :final server) =>
+        user.venue?.businessName ?? user.businessName ?? server.name,
+      _ => 'Barmada',
+    };
+    final symbol = switch (session) {
+      Authed(:final user) => user.venue?.currencySymbol ?? r'$',
+      _ => r'$',
+    };
+    final locale = Localizations.localeOf(context).languageCode;
+    try {
+      // Roboto for full Unicode currency coverage (the PDF built-in
+      // fonts can't draw €).
+      final baseFont = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+      final boldFont = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
+      final bytes = await const BillPdfGenerator().generate(
+        bill: bill,
+        venueName: venueName,
+        currencySymbol: symbol,
+        locale: locale,
+        baseFont: baseFont,
+        boldFont: boldFont,
+      );
+      final dir = await getTemporaryDirectory();
+      final filename = l10n.shareBillFilename('${widget.tableNumber}');
+      final file = File('${dir.path}/$filename');
+      await file.writeAsBytes(bytes, flush: true);
+
+      if (!mounted) return;
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/pdf')],
+        subject: l10n.shareBillSubject(venueName, '${widget.tableNumber}'),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.shareBillError)));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -144,9 +197,19 @@ class _TableSessionScreenState extends ConsumerState<TableSessionScreen> {
       appBar: AppBar(
         title: Text(l10n.orderTableTitle(widget.tableNumber)),
         actions: [
+          // Share bill — shown when there is a session with at least one
+          // non-cancelled order so there is something worth sharing.
+          if (snapshot != null &&
+              snapshot.hasOpenSession &&
+              snapshot.orders.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.share_outlined),
+              tooltip: l10n.shareBillAction,
+              onPressed: _busy ? null : () => _shareBill(snapshot),
+            ),
           if (bill.isLoading && snapshot != null)
             const Padding(
-              padding: EdgeInsets.only(right: 16),
+              padding: EdgeInsets.only(right: 8),
               child: Center(
                 child: SizedBox(
                   width: 16,

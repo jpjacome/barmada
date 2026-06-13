@@ -578,6 +578,38 @@
       }
     }
   },
+  "shareBillAction": "Share bill",
+  "@shareBillAction": {
+    "description": "Button on the session screen to generate and share the table bill PDF."
+  },
+  "shareBillFilename": "bill_table_{table}.pdf",
+  "@shareBillFilename": {
+    "description": "Filename for the shared bill PDF.",
+    "placeholders": {
+      "table": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "shareBillSubject": "Bill — {venueName} table {table}",
+  "@shareBillSubject": {
+    "description": "Subject/title passed to the share sheet.",
+    "placeholders": {
+      "venueName": {
+        "type": "String",
+        "example": "La Cantina"
+      },
+      "table": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "shareBillError": "Could not generate the bill PDF.",
+  "@shareBillError": {
+    "description": "Snackbar when PDF generation fails."
+  },
   "errorNetwork": "Could not reach the server. Check the address and your connection.",
   "@errorNetwork": {
     "description": "Transport failure: DNS, refused connection, timeout, no network."

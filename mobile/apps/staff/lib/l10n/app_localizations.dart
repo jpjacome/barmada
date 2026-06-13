@@ -812,6 +812,30 @@ abstract class AppLocalizations {
   /// **'Table {table} found — opening session.'**
   String scanQrSuccess(Object table);
 
+  /// Button on the session screen to generate and share the table bill PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'Share bill'**
+  String get shareBillAction;
+
+  /// Filename for the shared bill PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'bill_table_{table}.pdf'**
+  String shareBillFilename(String table);
+
+  /// Subject/title passed to the share sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Bill — {venueName} table {table}'**
+  String shareBillSubject(String venueName, String table);
+
+  /// Snackbar when PDF generation fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not generate the bill PDF.'**
+  String get shareBillError;
+
   /// Transport failure: DNS, refused connection, timeout, no network.
   ///
   /// In en, this message translates to:

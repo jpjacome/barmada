@@ -419,6 +419,22 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get shareBillAction => 'Compartir cuenta';
+
+  @override
+  String shareBillFilename(String table) {
+    return 'cuenta_mesa_$table.pdf';
+  }
+
+  @override
+  String shareBillSubject(String venueName, String table) {
+    return 'Cuenta — $venueName mesa $table';
+  }
+
+  @override
+  String get shareBillError => 'No se pudo generar el PDF de la cuenta.';
+
+  @override
   String get errorNetwork =>
       'No se pudo conectar con el servidor. Revisa la dirección y tu conexión.';
 
