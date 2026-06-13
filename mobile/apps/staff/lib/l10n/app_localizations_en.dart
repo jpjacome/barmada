@@ -300,6 +300,31 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get businessSettingsTitle => 'Business settings';
+
+  @override
+  String get currencySymbolLabel => 'Currency symbol';
+
+  @override
+  String get guestLanguageLabel => 'Guest menu language';
+
+  @override
+  String get timezoneLabel => 'Timezone';
+
+  @override
+  String get dayCutoffLabel => 'Business day ends at';
+
+  @override
+  String get dayCutoffHelp =>
+      'Sales after midnight count toward the previous day until this hour.';
+
+  @override
+  String get saveSettings => 'Save';
+
+  @override
+  String get settingsSavedSnack => 'Settings saved.';
+
+  @override
   String get analyticsOwnerOnlyTitle => 'Owner access only';
 
   @override

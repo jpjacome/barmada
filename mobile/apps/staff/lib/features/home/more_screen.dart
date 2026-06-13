@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../settings/business_settings_screen.dart';
 import '../settings/locale_controller.dart';
 
 class MoreScreen extends ConsumerWidget {
@@ -100,6 +101,20 @@ class MoreScreen extends ConsumerWidget {
               ],
             ),
           ),
+          // Business settings are editor-only server-side; staff don't
+          // get a dead-end entry.
+          if (authed?.user.isEditor ?? false) ...[
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const BusinessSettingsScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.storefront_outlined),
+              label: Text(l10n.businessSettingsTitle),
+            ),
+          ],
           const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: () =>

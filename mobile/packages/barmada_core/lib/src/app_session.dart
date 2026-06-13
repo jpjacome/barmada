@@ -118,6 +118,24 @@ class SessionController extends AsyncNotifier<AppSession> {
     ));
   }
 
+  /// Quietly re-reads /auth/user (e.g. after the venue's settings
+  /// changed) without flashing the splash — state stays Authed
+  /// throughout, and a transient failure keeps the current user.
+  Future<void> refreshUser() async {
+    final current = state.value;
+    if (current is! Authed) return;
+    try {
+      final user = await current.client.currentUser();
+      state = AsyncData(Authed(
+        server: current.server,
+        user: user,
+        client: current.client,
+      ));
+    } on ApiException {
+      // Keep what we have; the next action will surface real errors.
+    }
+  }
+
   Future<void> signOut() async {
     final current = state.value;
     if (current is Authed) {

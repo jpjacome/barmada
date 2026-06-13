@@ -430,6 +430,39 @@
     }
   },
 
+  "businessSettingsTitle": "Business settings",
+  "@businessSettingsTitle": {
+    "description": "More-page entry and screen title for the venue settings (owner accounts)."
+  },
+  "currencySymbolLabel": "Currency symbol",
+  "@currencySymbolLabel": {
+    "description": "Settings field: the symbol shown on every price (max 5 chars)."
+  },
+  "guestLanguageLabel": "Guest menu language",
+  "@guestLanguageLabel": {
+    "description": "Settings field: the language of the guest QR flow — independent of this app's language."
+  },
+  "timezoneLabel": "Timezone",
+  "@timezoneLabel": {
+    "description": "Settings field: IANA timezone id; the hint shows an example."
+  },
+  "dayCutoffLabel": "Business day ends at",
+  "@dayCutoffLabel": {
+    "description": "Settings field: hour (00–12) when the business day rolls over."
+  },
+  "dayCutoffHelp": "Sales after midnight count toward the previous day until this hour.",
+  "@dayCutoffHelp": {
+    "description": "Help text under the day-cutoff field."
+  },
+  "saveSettings": "Save",
+  "@saveSettings": {
+    "description": "Settings submit button."
+  },
+  "settingsSavedSnack": "Settings saved.",
+  "@settingsSavedSnack": {
+    "description": "Snackbar after the venue settings were stored."
+  },
+
   "analyticsOwnerOnlyTitle": "Owner access only",
   "@analyticsOwnerOnlyTitle": {
     "description": "Shown to staff accounts — the analytics endpoints are restricted to the venue owner."
