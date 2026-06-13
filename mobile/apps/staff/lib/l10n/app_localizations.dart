@@ -590,6 +590,84 @@ abstract class AppLocalizations {
   /// **'{name} is back on sale.'**
   String productBackOnSale(String name);
 
+  /// Button in the Tables AppBar to open the QR-scan screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR'**
+  String get scanQrAction;
+
+  /// Title of the QR camera screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan table QR'**
+  String get scanQrTitle;
+
+  /// Instruction overlay on the scanner viewfinder.
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at a table QR code'**
+  String get scanQrHint;
+
+  /// Shown when the scanned URL doesn't match the expected /qr-entry/{username}/{table} pattern.
+  ///
+  /// In en, this message translates to:
+  /// **'This QR code is not a Barmada table code.'**
+  String get scanQrInvalidUrl;
+
+  /// Brief feedback after resolving the QR.
+  ///
+  /// In en, this message translates to:
+  /// **'Table {table} found — opening session.'**
+  String scanQrSuccess(Object table);
+
+  /// More-page entry and screen title for the venue settings (owner accounts).
+  ///
+  /// In en, this message translates to:
+  /// **'Business settings'**
+  String get businessSettingsTitle;
+
+  /// Settings field: the symbol shown on every price (max 5 chars).
+  ///
+  /// In en, this message translates to:
+  /// **'Currency symbol'**
+  String get currencySymbolLabel;
+
+  /// Settings field: the language of the guest QR flow — independent of this app's language.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest menu language'**
+  String get guestLanguageLabel;
+
+  /// Settings field: IANA timezone id; the hint shows an example.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get timezoneLabel;
+
+  /// Settings field: hour (00–12) when the business day rolls over.
+  ///
+  /// In en, this message translates to:
+  /// **'Business day ends at'**
+  String get dayCutoffLabel;
+
+  /// Help text under the day-cutoff field.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales after midnight count toward the previous day until this hour.'**
+  String get dayCutoffHelp;
+
+  /// Settings submit button.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveSettings;
+
+  /// Snackbar after the venue settings were stored.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings saved.'**
+  String get settingsSavedSnack;
+
   /// Shown to staff accounts — the analytics endpoints are restricted to the venue owner.
   ///
   /// In en, this message translates to:

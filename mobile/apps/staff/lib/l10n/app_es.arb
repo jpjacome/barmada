@@ -93,6 +93,21 @@
   "productMarkedSoldOut": "{name} marcado como agotado.",
   "productBackOnSale": "{name} vuelve a estar a la venta.",
 
+  "scanQrAction": "Escanear QR",
+  "scanQrTitle": "Escanear QR de mesa",
+  "scanQrHint": "Apunta la cámara al código QR de la mesa",
+  "scanQrInvalidUrl": "Este código QR no es un código de mesa de Barmada.",
+  "scanQrSuccess": "Mesa {table} encontrada — abriendo sesión.",
+
+  "businessSettingsTitle": "Configuración del negocio",
+  "currencySymbolLabel": "Símbolo de moneda",
+  "guestLanguageLabel": "Idioma del menú para clientes",
+  "timezoneLabel": "Zona horaria",
+  "dayCutoffLabel": "El día de negocio termina a las",
+  "dayCutoffHelp": "Las ventas después de medianoche cuentan para el día anterior hasta esta hora.",
+  "saveSettings": "Guardar",
+  "settingsSavedSnack": "Configuración guardada.",
+
   "analyticsOwnerOnlyTitle": "Solo para el propietario",
   "analyticsOwnerOnlySubtitle": "Las estadísticas están disponibles para la cuenta del propietario del local.",
   "rangeToday": "Hoy",

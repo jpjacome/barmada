@@ -430,6 +430,65 @@
     }
   },
 
+  "scanQrAction": "Scan QR",
+  "@scanQrAction": {
+    "description": "Button in the Tables AppBar to open the QR-scan screen."
+  },
+  "scanQrTitle": "Scan table QR",
+  "@scanQrTitle": {
+    "description": "Title of the QR camera screen."
+  },
+  "scanQrHint": "Point the camera at a table QR code",
+  "@scanQrHint": {
+    "description": "Instruction overlay on the scanner viewfinder."
+  },
+  "scanQrInvalidUrl": "This QR code is not a Barmada table code.",
+  "@scanQrInvalidUrl": {
+    "description": "Shown when the scanned URL doesn't match the expected /qr-entry/{username}/{table} pattern."
+  },
+  "scanQrSuccess": "Table {table} found — opening session.",
+  "@scanQrSuccess": {
+    "description": "Brief feedback after resolving the QR.",
+    "placeholders": {
+      "table": {
+        "example": "4"
+      }
+    }
+  },
+
+  "businessSettingsTitle": "Business settings",
+  "@businessSettingsTitle": {
+    "description": "More-page entry and screen title for the venue settings (owner accounts)."
+  },
+  "currencySymbolLabel": "Currency symbol",
+  "@currencySymbolLabel": {
+    "description": "Settings field: the symbol shown on every price (max 5 chars)."
+  },
+  "guestLanguageLabel": "Guest menu language",
+  "@guestLanguageLabel": {
+    "description": "Settings field: the language of the guest QR flow — independent of this app's language."
+  },
+  "timezoneLabel": "Timezone",
+  "@timezoneLabel": {
+    "description": "Settings field: IANA timezone id; the hint shows an example."
+  },
+  "dayCutoffLabel": "Business day ends at",
+  "@dayCutoffLabel": {
+    "description": "Settings field: hour (00–12) when the business day rolls over."
+  },
+  "dayCutoffHelp": "Sales after midnight count toward the previous day until this hour.",
+  "@dayCutoffHelp": {
+    "description": "Help text under the day-cutoff field."
+  },
+  "saveSettings": "Save",
+  "@saveSettings": {
+    "description": "Settings submit button."
+  },
+  "settingsSavedSnack": "Settings saved.",
+  "@settingsSavedSnack": {
+    "description": "Snackbar after the venue settings were stored."
+  },
+
   "analyticsOwnerOnlyTitle": "Owner access only",
   "@analyticsOwnerOnlyTitle": {
     "description": "Shown to staff accounts — the analytics endpoints are restricted to the venue owner."

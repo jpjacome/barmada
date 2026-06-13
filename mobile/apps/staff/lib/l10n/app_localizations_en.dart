@@ -300,6 +300,48 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get scanQrAction => 'Scan QR';
+
+  @override
+  String get scanQrTitle => 'Scan table QR';
+
+  @override
+  String get scanQrHint => 'Point the camera at a table QR code';
+
+  @override
+  String get scanQrInvalidUrl => 'This QR code is not a Barmada table code.';
+
+  @override
+  String scanQrSuccess(Object table) {
+    return 'Table $table found — opening session.';
+  }
+
+  @override
+  String get businessSettingsTitle => 'Business settings';
+
+  @override
+  String get currencySymbolLabel => 'Currency symbol';
+
+  @override
+  String get guestLanguageLabel => 'Guest menu language';
+
+  @override
+  String get timezoneLabel => 'Timezone';
+
+  @override
+  String get dayCutoffLabel => 'Business day ends at';
+
+  @override
+  String get dayCutoffHelp =>
+      'Sales after midnight count toward the previous day until this hour.';
+
+  @override
+  String get saveSettings => 'Save';
+
+  @override
+  String get settingsSavedSnack => 'Settings saved.';
+
+  @override
   String get analyticsOwnerOnlyTitle => 'Owner access only';
 
   @override

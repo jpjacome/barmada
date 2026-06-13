@@ -301,6 +301,49 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get scanQrAction => 'Escanear QR';
+
+  @override
+  String get scanQrTitle => 'Escanear QR de mesa';
+
+  @override
+  String get scanQrHint => 'Apunta la cámara al código QR de la mesa';
+
+  @override
+  String get scanQrInvalidUrl =>
+      'Este código QR no es un código de mesa de Barmada.';
+
+  @override
+  String scanQrSuccess(Object table) {
+    return 'Mesa $table encontrada — abriendo sesión.';
+  }
+
+  @override
+  String get businessSettingsTitle => 'Configuración del negocio';
+
+  @override
+  String get currencySymbolLabel => 'Símbolo de moneda';
+
+  @override
+  String get guestLanguageLabel => 'Idioma del menú para clientes';
+
+  @override
+  String get timezoneLabel => 'Zona horaria';
+
+  @override
+  String get dayCutoffLabel => 'El día de negocio termina a las';
+
+  @override
+  String get dayCutoffHelp =>
+      'Las ventas después de medianoche cuentan para el día anterior hasta esta hora.';
+
+  @override
+  String get saveSettings => 'Guardar';
+
+  @override
+  String get settingsSavedSnack => 'Configuración guardada.';
+
+  @override
   String get analyticsOwnerOnlyTitle => 'Solo para el propietario';
 
   @override

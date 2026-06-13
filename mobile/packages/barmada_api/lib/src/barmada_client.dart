@@ -195,6 +195,23 @@ class BarmadaClient {
     return [...active, ...archived];
   }
 
+  /// Resolves a guest QR URL to a TableInfo for direct navigation.
+  ///
+  /// Call after parsing `/qr-entry/{username}/{table_number}` from the
+  /// scanned URL; returns the table so the app can push [TableSessionScreen].
+  /// 403 means the QR belongs to a different venue; 404 means the venue
+  /// or table doesn't exist (or is archived).
+  Future<TableInfo> resolveQr({
+    required String username,
+    required int tableNumber,
+  }) async {
+    final body = await _request('GET', '/tables/scan', query: {
+      'username': username,
+      'table_number': tableNumber,
+    });
+    return TableInfo.fromJson(body['table'] as Map<String, dynamic>);
+  }
+
   Future<SessionBill> tableSession(int tableId) async =>
       SessionBill.fromJson(await _request('GET', '/tables/$tableId/session'));
 
@@ -261,6 +278,28 @@ class BarmadaClient {
         await _request('POST', '/products/$productId/toggle-availability');
     return ProductInfo.fromJson(body['product'] as Map<String, dynamic>);
   }
+
+  // ------------------------------------------------------------- settings
+  //
+  // Editor-only on the server (staff tokens get 403); staff inherit the
+  // venue's settings through /auth/user.
+
+  Future<BusinessSettings> settings() async =>
+      BusinessSettings.fromJson(await _request('GET', '/settings'));
+
+  Future<BusinessSettings> updateSettings({
+    required String currencySymbol,
+    required String locale,
+    String? businessTimezone,
+    int? dayCutoffHour,
+  }) async =>
+      BusinessSettings.fromJson(await _request('PATCH', '/settings', data: {
+        'currency_symbol': currencySymbol,
+        'locale': locale,
+        if (businessTimezone != null && businessTimezone.isNotEmpty)
+          'business_timezone': businessTimezone,
+        if (dayCutoffHour != null) 'day_cutoff_hour': dayCutoffHour,
+      }));
 
   // ------------------------------------------------------------ analytics
   //

@@ -18,6 +18,8 @@ dependencies:
     path: ../../packages/barmada_core
   barmada_ui:
     path: ../../packages/barmada_ui
+  audioplayers: ^6.1.0
+  mobile_scanner: ^6.0.0
   flutter_riverpod: ^2.6.1
   intl: ^0.20.2
   shared_preferences: ^2.3.0
@@ -32,3 +34,5 @@ flutter:
   # Regenerates lib/l10n/app_localizations*.dart from the ARB files on
   # `flutter pub get` / build. `melos run l10n` does it on demand.
   generate: true
+  assets:
+    - assets/sounds/
