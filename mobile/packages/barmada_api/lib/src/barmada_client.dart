@@ -195,6 +195,23 @@ class BarmadaClient {
     return [...active, ...archived];
   }
 
+  /// Resolves a guest QR URL to a TableInfo for direct navigation.
+  ///
+  /// Call after parsing `/qr-entry/{username}/{table_number}` from the
+  /// scanned URL; returns the table so the app can push [TableSessionScreen].
+  /// 403 means the QR belongs to a different venue; 404 means the venue
+  /// or table doesn't exist (or is archived).
+  Future<TableInfo> resolveQr({
+    required String username,
+    required int tableNumber,
+  }) async {
+    final body = await _request('GET', '/tables/scan', query: {
+      'username': username,
+      'table_number': tableNumber,
+    });
+    return TableInfo.fromJson(body['table'] as Map<String, dynamic>);
+  }
+
   Future<SessionBill> tableSession(int tableId) async =>
       SessionBill.fromJson(await _request('GET', '/tables/$tableId/session'));
 

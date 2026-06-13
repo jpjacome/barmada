@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/api_error_l10n.dart';
 import '../../l10n/app_localizations.dart';
+import 'qr_scan_screen.dart';
 import 'table_session_screen.dart';
 import 'tables_providers.dart';
 
@@ -48,7 +49,7 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
         actions: [
           if (tables.isLoading && snapshot != null)
             const Padding(
-              padding: EdgeInsets.only(right: 16),
+              padding: EdgeInsets.only(right: 8),
               child: Center(
                 child: SizedBox(
                   width: 16,
@@ -57,6 +58,15 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
                 ),
               ),
             ),
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner_outlined),
+            tooltip: l10n.scanQrAction,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const QrScanScreen(),
+              ),
+            ),
+          ),
         ],
       ),
       body: RefreshIndicator(

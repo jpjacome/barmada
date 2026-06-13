@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Camera permission for QR scan-to-table. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
     <!-- Cleartext allows plain-HTTP dev servers (php artisan serve / LAN IPs).
          Production venues should run HTTPS. -->
     <application
