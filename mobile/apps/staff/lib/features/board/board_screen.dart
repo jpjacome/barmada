@@ -8,14 +8,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/api_error_l10n.dart';
 import '../../l10n/app_localizations.dart';
+import 'board_alerts.dart';
 import 'board_providers.dart';
 
 /// The live orders board — the staff app's home screen.
 ///
 /// Polls `/board` every 5 seconds (the web cadence); push wake-ups make
-/// this instant once FCM is configured. Shows the attention strip
-/// (approvals + service requests), then pending order cards with the
-/// chronometer and one-tap actions.
+/// this instant once FCM is configured. New orders, approval requests
+/// and service requests ring the bar chime — the mobile twin of the
+/// web board's sound alerts. Shows the attention strip (approvals +
+/// service requests), then pending order cards with the chronometer
+/// and one-tap actions.
 class BoardScreen extends ConsumerStatefulWidget {
   const BoardScreen({super.key});
 
@@ -25,6 +28,7 @@ class BoardScreen extends ConsumerStatefulWidget {
 
 class _BoardScreenState extends ConsumerState<BoardScreen> {
   Timer? _poll;
+  final _alerts = BoardAlertDetector();
 
   @override
   void initState() {
@@ -57,6 +61,15 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Ring on anything new the poll brings; the first snapshot primes
+    // silently so reopening over a busy board doesn't ring.
+    ref.listen(boardProvider, (_, next) {
+      final data = next.valueOrNull;
+      if (data != null && _alerts.register(data)) {
+        AlertSounds.chime();
+      }
+    });
+
     final session = ref.watch(sessionControllerProvider).value;
     final venueName = switch (session) {
       Authed(:final user, :final server) =>
