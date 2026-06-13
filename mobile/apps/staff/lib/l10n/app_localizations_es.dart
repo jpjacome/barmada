@@ -301,6 +301,31 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get businessSettingsTitle => 'Configuración del negocio';
+
+  @override
+  String get currencySymbolLabel => 'Símbolo de moneda';
+
+  @override
+  String get guestLanguageLabel => 'Idioma del menú para clientes';
+
+  @override
+  String get timezoneLabel => 'Zona horaria';
+
+  @override
+  String get dayCutoffLabel => 'El día de negocio termina a las';
+
+  @override
+  String get dayCutoffHelp =>
+      'Las ventas después de medianoche cuentan para el día anterior hasta esta hora.';
+
+  @override
+  String get saveSettings => 'Guardar';
+
+  @override
+  String get settingsSavedSnack => 'Configuración guardada.';
+
+  @override
   String get analyticsOwnerOnlyTitle => 'Solo para el propietario';
 
   @override

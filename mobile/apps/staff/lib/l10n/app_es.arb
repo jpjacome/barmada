@@ -93,6 +93,15 @@
   "productMarkedSoldOut": "{name} marcado como agotado.",
   "productBackOnSale": "{name} vuelve a estar a la venta.",
 
+  "businessSettingsTitle": "Configuración del negocio",
+  "currencySymbolLabel": "Símbolo de moneda",
+  "guestLanguageLabel": "Idioma del menú para clientes",
+  "timezoneLabel": "Zona horaria",
+  "dayCutoffLabel": "El día de negocio termina a las",
+  "dayCutoffHelp": "Las ventas después de medianoche cuentan para el día anterior hasta esta hora.",
+  "saveSettings": "Guardar",
+  "settingsSavedSnack": "Configuración guardada.",
+
   "analyticsOwnerOnlyTitle": "Solo para el propietario",
   "analyticsOwnerOnlySubtitle": "Las estadísticas están disponibles para la cuenta del propietario del local.",
   "rangeToday": "Hoy",
