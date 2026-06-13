@@ -65,14 +65,17 @@ Sign in with an editor or staff account from your server (`/register` on the web
 - **Products**: the catalog grouped by category with photos and venue-currency prices, a search box for rush moments, and **one-tap 86** — tap a row (or its switch) to mark sold out / back on sale; the guest menu reflects it on its next poll
 - **Manual order entry**: the **New order** button on any open table — searchable catalog with quantity steppers, sold-out items blocked, then a review sheet (the guest flow's *Revisar/Confirmar pedido* vocabulary) with an optional kitchen/bar note, submitted through the same CreateOrder path as the QR flow
 - **Analytics** (owner accounts): business-day sales headline, orders-by-hour chart, top products with category split, and service ops (sessions, turnover, QR funnel, who-took-the-orders) over Today / 7 / 30 days — the same `VenueAnalytics` read models as the web dashboard
+- **Business settings** (owner accounts, More → Business settings): currency symbol, guest menu language, timezone and the business-day cutoff — saved through the same validation as the web form
+- **Sound alerts**: the bar chime rings when the board poll brings a new order, approval request or service request (reopening over a busy board stays silent) — instant once push lands, useful today without it
 - Dark Barmada theme by default (light theme included), 5-tab shell — **every tab is real now**
 - **Bilingual UI (English / Español)**: follows the device language, with a live in-app override under **More → Language**
 
-## Roadmap (next chunks of Phase 1)
+## Roadmap (remaining — each gated on a decision or account)
 
-1. Push wake-ups (`firebase_messaging` — the server side shipped in barmada PR #29) + notification chime
-2. Settings; QR-scan-to-table; print/share
-3. Store packaging (icons, splash, signing, CI)
+1. **Push wake-ups** (`firebase_messaging`): the server side shipped in barmada PR #29; the app side needs either a venue Firebase project (self-build) or the hosted Barmada Push Relay decision from the proposal §5.3. The chime already rings on the polling path.
+2. **QR-scan-to-table**: needs a small server endpoint resolving a table QR token for staff tokens, plus camera packaging.
+3. **Print/share** (bill + ticket PDFs from the phone).
+4. **Store packaging**: app icon sign-off, splash, signing keystore, store accounts.
 
 ## Localization (i18n)
 
@@ -107,3 +110,7 @@ How it's wired:
 - No code generation except `gen-l10n` (no build_runner) — keep the
   clone-and-run loop instant
 - Melos scripts available: `dart run melos run analyze | test | format | l10n`
+- CI: `docs/ci/mobile-ci.yml` holds the GitHub Actions workflow (analyzer,
+  format gate, all three test suites on `mobile/` changes). Move it to
+  `.github/workflows/mobile-ci.yml` to activate — the automation token
+  lacks the `workflow` scope to place it there directly.

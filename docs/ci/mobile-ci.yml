@@ -1,0 +1,50 @@
+# Mobile workspace CI: analyzer, formatter gate and all three test
+# suites on anything touching mobile/. The committed gen-l10n output
+# regenerates on `flutter pub get`, so a stale catalog fails analyze.
+name: mobile
+
+on:
+  pull_request:
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-ci.yml'
+  push:
+    branches: [master, main]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-ci.yml'
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve workspace (regenerates l10n)
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Format gate
+        run: dart format --set-exit-if-changed .
+
+      - name: Test barmada_api
+        run: flutter test
+        working-directory: mobile/packages/barmada_api
+
+      - name: Test barmada_ui
+        run: flutter test
+        working-directory: mobile/packages/barmada_ui
+
+      - name: Test staff app
+        run: flutter test
+        working-directory: mobile/apps/staff
