@@ -26,12 +26,7 @@ class SettingsController extends Controller
         $user = $request->user();
         abort_unless($user && $user->is_editor, 403);
 
-        $validated = $request->validate([
-            'currency_symbol' => ['required', 'string', 'max:5', 'regex:/^[^<>"\']+$/u'],
-            'locale' => ['required', 'in:en,es'],
-            'business_timezone' => ['nullable', 'timezone:all'],
-            'day_cutoff_hour' => ['nullable', 'integer', 'min:0', 'max:12'],
-        ]);
+        $validated = $request->validate(UpdateBusinessSettings::rules());
 
         $updateSettings->handle($user, $validated);
 
@@ -47,6 +42,13 @@ class SettingsController extends Controller
             'locale' => $user->guestLocale(),
             'business_timezone' => $user->businessTimezone(),
             'day_cutoff_hour' => $user->dayCutoffHour(),
+            'default_tax_code' => $user->defaultTaxCode(),
+            'prices_include_tax' => $user->pricesIncludeTax(),
+            'service_charge_enabled' => $user->serviceChargeEnabled(),
+            'service_charge_rate_bp' => $user->serviceChargeRateBp(),
+            'tax_codes' => collect(\App\Support\Tax::catalogue())
+                ->map(fn ($row, $code) => ['code' => (string) $code, 'rate_bp' => $row['rate_bp'], 'label' => $row['label']])
+                ->values(),
         ];
     }
 }

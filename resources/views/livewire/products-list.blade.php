@@ -156,8 +156,24 @@
                             step="0.01"
                             min="0"
                         >
-                        @error('price') 
-                            <span class="product-form-error">{{ $message }}</span> 
+                        @error('price')
+                            <span class="product-form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <!-- IVA rate (SRI code); blank = venue default -->
+                    <div class="product-form-group">
+                        <label for="taxCode" class="product-form-label">
+                            IVA rate
+                        </label>
+                        <select id="taxCode" wire:model="taxCode" class="product-form-input">
+                            <option value="">Venue default ({{ \App\Support\Tax::label(auth()->user()->venueSettingsUser()->defaultTaxCode()) }})</option>
+                            @foreach(\App\Support\Tax::catalogue() as $code => $row)
+                                <option value="{{ $code }}">{{ $row['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @error('taxCode')
+                            <span class="product-form-error">{{ $message }}</span>
                         @enderror
                     </div>
 

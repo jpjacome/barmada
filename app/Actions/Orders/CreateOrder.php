@@ -73,6 +73,13 @@ class CreateOrder
             ? $table->editor_id
             : $creator->effectiveEditorId();
 
+        // Tax is snapshotted per unit at order time from the venue's fiscal
+        // settings, so history survives rate changes and every surface
+        // (bill, API, fiscal document) reads the same breakdown.
+        $venue = $table->editor ?: User::withoutGlobalScopes()->find($table->editor_id);
+        $pricesIncludeTax = $venue ? $venue->pricesIncludeTax() : (bool) config('fiscal.prices_include_tax_default', true);
+        $serviceChargeBp = $venue && $venue->serviceChargeEnabled() ? $venue->serviceChargeRateBp() : 0;
+
         $order = Order::create([
             'table_id' => $table->id,
             'table_session_id' => $session->id,
@@ -82,29 +89,29 @@ class CreateOrder
             'total_amount' => 0,
             'amount_paid' => 0,
             'amount_left' => 0,
+            'service_charge_rate_bp' => $serviceChargeBp,
             'editor_id' => $editorId,
         ]);
 
-        $totalAmount = 0;
         $itemIndex = 0;
         foreach ($quantities as $productId => $quantity) {
-            $price = $products[$productId]->price;
+            $product = $products[$productId];
+            $snapshot = \App\Support\Tax::unitSnapshot(
+                $product->price,
+                \App\Support\Tax::codeFor($product, $venue),
+                $pricesIncludeTax,
+            );
             for ($i = 0; $i < $quantity; $i++) {
                 $order->items()->create([
                     'product_id' => $productId,
                     'quantity' => 1,
-                    'price' => $price,
                     'is_paid' => false,
                     'item_index' => $itemIndex++,
-                ]);
-                $totalAmount += $price;
+                ] + $snapshot);
             }
         }
 
-        $order->update([
-            'total_amount' => $totalAmount,
-            'amount_left' => $totalAmount,
-        ]);
+        app(RecalculateOrderTotals::class)->handle($order->load('items'));
 
         // Every order placed — guest QR, staff form or API — alerts the
         // venue's registered staff devices.

@@ -37,15 +37,12 @@ class GuestSessionController extends Controller
                 ->get()
             : collect();
 
-        $total = 0;
-        $paid = 0;
-        foreach ($orders as $order) {
-            if ($order->status === 'cancelled') {
-                continue; // shown in the list, excluded from the bill [#12]
-            }
-            $total += $order->items->sum('price');
-            $paid += $order->items->where('is_paid', true)->sum('price');
-        }
+        // Cancelled orders stay in the list but are excluded from the bill
+        // [#12]; the shared read model applies that rule and carries the
+        // tax breakdown the guest is entitled to see.
+        $bill = \App\Support\TableBill::build($table);
+        $total = $bill['total'];
+        $paid = $bill['paid'];
 
         $openRequests = $session
             ? ServiceRequest::where('table_session_id', $session->id)
@@ -60,7 +57,8 @@ class GuestSessionController extends Controller
             'currency' => $currency,
             'total' => $total,
             'paid' => $paid,
-            'left' => $total - $paid,
+            'left' => $bill['left'],
+            'bill' => $bill,
             'unique_token' => $unique_token,
             'openRequests' => $openRequests,
         ]);

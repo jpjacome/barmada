@@ -244,6 +244,12 @@ class TableController extends Controller
                 'total' => round((float) $bill['total'], 2),
                 'paid' => round((float) $bill['paid'], 2),
                 'left' => round((float) $bill['left'], 2),
+                'subtotal' => round((float) $bill['subtotal'], 2),
+                'tax_total' => round((float) $bill['tax_total'], 2),
+                'taxes' => $bill['taxes'],
+                'service_charge' => round((float) $bill['service_charge'], 2),
+                'grand_total' => round((float) $bill['grand_total'], 2),
+                'grand_left' => round((float) $bill['grand_left'], 2),
             ],
             'invoice' => $bill['invoice'] ? [
                 'name' => $bill['invoice']->name,
