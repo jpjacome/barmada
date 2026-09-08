@@ -63,6 +63,60 @@ class PrintAndInvoiceTest extends TestCase
             ->assertSee('extra cheese');
     }
 
+    public function test_order_ticket_defaults_to_80mm_paper_width(): void
+    {
+        $editor = $this->makeEditor();
+        [$table, $session] = $this->openTableWithSession($editor);
+        $product = $this->makeProductFor($editor, ['name' => 'Nachos']);
+        $order = $this->makeOrderFor($editor, [
+            'table_id' => $table->id,
+            'table_session_id' => $session->id,
+            'status' => 'pending',
+        ]);
+        $this->addItem($order, $product);
+
+        $response = $this->actingAs($editor)->get('/orders/'.$order->id.'/ticket');
+        $response->assertOk()
+            ->assertSee('size: 80mm auto', false)
+            ->assertSee('max-width: 302px', false);
+    }
+
+    public function test_order_ticket_switches_to_58mm_paper_via_query_string(): void
+    {
+        $editor = $this->makeEditor();
+        [$table, $session] = $this->openTableWithSession($editor);
+        $product = $this->makeProductFor($editor, ['name' => 'Nachos']);
+        $order = $this->makeOrderFor($editor, [
+            'table_id' => $table->id,
+            'table_session_id' => $session->id,
+            'status' => 'pending',
+        ]);
+        $this->addItem($order, $product);
+
+        $this->actingAs($editor)
+            ->get('/orders/'.$order->id.'/ticket?w=58')
+            ->assertOk()
+            ->assertSee('size: 58mm auto', false)
+            ->assertSee('max-width: 219px', false);
+    }
+
+    public function test_table_bill_switches_to_58mm_paper_via_query_string(): void
+    {
+        $editor = $this->makeEditor();
+        $editor->forceFill(['currency_symbol' => '€'])->save();
+        [$table, $session] = $this->openTableWithSession($editor);
+        $product = $this->makeProductFor($editor, ['name' => 'Craft Beer', 'price' => 4.00]);
+        $order = $this->makeOrderFor($editor, ['table_id' => $table->id, 'table_session_id' => $session->id, 'status' => 'pending']);
+        $this->addItem($order, $product);
+
+        $this->actingAs($editor)
+            ->get('/tables/'.$table->id.'/bill?w=58')
+            ->assertOk()
+            ->assertSee('Craft Beer')
+            ->assertSee('size: 58mm auto', false)
+            ->assertSee('max-width: 219px', false);
+    }
+
     public function test_qr_sheet_lists_active_tables_only(): void
     {
         $editor = $this->makeEditor();

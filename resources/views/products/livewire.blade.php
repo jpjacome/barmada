@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', __('Products'))
+
 @section('content')
 <!-- Link to general CSS first, then component-specific CSS -->
 <link href="{{ asset('css/general-' . (session('theme', 'light')) . '.css') }}" rel="stylesheet">

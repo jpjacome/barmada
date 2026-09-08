@@ -111,7 +111,7 @@
 }
 
 .editor-delete-button {
-    color: var(--color-danger);
+    color: var(--color-danger-text);
 }
 
 .editor-edit-button:hover {

@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', __('Orders Archive'))
+
 @section('content')
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -115,6 +117,29 @@
                     color: var(--color-accents);
                     font-style: italic;
                     opacity: 0.7;
+                }
+
+                @media (max-width: 480px) {
+                    .archive-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: var(--spacing-3);
+                    }
+                    .archive-back {
+                        align-self: stretch;
+                        justify-content: center;
+                    }
+                }
+
+                @media (max-width: 360px) {
+                    .archive-header {
+                        padding: var(--spacing-3);
+                    }
+                    .archive-table-head th,
+                    .archive-table-body td {
+                        padding: var(--spacing-2) var(--spacing-3);
+                        font-size: var(--text-sm);
+                    }
                 }
             </style>
             <div class="archive-container">

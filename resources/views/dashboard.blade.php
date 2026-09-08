@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', __('Dashboard'))
+
 @section('content')
 <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
 <div class="dashboard-wrapper">

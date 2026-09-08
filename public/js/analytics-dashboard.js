@@ -395,12 +395,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Chart Modal Logic ---
     let modalChartInstance = null;
+    let chartModalTrigger = null;
     function deepClone(obj) {
         return JSON.parse(JSON.stringify(obj));
     }
     window.openChartModal = function(chartId) {
         const modal = document.getElementById('chartModal');
         const modalCanvas = document.getElementById('modalChartCanvas');
+        chartModalTrigger = document.activeElement;
         modal.style.display = 'flex';
         if (modalChartInstance) {
             modalChartInstance.destroy();
@@ -413,6 +415,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 options: Object.assign(deepClone(chartInstance.options), {responsive: false, maintainAspectRatio: false})
             });
         }
+        const closeBtn = modal.querySelector('.chart-modal-close');
+        if (closeBtn) {
+            closeBtn.focus();
+        }
     };
     window.closeChartModal = function() {
         document.getElementById('chartModal').style.display = 'none';
@@ -420,7 +426,19 @@ document.addEventListener('DOMContentLoaded', function() {
             modalChartInstance.destroy();
             modalChartInstance = null;
         }
+        if (chartModalTrigger && typeof chartModalTrigger.focus === 'function') {
+            chartModalTrigger.focus();
+        }
+        chartModalTrigger = null;
     };
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('chartModal');
+            if (modal && modal.style.display !== 'none' && modal.style.display !== '') {
+                window.closeChartModal();
+            }
+        }
+    });
     [
         'salesChart',
         'salesLastWeekChart',

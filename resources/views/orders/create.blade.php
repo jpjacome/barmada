@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', __('Place Order'))
+
 @section('content')
 <link href="{{ asset('css/create-order.css') }}" rel="stylesheet">
 
@@ -119,7 +121,7 @@
                     </div>
                     <button type="button" class="submit-button" id="cart-review-btn" disabled>
                         {{ __('Review order') }}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="submit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="submit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
                     </button>
@@ -131,8 +133,8 @@
 
 <!-- Product Info Modal -->
 <div id="product-info-modal" class="product-info-modal">
-    <div class="product-info-modal-content">
-        <button onclick="closeProductInfoModal()" class="product-info-modal-close"><i class="bi bi-x"></i></button>
+    <div class="product-info-modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-product-name">
+        <button onclick="closeProductInfoModal()" class="product-info-modal-close" aria-label="{{ __('Close') }}"><i class="bi bi-x" aria-hidden="true"></i></button>
         <h2 id="modal-product-name"></h2>
         <img id="modal-product-image" src="" alt="Product Image" />
         <div id="modal-product-description"></div>
@@ -141,8 +143,8 @@
 
 <!-- Order Review Modal [M-3a] -->
 <div id="order-review-modal" class="product-info-modal">
-    <div class="product-info-modal-content order-review-content">
-        <h2>{{ __('Your order') }}</h2>
+    <div class="product-info-modal-content order-review-content" role="dialog" aria-modal="true" aria-labelledby="order-review-title">
+        <h2 id="order-review-title">{{ __('Your order') }}</h2>
         <ul id="order-review-list" class="order-review-list"></ul>
         <div class="order-review-total">{{ __('Total') }}: <strong id="order-review-total"></strong></div>
         <div class="order-review-note">
@@ -174,7 +176,11 @@
         updateCartBar();
     }
 
+    let productInfoModalTrigger = null;
+    let orderReviewModalTrigger = null;
+
     function showProductInfoModal(name, photo, description) {
+        productInfoModalTrigger = document.activeElement;
         document.getElementById('modal-product-name').textContent = name;
         var img = document.getElementById('modal-product-image');
         if(photo) {
@@ -186,10 +192,15 @@
         }
         document.getElementById('modal-product-description').textContent = description || @js(__('Description not available'));
         document.getElementById('product-info-modal').classList.add('active');
+        document.querySelector('.product-info-modal-close').focus();
     }
 
     function closeProductInfoModal() {
         document.getElementById('product-info-modal').classList.remove('active');
+        if (productInfoModalTrigger && typeof productInfoModalTrigger.focus === 'function') {
+            productInfoModalTrigger.focus();
+        }
+        productInfoModalTrigger = null;
     }
 
     // ---- Cart bar + review step ----
@@ -222,6 +233,7 @@
     function openReviewModal() {
         const items = cartItems();
         if (items.length === 0) return;
+        orderReviewModalTrigger = document.activeElement;
         const list = document.getElementById('order-review-list');
         list.innerHTML = '';
         let total = 0;
@@ -238,11 +250,27 @@
         });
         document.getElementById('order-review-total').textContent = CURRENCY + total.toFixed(2);
         document.getElementById('order-review-modal').classList.add('active');
+        document.getElementById('order-note').focus();
+    }
+
+    function closeReviewModal() {
+        document.getElementById('order-review-modal').classList.remove('active');
+        if (orderReviewModalTrigger && typeof orderReviewModalTrigger.focus === 'function') {
+            orderReviewModalTrigger.focus();
+        }
+        orderReviewModalTrigger = null;
     }
 
     document.getElementById('cart-review-btn').addEventListener('click', openReviewModal);
-    document.getElementById('review-cancel').addEventListener('click', function () {
-        document.getElementById('order-review-modal').classList.remove('active');
+    document.getElementById('review-cancel').addEventListener('click', closeReviewModal);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        if (document.getElementById('product-info-modal').classList.contains('active')) {
+            closeProductInfoModal();
+        } else if (document.getElementById('order-review-modal').classList.contains('active')) {
+            closeReviewModal();
+        }
     });
     document.getElementById('review-confirm').addEventListener('click', function () {
         document.getElementById('order-note-input').value = document.getElementById('order-note').value;

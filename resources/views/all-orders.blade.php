@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', __('Orders'))
 @section('header')
     <h1 class="page-title">Orders</h1>
 @endsection

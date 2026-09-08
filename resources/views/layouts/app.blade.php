@@ -5,10 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>@yield('title', 'Barmada')</title>
+        <title>@hasSection('title')@yield('title') - Barmada@else{{ __('Barmada - Bar Management Dashboard') }}@endif</title>
         @hasSection('meta_description')
             <meta name="description" content="@yield('meta_description')">
         @endif
+        @yield('head_extra')
 
         {{-- Fonts: one CDN, the two brand families only. Figtree was Breeze
              scaffolding the design system retired; Google's "Inter" was a

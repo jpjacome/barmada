@@ -63,22 +63,25 @@
                                         wire:click="toggleAvailability({{ $product->id }})"
                                         class="product-edit-button"
                                         title="{{ $product->is_available ? 'Mark as sold out (86)' : 'Mark as available' }}"
+                                        aria-label="{{ $product->is_available ? __('Mark as sold out') : __('Mark as available') }}"
                                     >
-                                        <i class="bi {{ $product->is_available ? 'bi-eye' : 'bi-eye-slash' }}"></i>
+                                        <i class="bi {{ $product->is_available ? 'bi-eye' : 'bi-eye-slash' }}" aria-hidden="true"></i>
                                     </button>
                                     <button
                                         wire:click="editProduct({{ $product->id }})"
                                         class="product-edit-button"
                                         title="Edit Product"
+                                        aria-label="{{ __('Edit product') }}"
                                     >
-                                        <i class="bi bi-pencil"></i>
+                                        <i class="bi bi-pencil" aria-hidden="true"></i>
                                     </button>
-                                    <button 
-                                        wire:click="confirmDelete({{ $product->id }})" 
+                                    <button
+                                        wire:click="confirmDelete({{ $product->id }})"
                                         class="product-delete-button"
                                         title="Delete Product"
+                                        aria-label="{{ __('Delete product') }}"
                                     >
-                                        <i class="bi bi-trash"></i>
+                                        <i class="bi bi-trash" aria-hidden="true"></i>
                                     </button>
                                 </td>
                             </tr>

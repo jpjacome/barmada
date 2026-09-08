@@ -127,7 +127,7 @@
 }
 
 .auth-form-error {
-    color: var(--color-danger);
+    color: var(--color-danger-text);
     font-size: var(--text-sm);
     margin-top: var(--spacing-2);
     font-weight: var(--font-weight-medium);
@@ -272,7 +272,7 @@
     border-radius: var(--border-radius-md);
     padding: var(--spacing-4);
     margin-bottom: var(--spacing-4);
-    color: var(--color-danger);
+    color: var(--color-danger-text);
     font-size: var(--text-sm);
     animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
@@ -355,3 +355,21 @@
         padding: var(--spacing-3);
     }
 }
+
+/* ==========================================================================
+   Reduced Motion
+   Speeds entrance/attention animations to imperceptible instead of
+   cancelling them, so elements still land on their final (visible) frame
+   instead of getting stuck at an animation-only opacity:0 start state.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+

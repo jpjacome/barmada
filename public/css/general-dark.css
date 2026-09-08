@@ -34,8 +34,8 @@
        destructive control flipped to a success colour. Same hue now. */
     --color-danger: #d1074a;     /* Raspberry */
     --color-danger-dark: #a3053a; /* Raspberry, darker */
-    --color-danger-light: #f06a93; /* Raspberry, lighter — text-safe on aubergine */
-    
+    --color-danger-light: #f06a93; /* Raspberry, lighter */
+    --color-danger-text: #f06a93; /* AA-contrast red for small danger/delete text on dark surfaces */
     
     /* Spacing */
     --spacing-1: 0.25rem;
@@ -408,3 +408,20 @@ h1, h2, h3, h4, h5, h6 {
     scrollbar-width: thin;
     scrollbar-color: var(--color-primary) var(--color-secondary);
 }
+/* ==========================================================================
+   Reduced Motion
+   Speeds entrance/attention animations to imperceptible instead of
+   cancelling them, so elements still land on their final (visible) frame
+   instead of getting stuck at an animation-only opacity:0 start state.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+

@@ -74,8 +74,9 @@
                 <h3 class="orders-panel-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
                     <span>Pending Orders</span>
                     <button type="button" id="barmada-sound-toggle" title="New-order sound alerts"
-                            style="background:transparent;border:none;cursor:pointer;font-size:1.1em;line-height:1;">
-                        <i class="bi bi-bell-fill"></i>
+                            style="background:transparent;border:none;cursor:pointer;font-size:1.1em;line-height:1;"
+                            aria-label="{{ __('Toggle new-order sound alerts') }}">
+                        <i class="bi bi-bell-fill" aria-hidden="true"></i>
                     </button>
                 </h3>
                 <div class="orders-panel-content">
@@ -158,8 +159,9 @@
                                             </button>
                                             <a href="{{ url('/orders/'.$pendingOrder['id'].'/ticket') }}" target="_blank" rel="noopener"
                                                class="orders-action-button orders-edit-button" title="Print ticket"
+                                               aria-label="{{ __('Print ticket') }}"
                                                wire:key="ticket-{{ $pendingOrder['id'] }}">
-                                                <i class="bi bi-printer"></i>
+                                                <i class="bi bi-printer" aria-hidden="true"></i>
                                             </a>
                                             <button
                                                 wire:click="cancelOrder({{ $pendingOrder['id'] }})"
@@ -167,8 +169,9 @@
                                                 title="Cancel order (kept in history, excluded from revenue)"
                                                 onclick="return confirm('Cancel this order?')"
                                                 wire:key="cancel-{{ $pendingOrder['id'] }}"
+                                                aria-label="{{ __('Cancel order') }}"
                                             >
-                                                <i class="bi bi-x-circle"></i>
+                                                <i class="bi bi-x-circle" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -283,20 +286,22 @@
                                     </td>
                                     <td class="orders-table-cell">
                                         <div class="orders-actions">
-                                            <button 
-                                                wire:click="openStatusModal({{ $order->id }})" 
-                                                class="orders-action-button orders-edit-button" 
+                                            <button
+                                                wire:click="openStatusModal({{ $order->id }})"
+                                                class="orders-action-button orders-edit-button"
                                                 title="Edit Status"
+                                                aria-label="{{ __('Edit status') }}"
                                             >
-                                                <i class="bi bi-pencil"></i>
+                                                <i class="bi bi-pencil" aria-hidden="true"></i>
                                             </button>
-                                            <button 
-                                                wire:click="deleteOrder({{ $order->id }})" 
-                                                class="orders-action-button orders-delete-button" 
+                                            <button
+                                                wire:click="deleteOrder({{ $order->id }})"
+                                                class="orders-action-button orders-delete-button"
                                                 title="Delete Order"
                                                 onclick="return confirm('Are you sure you want to delete this order?')"
+                                                aria-label="{{ __('Delete order') }}"
                                             >
-                                                <i class="bi bi-trash"></i>
+                                                <i class="bi bi-trash" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -344,12 +349,17 @@
 
     <!-- Status Modal -->
     @if($showStatusModal)
-        <div class="orders-modal-overlay">
-            <div class="orders-modal">
+        <div
+            class="orders-modal-overlay"
+            x-data
+            x-init="$nextTick(() => $el.querySelector('button, [href], input, select, textarea')?.focus())"
+            wire:keydown.escape.window="closeModal"
+        >
+            <div class="orders-modal" role="dialog" aria-modal="true" aria-labelledby="orders-status-modal-title">
                 <div class="orders-modal-header">
-                    <h3 class="orders-modal-title">Change Order Status</h3>
-                    <button wire:click="closeModal" class="orders-modal-close">
-                        <i class="bi bi-x-lg"></i>
+                    <h3 class="orders-modal-title" id="orders-status-modal-title">Change Order Status</h3>
+                    <button wire:click="closeModal" class="orders-modal-close" aria-label="{{ __('Close') }}">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
                     </button>
                 </div>
                 
@@ -394,23 +404,26 @@
                                         <span class="orders-product-name">{{ $product['name'] }}</span>
                                     </div>
                                     <div class="orders-product-controls">
-                                        <button 
+                                        <button
                                             wire:click="decrementProductQuantity({{ $product['id'] }})"
                                             class="orders-product-button orders-product-decrease"
                                             @if(($editingOrder['products'][$product['id']] ?? 0) <= 0) disabled @endif
+                                            aria-label="{{ __('Decrease quantity') }}"
                                         >
                                             -
                                         </button>
-                                        <input 
-                                            type="number" 
+                                        <input
+                                            type="number"
                                             value="{{ $editingOrder['products'][$product['id']] ?? 0 }}"
                                             wire:change="updateProductQuantity({{ $product['id'] }}, $event.target.value)"
                                             class="orders-product-input"
                                             min="0"
+                                            aria-label="{{ __('Quantity') }}"
                                         >
-                                        <button 
+                                        <button
                                             wire:click="incrementProductQuantity({{ $product['id'] }})"
                                             class="orders-product-button orders-product-increase"
+                                            aria-label="{{ __('Increase quantity') }}"
                                         >
                                             +
                                         </button>

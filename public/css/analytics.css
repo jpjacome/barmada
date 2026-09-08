@@ -275,7 +275,7 @@
     color: var(--color-success);
 }
 .trend-down {
-    color: var(--color-danger);
+    color: var(--color-danger-text);
 }
 
 .chart-modal-overlay {
@@ -322,7 +322,7 @@
     transition: color 0.2s;
 }
 .chart-modal-close:hover {
-    color: var(--color-danger);
+    color: var(--color-danger-text);
 }
 #modalChartCanvas {
     width: 900px !important;
@@ -424,6 +424,22 @@
 }
 .analytics-flex-1 {
     flex: 1;
+    min-width: 0;
+}
+
+/* Period cards: 2-up down to tablet, 1-up on phones so labels/values
+   don't wrap word-by-word at narrow widths. */
+@media (max-width: 1024px) {
+    .analytics-card-group-month {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 640px) {
+    .analytics-card-group-month,
+    .analytics-flex-gap {
+        flex-direction: column;
+    }
 }
 
 /* Fullwidth table row */
@@ -685,3 +701,20 @@
     }
     /* Hide any other elements you don't want in the PDF here */
 }
+/* ==========================================================================
+   Reduced Motion
+   Speeds entrance/attention animations to imperceptible instead of
+   cancelling them, so elements still land on their final (visible) frame
+   instead of getting stuck at an animation-only opacity:0 start state.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+

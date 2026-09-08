@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', __('Settings'))
+
 @section('content')
 <link href="{{ asset('css/settings.css') }}" rel="stylesheet">
 <div class="settings-container">

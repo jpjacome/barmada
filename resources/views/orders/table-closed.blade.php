@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', __('Table Closed'))
+
 @section('content')
 <div class="container page-container">
     <div class="content-card content-card-body text-center" style="max-width: 500px; margin: 4rem auto;">

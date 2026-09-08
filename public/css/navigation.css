@@ -349,6 +349,38 @@ a:after {
     transform: scaleY(1);
 }
 
+/* Guests: labelled login link, visible only below the 640px breakpoint
+   where the desktop icon-only link (in .navigation-right) is hidden. */
+.navigation-guest-mobile {
+    display: flex;
+    align-items: center;
+}
+
+@media (min-width: 640px) {
+    .navigation-guest-mobile {
+        display: none;
+    }
+}
+
+.navigation-guest-mobile-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border: var(--border-width) solid rgba(115, 171, 132, 0.3);
+    border-radius: var(--border-radius-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-accents);
+    background-color: rgba(115, 171, 132, 0.05);
+    transition: var(--transition);
+}
+
+.navigation-guest-mobile-link:hover {
+    color: var(--color-warning);
+    border-color: var(--color-warning);
+}
+
 .navigation-hamburger {
     display: flex;
     align-items: center;
