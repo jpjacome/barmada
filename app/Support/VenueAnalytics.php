@@ -125,7 +125,8 @@ class VenueAnalytics
             )
             ->groupBy('order_items.product_id')
             // First-appearance order: the tie-break the PHP implementation
-            // inherited from iterating orders, then items, in id order.
+            // inherited from iterating orders chronologically. Ties within
+            // one instant fall back to order id, then item id.
             ->orderBy('first_seen_at')->orderBy('first_order_id')->orderBy('first_item_id')
             ->toBase()->get()
             ->map(fn ($row) => [
