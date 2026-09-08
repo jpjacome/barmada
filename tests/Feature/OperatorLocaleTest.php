@@ -23,7 +23,8 @@ class OperatorLocaleTest extends TestCase
 
         $response = $this->actingAs($editor)->get('/dashboard')->assertOk();
 
-        $response->assertSee('Hola, '.$editor->username);
+        // The greeting prefers first name over username (dashboard.blade.php).
+        $response->assertSee('Hola, '.$editor->first_name);
     }
 
     public function test_editor_with_english_locale_sees_english_dashboard_heading(): void
@@ -33,7 +34,7 @@ class OperatorLocaleTest extends TestCase
 
         $response = $this->actingAs($editor)->get('/dashboard')->assertOk();
 
-        $response->assertSee('Hello, '.$editor->username);
+        $response->assertSee('Hello, '.$editor->first_name);
     }
 
     public function test_staff_inherits_their_editors_locale(): void
@@ -44,6 +45,6 @@ class OperatorLocaleTest extends TestCase
 
         $response = $this->actingAs($staff)->get('/dashboard')->assertOk();
 
-        $response->assertSee('Hello, '.$staff->username);
+        $response->assertSee('Hello, '.$staff->first_name);
     }
 }

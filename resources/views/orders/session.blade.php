@@ -4,7 +4,7 @@
 <link href="{{ asset('css/create-order.css') }}" rel="stylesheet">
 @endsection
 
-@section('title', __('My Table & Bill'))
+@section('title', __('My table & bill'))
 
 @section('content')
 <div class="container page-container">

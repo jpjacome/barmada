@@ -30,6 +30,9 @@ class StaffWebParityTest extends TestCase
             'business_name' => 'La Cantina',
             'business_timezone' => 'America/Guayaquil',
         ]);
+        // Dashboard text assertions below are in English; pin the venue's
+        // locale explicitly instead of relying on the 'es' default.
+        $editor->forceFill(['locale' => 'en'])->save();
 
         $staff = User::factory()->create([
             'username' => 'mesero'.uniqid(),
