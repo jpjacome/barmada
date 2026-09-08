@@ -41,6 +41,10 @@ Route::resource('tables', TableController::class)->only(['index'])->middleware([
 Route::get('/tables/qr-sheet', [TableController::class, 'qrSheet'])->middleware(['auth'])->name('tables.qr-sheet');
 Route::get('/tables/{table}/qr', [TableController::class, 'qrImage'])->name('tables.qr');
 Route::get('/tables/{table}/bill', [TableController::class, 'bill'])->middleware(['auth'])->name('tables.bill');
+// Fiscal ledger: issue a factura for the table's current session, view the RIDE, download the XML.
+Route::post('/tables/{table}/factura', [\App\Http\Controllers\FiscalDocumentController::class, 'issue'])->middleware(['auth'])->name('tables.factura');
+Route::get('/fiscal/{document}/ride', [\App\Http\Controllers\FiscalDocumentController::class, 'ride'])->middleware(['auth'])->name('fiscal.ride');
+Route::get('/fiscal/{document}/xml', [\App\Http\Controllers\FiscalDocumentController::class, 'xml'])->middleware(['auth'])->name('fiscal.xml');
 Route::get('/orders/{order}/ticket', [OrderController::class, 'ticket'])->middleware(['auth'])->whereNumber('order')->name('orders.ticket');
 
 // Products route (accessible to both admins and editors)
@@ -143,6 +147,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/logo', [SettingsController::class, 'updateLogo'])->name('settings.update-logo');
     Route::post('/settings/business', [SettingsController::class, 'updateBusiness'])->name('settings.update-business');
+    Route::post('/settings/fiscal', [SettingsController::class, 'updateFiscal'])->name('settings.update-fiscal');
 });
 
 // Make theme toggle available to all (guests and users)

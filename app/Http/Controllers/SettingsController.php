@@ -146,4 +146,24 @@ class SettingsController extends Controller
         // Redirect back to previous page
         return redirect()->back()->with('success', 'Theme updated successfully');
     }
+
+    /**
+     * The venue's fiscal identity for electronic invoicing (RUC, razón
+     * social, establecimiento/punto de emisión, régimen, ambiente,
+     * transport). Editors only.
+     */
+    public function updateFiscal(Request $request)
+    {
+        $user = $request->user();
+        abort_unless($user && $user->is_editor, 403);
+
+        $validated = $request->validate(\App\Actions\Settings\UpdateFiscalProfile::rules());
+        foreach (['fiscal_obligado_contabilidad', 'fiscal_enabled'] as $flag) {
+            $validated[$flag] = $request->boolean($flag);
+        }
+
+        app(\App\Actions\Settings\UpdateFiscalProfile::class)->handle($user, $validated);
+
+        return redirect()->route('settings.index')->with('success', 'Fiscal profile updated.');
+    }
 }

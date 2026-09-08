@@ -47,4 +47,31 @@ return [
         'max_rate_bp' => 1000,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Electronic invoicing (comprobantes electrónicos)
+    |--------------------------------------------------------------------------
+    */
+
+    // Above this importe total the buyer must be identified (Ficha §9.10 —
+    // SRI enforces 50 even though the Reglamento still says 200).
+    'consumidor_final_max_total' => 50.00,
+
+    // tipoIdentificacionComprador 07 and its fixed identification.
+    'consumidor_final' => [
+        'id_type' => '07',
+        'identification' => '9999999999999',
+        'name' => 'CONSUMIDOR FINAL',
+    ],
+
+    // RUC of the software provider, emitted as campoAdicional "RUC Proveedor"
+    // (mandatory from 26 Sep 2026 when the software is commercialised;
+    // Res. NAC-DGERCGC26-00000027). Leave null for a venue's in-house use.
+    'software_provider_ruc' => env('FISCAL_SOFTWARE_PROVIDER_RUC'),
+
+    // Transport drivers: sign + transmit. 'none' parks documents unsigned.
+    'providers' => [
+        'none' => \App\Fiscal\Transport\NullTransport::class,
+    ],
+
 ];

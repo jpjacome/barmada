@@ -69,7 +69,31 @@
         </div>
     @endif
 
-    <p class="footer">Not a fiscal receipt — internal bill summary.</p>
+    @php
+        $fiscalDoc = $session
+            ? \App\Models\FiscalDocument::where('table_session_id', $session->id)->where('doc_type', '01')->whereNotIn('status', ['rejected', 'error'])->latest('id')->first()
+            : null;
+    @endphp
+    @if($fiscalDoc)
+        <div class="invoice">
+            <h2>Factura {{ $fiscalDoc->number() }}</h2>
+            <div>Estado: {{ $fiscalDoc->status }}</div>
+            <div style="word-break:break-all;font-size:0.75rem;">{{ $fiscalDoc->clave_acceso }}</div>
+            <a class="print-btn" style="text-decoration:none;text-align:center;" href="{{ route('fiscal.ride', $fiscalDoc) }}">Ver RIDE</a>
+        </div>
+        <p class="footer">Comprobante electrónico emitido — ver RIDE para la representación fiscal.</p>
+    @else
+        @if($errors->has('factura'))
+            <p class="footer" style="color:#b00020;">{{ $errors->first('factura') }}</p>
+        @endif
+        @if($venue && $venue->fiscal_enabled && $session && !empty($lines))
+            <form method="POST" action="{{ route('tables.factura', $table) }}" onsubmit="return confirm('Emitir factura electrónica para esta cuenta?')">
+                @csrf
+                <button type="submit" class="print-btn">Emitir factura</button>
+            </form>
+        @endif
+        <p class="footer">Not a fiscal receipt — internal bill summary.</p>
+    @endif
     <button class="print-btn" onclick="window.print()">Print</button>
 </body>
 </html>
