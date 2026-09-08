@@ -312,6 +312,12 @@ class OrderController extends Controller
         $device = DeviceToken::ensure(request());
         app()->setLocale($editor->guestLocale());
 
+        // Proof of scan. The waiting page polls /poll-table-status/{id} by
+        // raw table id, which no scope protects for a guest; remembering the
+        // tables this visitor actually scanned lets that endpoint serve them
+        // while turning away callers walking ids they were never given.
+        $this->rememberScannedTable($table->id);
+
         // Every scan is an analytics signal (QR conversion metrics).
         ActivityLog::create([
             'type' => 'qr_scan',
@@ -392,6 +398,42 @@ class OrderController extends Controller
      * cookie when present (with IP fallback for token-less legacy rows),
      * by IP otherwise. [F-18]
      */
+    /**
+     * Record that this visitor scanned the given table's QR.
+     */
+    private function rememberScannedTable(int $tableId): void
+    {
+        $scanned = (array) session('scanned_tables', []);
+
+        if (! in_array($tableId, $scanned, true)) {
+            $scanned[] = $tableId;
+            // Bounded: a phone that has toured the venue keeps its recent
+            // tables, not an unbounded session payload.
+            session(['scanned_tables' => array_slice($scanned, -20)]);
+        }
+    }
+
+    /**
+     * Whether this visitor may poll the given table's status.
+     *
+     * Either they scanned it in this browser session, or a request row
+     * already ties their device (or IP) to it from an earlier visit.
+     */
+    private function mayPollTable(\App\Models\Table $table): bool
+    {
+        if (in_array($table->id, (array) session('scanned_tables', []), true)) {
+            return true;
+        }
+
+        return $this->scopeToDevice(
+            \App\Models\TableSessionRequest::where('table_id', $table->id),
+            request()->ip(),
+            // Read-only: minting a cookie here would hand an unknown caller
+            // an identity instead of turning it away.
+            DeviceToken::fromRequest(request()),
+        )->exists();
+    }
+
     private function scopeToDevice($query, string $ip, ?string $device)
     {
         return $query->where(function ($q) use ($ip, $device) {
@@ -411,17 +453,33 @@ class OrderController extends Controller
      */
     public function pollTableStatus($tableId)
     {
-        $table = \App\Models\Table::find($tableId);
+        // Unauthenticated callers bypass EditorScope, so this lookup resolves
+        // any table in the database. Reaching it therefore has to be earned:
+        // the caller must be a staff member of the table's tenant, or a device
+        // that actually scanned this table's QR (qrEntry records every scan,
+        // with or without a session). Without that gate this endpoint leaked
+        // every venue's table state and — because of the self-healing
+        // registration below — let anyone create approval rows and fire push
+        // notifications at arbitrary venues by walking table ids.
+        $table = \App\Models\Table::withoutGlobalScope(\App\Models\Scopes\EditorScope::class)
+            ->find($tableId);
         if (!$table) {
             return response()->json(['status' => 'not_found']);
         }
-        
+
+        $user = Auth::user();
+        $isVenueMember = $user
+            && ($user->is_admin || $user->effectiveEditorId() === $table->editor_id);
+
+        if (! $isVenueMember && ! $this->mayPollTable($table)) {
+            return response()->json(['status' => 'not_found']);
+        }
+
         if ($table->status === 'open') {
             // Generate unique_token if missing
             if (!$table->unique_token) {
                 $table->generateUniqueToken();
             }
-            $user = Auth::user();
             if ($user && ($user->is_admin || $user->is_editor || $user->is_staff)) {
                 // Authenticated users: allow immediate access
                 return response()->json([

@@ -366,11 +366,18 @@ class AllOrdersList extends Component
             
             // Delete all existing items
             $order->items()->delete();
-            
+
             // Create new items with correct quantities. editingOrder is a
             // client-controlled Livewire property: bound quantities and
             // resolve products within the order's tenant only.
+            //
+            // One row per unit, exactly as CreateOrder writes them. This
+            // method used to collapse a quantity into a single row, which
+            // the bill, the API and item-level payment ticking all read as
+            // a single unit — a 3x line was charged as 1x. Analytics did
+            // multiply by quantity, so the two disagreed permanently.
             $itemIndex = 0;
+            $totalAmount = 0;
             foreach ($this->editingOrder['products'] as $productId => $quantity) {
                 $quantity = min(99, max(0, (int) $quantity));
                 if ($quantity > 0) {
@@ -378,16 +385,26 @@ class AllOrdersList extends Component
                     if (! $product) {
                         continue;
                     }
-                    $order->items()->create([
-                        'product_id' => $productId,
-                        'quantity' => $quantity,
-                        'price' => $product->price,
-                        'is_paid' => false,
-                        'item_index' => $itemIndex++
-                    ]);
+                    for ($unit = 0; $unit < $quantity; $unit++) {
+                        $order->items()->create([
+                            'product_id' => $productId,
+                            'quantity' => 1,
+                            'price' => $product->price,
+                            'is_paid' => false,
+                            'item_index' => $itemIndex++
+                        ]);
+                        $totalAmount += $product->price;
+                    }
                 }
             }
-            
+
+            // Every item was just recreated unpaid, so the order's payment
+            // columns have to follow. Leaving total_amount at its pre-edit
+            // value is what made analytics and the bill drift apart.
+            $order->total_amount = $totalAmount;
+            $order->amount_paid = 0;
+            $order->amount_left = $totalAmount;
+
             $order->save();
             
             // Close the modal
@@ -441,7 +458,10 @@ class AllOrdersList extends Component
     public function exportOrdersToXml()
     {
         $user = Auth::user();
-        $editorId = $user->is_admin ? null : $user->id;
+        // Staff belong to an editor: keying the archive on their own user id
+        // wrote the export to a directory the editor's Archives page never
+        // reads, so a staff-triggered export silently vanished.
+        $editorId = $user->is_admin ? null : $user->effectiveEditorId();
         if (!$editorId) {
             // Optionally, block admin from exporting or export all data to a separate admin folder
             session()->flash('message', 'Only editors can export their own orders.');

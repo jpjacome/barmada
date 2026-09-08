@@ -117,6 +117,12 @@ class ProductController extends Controller
     {
         $this->authorize('delete', $product);
 
+        if ($product->hasOrderHistory()) {
+            return response()->json([
+                'message' => __('This product has been ordered before and cannot be deleted. Mark it unavailable instead.'),
+            ], 422);
+        }
+
         $product->delete();
 
         return response()->json(['message' => __('Product deleted.')]);

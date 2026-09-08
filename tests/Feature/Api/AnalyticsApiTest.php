@@ -11,6 +11,18 @@ class AnalyticsApiTest extends TestCase
 {
     use ActsAsApiUser, InteractsWithTenants, RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Analytics buckets on the venue's business day, which for a default
+        // venue (UTC, cutoff 0) starts at UTC midnight. The fixtures below
+        // backdate by up to 15 minutes, so a suite run in the first quarter
+        // hour of a UTC day pushed them into *yesterday* and three of these
+        // tests failed for no reason other than the wall clock. Pin the hour.
+        $this->travelTo(now()->setTime(12, 0));
+    }
+
     private function seedSales($editor): void
     {
         [$table, $session] = $this->openTableWithSession($editor);

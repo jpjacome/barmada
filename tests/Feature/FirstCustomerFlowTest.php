@@ -145,12 +145,17 @@ class FirstCustomerFlowTest extends TestCase
         $editor = $this->makeEditor();
         [$table, $session] = $this->openTableWithSession($editor);
 
+        // The guest scanned and is sitting on the waiting page, but their
+        // request row is gone (session churn, staff cleanup, a close/reopen
+        // between scan and poll). The poll must still make them visible.
+        $this->rememberDevice(
+            $this->get('/qr-entry/'.rawurlencode($editor->username).'/'.$table->table_number)->assertOk()
+        );
+        TableSessionRequest::query()->delete();
         $this->assertSame(0, TableSessionRequest::count());
 
-        $this->rememberDevice(
-            $this->get('/poll-table-status/'.$table->id)
-                ->assertJsonPath('status', 'waiting_ip_approval')
-        );
+        $this->get('/poll-table-status/'.$table->id)
+            ->assertJsonPath('status', 'waiting_ip_approval');
 
         $request = TableSessionRequest::sole();
         $this->assertSame($session->id, $request->table_session_id);

@@ -3,7 +3,6 @@
 namespace App\Actions\Tables;
 
 use App\Exceptions\DomainActionException;
-use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Table;
 
@@ -38,7 +37,9 @@ class CloseTable
 
     public function hasUnpaidBalance(Table $table): bool
     {
-        $orderIds = Order::countable()->where('table_id', $table->id)->pluck('id');
+        // Current session only: an item left unpaid in a session months ago
+        // used to make the table impossible to close ever again.
+        $orderIds = $table->currentSessionOrders()->pluck('id');
 
         return OrderItem::whereIn('order_id', $orderIds)
             ->where('is_paid', false)

@@ -360,14 +360,24 @@ class TablesList extends Component
 
     public function isTableFullyPaid($tableId)
     {
-        $orders = Order::countable()->where('table_id', $tableId)->get();
+        // Resolves within the caller's tenant via the global scope.
+        $table = Table::find($tableId);
+        if (! $table) {
+            return false;
+        }
+
+        // Current session only, matching the bill and the settle/close
+        // actions — this used to consider every order in the table's history.
+        $orders = $table->currentSessionOrders()->with('items')->get();
         $totalLeft = $orders->sum(function ($order) {
             return $order->items->sum(function ($item) {
                 return $item->is_paid ? 0 : $item->price;
             });
         });
 
-        return $totalLeft === 0;
+        // Money arithmetic here is float-shaped, so a strict === 0 comparison
+        // is wrong the moment a zero-priced item is involved.
+        return round((float) $totalLeft, 2) <= 0.0;
     }
 
     public function openQrModal($tableId, $tableNumber)

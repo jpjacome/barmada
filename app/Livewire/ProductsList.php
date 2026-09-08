@@ -290,7 +290,12 @@ class ProductsList extends Component
         }
         
         $this->authorize('delete', $product);
-        
+
+        if ($product->hasOrderHistory()) {
+            $this->status = "Error: '{$product->name}' has been ordered before and cannot be deleted. Mark it unavailable instead.";
+            return;
+        }
+
         $productName = $product->name;
         $product->delete();
         

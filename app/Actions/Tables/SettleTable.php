@@ -3,7 +3,6 @@
 namespace App\Actions\Tables;
 
 use App\Models\ActivityLog;
-use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Table;
 
@@ -16,7 +15,10 @@ class SettleTable
 {
     public function handle(Table $table): Table
     {
-        $orders = Order::countable()->where('table_id', $table->id)->get();
+        // Current session only. Without this filter "pay all" settled every
+        // order the table had ever carried, and the activity-log amount
+        // recorded the table's lifetime unpaid total rather than tonight's.
+        $orders = $table->currentSessionOrders()->get();
         $allItems = OrderItem::whereIn('order_id', $orders->pluck('id'))->get();
 
         $totalAmount = 0;

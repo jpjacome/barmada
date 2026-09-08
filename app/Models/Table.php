@@ -46,6 +46,43 @@ class Table extends Model
     }
 
     /**
+     * The session the table is living in right now, if any.
+     *
+     * This lookup was copy-pasted across the bill, the settle/close
+     * actions, the guest flow and both client surfaces, and the copies
+     * had drifted: the bill filtered orders by session while settling
+     * and closing did not, so "pay all" reached back through every past
+     * session of the table. One definition, one behaviour.
+     */
+    public function currentSession(): ?TableSession
+    {
+        return $this->sessions()
+            ->whereIn('status', ['open', 'reopened'])
+            ->latest('opened_at')
+            ->first();
+    }
+
+    /**
+     * Countable orders belonging to the table's current session.
+     *
+     * With no open session this falls back to the table's session-less
+     * orders (rows predating session tracking) rather than every order
+     * the table has ever carried.
+     */
+    public function currentSessionOrders(): \Illuminate\Database\Eloquent\Builder
+    {
+        $session = $this->currentSession();
+
+        return Order::countable()
+            ->where('table_id', $this->id)
+            ->when(
+                $session,
+                fn ($query) => $query->where('table_session_id', $session->id),
+                fn ($query) => $query->whereNull('table_session_id'),
+            );
+    }
+
+    /**
      * Generate a unique token for the table.
      */
     public function generateUniqueToken(): void
