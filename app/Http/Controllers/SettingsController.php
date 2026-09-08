@@ -103,12 +103,12 @@ class SettingsController extends Controller
         $user = $request->user();
         abort_unless($user && $user->is_editor, 403);
 
-        $validated = $request->validate([
-            'currency_symbol' => ['required', 'string', 'max:5', 'regex:/^[^<>"\']+$/u'],
-            'locale' => ['required', 'in:en,es'],
-            'business_timezone' => ['nullable', 'timezone:all'],
-            'day_cutoff_hour' => ['nullable', 'integer', 'min:0', 'max:12'],
-        ]);
+        $validated = $request->validate(\App\Actions\Settings\UpdateBusinessSettings::rules());
+
+        // HTML checkboxes are absent when unticked: an explicit false.
+        foreach (['prices_include_tax', 'service_charge_enabled'] as $flag) {
+            $validated[$flag] = $request->boolean($flag);
+        }
 
         // Not mass-assignable by design; the action sets the validated
         // values explicitly (shared with the API).

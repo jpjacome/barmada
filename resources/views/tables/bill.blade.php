@@ -43,9 +43,18 @@
             @endforeach
         </table>
         <div class="totals">
-            <div><span>Total</span><span>{{ $currency }}{{ number_format($total, 2) }}</span></div>
+            @if(!empty($bill['taxes']))
+                <div><span>Subtotal</span><span>{{ $currency }}{{ number_format($bill['subtotal'], 2) }}</span></div>
+                @foreach($bill['taxes'] as $tax)
+                    <div><span>{{ $tax['label'] }}</span><span>{{ $currency }}{{ number_format($tax['amount'], 2) }}</span></div>
+                @endforeach
+            @endif
+            @if($bill['service_charge'] > 0)
+                <div><span>Servicio {{ $venue ? $venue->serviceChargeRateBp() / 100 : 10 }}% (propina)</span><span>{{ $currency }}{{ number_format($bill['service_charge'], 2) }}</span></div>
+            @endif
+            <div><span>Total</span><span>{{ $currency }}{{ number_format($bill['grand_total'], 2) }}</span></div>
             <div><span>Paid</span><span>{{ $currency }}{{ number_format($paid, 2) }}</span></div>
-            <div class="due"><span>Due</span><span>{{ $currency }}{{ number_format($left, 2) }}</span></div>
+            <div class="due"><span>Due</span><span>{{ $currency }}{{ number_format($bill['grand_left'], 2) }}</span></div>
         </div>
     @endif
 

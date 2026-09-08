@@ -153,6 +153,43 @@ class User extends Authenticatable
         return max(0, min(12, (int) ($this->day_cutoff_hour ?? 0)));
     }
 
+    /**
+     * SRI IVA code applied to products that do not set their own.
+     */
+    public function defaultTaxCode(): string
+    {
+        // '0' (IVA 0%) is a valid code and falsy — compare explicitly.
+        return ($this->default_tax_code === null || $this->default_tax_code === '')
+            ? (string) config('fiscal.default_iva_code', '4')
+            : (string) $this->default_tax_code;
+    }
+
+    /**
+     * Whether menu prices already include IVA (Ecuadorian menus normally do).
+     */
+    public function pricesIncludeTax(): bool
+    {
+        return $this->prices_include_tax === null
+            ? (bool) config('fiscal.prices_include_tax_default', true)
+            : (bool) $this->prices_include_tax;
+    }
+
+    /**
+     * The legal "10% de servicio" — only mandatory for first- and
+     * second-category tourism establishments, so opt-in.
+     */
+    public function serviceChargeEnabled(): bool
+    {
+        return (bool) $this->service_charge_enabled;
+    }
+
+    public function serviceChargeRateBp(): int
+    {
+        $max = (int) config('fiscal.service_charge.max_rate_bp', 1000);
+
+        return max(0, min($max, (int) ($this->service_charge_rate_bp ?? 1000)));
+    }
+
     public function tables()
     {
         return $this->hasMany(Table::class, 'editor_id');

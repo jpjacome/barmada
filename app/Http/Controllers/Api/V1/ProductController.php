@@ -16,6 +16,9 @@ class ProductController extends Controller
     private const RULES = [
         'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
         'price' => 'required|numeric|decimal:0,2|min:0.01|max:99999.99',
+        // SRI IVA code override; empty = venue default. Validated against
+        // the catalogue in store()/update().
+        'tax_code' => 'nullable|string|max:4',
         'icon_type' => 'nullable|in:bootstrap,svg',
         'bootstrap_icon' => ['nullable', 'regex:/^[a-z0-9 -]+$/i'],
         'icon' => 'nullable|file|max:1024',
@@ -68,6 +71,7 @@ class ProductController extends Controller
             [
                 'name' => $validated['name'],
                 'price' => $validated['price'],
+                'tax_code' => $this->taxCode($validated),
                 'icon_type' => $validated['icon_type'] ?? 'bootstrap',
                 'bootstrap_icon' => $validated['bootstrap_icon'] ?? 'bi-box',
                 'category_id' => $validated['category_id'] ?? null,
@@ -98,6 +102,7 @@ class ProductController extends Controller
             [
                 'name' => $validated['name'],
                 'price' => $validated['price'],
+                'tax_code' => $this->taxCode($validated),
                 'icon_type' => $validated['icon_type'] ?? $product->icon_type ?? 'bootstrap',
                 'bootstrap_icon' => $validated['bootstrap_icon'] ?? ($product->icon_type === 'bootstrap' ? $product->icon_value : 'bi-box'),
                 'icon_value_fallback' => $product->icon_value,
@@ -141,12 +146,24 @@ class ProductController extends Controller
         return response()->json(['product' => $this->productRow($product->refresh()->load('category'))]);
     }
 
+    /**
+     * A tax code must be in the catalogue; anything else falls back to the
+     * venue default (null) rather than 422-ing a catalog edit.
+     */
+    private function taxCode(array $validated): ?string
+    {
+        $code = $validated['tax_code'] ?? null;
+
+        return $code !== null && array_key_exists((string) $code, \App\Support\Tax::catalogue()) ? (string) $code : null;
+    }
+
     private function productRow(Product $product): array
     {
         return [
             'id' => $product->id,
             'name' => $product->name,
             'price' => (float) $product->price,
+            'tax_code' => $product->tax_code,
             'description' => $product->description,
             'is_available' => (bool) $product->is_available,
             'category' => $product->category ? [

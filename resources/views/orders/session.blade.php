@@ -47,9 +47,18 @@
             @endforeach
 
             <div class="session-summary">
-                <div><span>{{ __('Table total') }}</span><strong>{{ $currency }}{{ number_format($total, 2) }}</strong></div>
+                @if(!empty($bill['taxes']))
+                    <div class="session-breakdown"><span>{{ __('Subtotal') }}</span><span>{{ $currency }}{{ number_format($bill['subtotal'], 2) }}</span></div>
+                    @foreach($bill['taxes'] as $tax)
+                        <div class="session-breakdown"><span>{{ $tax['label'] }}</span><span>{{ $currency }}{{ number_format($tax['amount'], 2) }}</span></div>
+                    @endforeach
+                @endif
+                @if($bill['service_charge'] > 0)
+                    <div class="session-breakdown"><span>{{ __('Service charge') }}</span><span>{{ $currency }}{{ number_format($bill['service_charge'], 2) }}</span></div>
+                @endif
+                <div><span>{{ __('Table total') }}</span><strong>{{ $currency }}{{ number_format($bill['grand_total'], 2) }}</strong></div>
                 <div><span>{{ __('Paid') }}</span><strong>{{ $currency }}{{ number_format($paid, 2) }}</strong></div>
-                <div><span>{{ __('Remaining') }}</span><strong>{{ $currency }}{{ number_format($left, 2) }}</strong></div>
+                <div><span>{{ __('Remaining') }}</span><strong>{{ $currency }}{{ number_format($bill['grand_left'], 2) }}</strong></div>
             </div>
         @endif
 

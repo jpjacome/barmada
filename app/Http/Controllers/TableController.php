@@ -90,19 +90,21 @@ class TableController extends Controller
         }
 
         $venue = $table->editor;
-        $invoice = $session
-            ? \App\Models\ClientInvoice::where('table_session_id', $session->id)->first()
-            : null;
+        // Totals and the tax breakdown come from the shared read model so
+        // the printed bill, the staff screen, the guest page and the API
+        // never disagree.
+        $bill = \App\Support\TableBill::build($table);
 
         return view('tables.bill', [
             'table' => $table,
             'venue' => $venue,
             'currency' => $venue ? $venue->currencySymbol() : '$',
             'lines' => $lines,
-            'total' => $total,
-            'paid' => $paid,
-            'left' => $total - $paid,
-            'invoice' => $invoice,
+            'total' => $bill['total'],
+            'paid' => $bill['paid'],
+            'left' => $bill['left'],
+            'bill' => $bill,
+            'invoice' => $bill['invoice'],
             'session' => $session,
         ]);
     }

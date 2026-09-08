@@ -79,6 +79,8 @@ class SaveProduct
         $attributes = [
             'name' => $data['name'],
             'price' => $data['price'],
+            // NULL = venue default IVA rate.
+            'tax_code' => (isset($data['tax_code']) && $data['tax_code'] !== '') ? (string) $data['tax_code'] : null,
             'icon_type' => $iconType,
             'icon_value' => $iconValue,
             'category_id' => $categoryId ?: null,

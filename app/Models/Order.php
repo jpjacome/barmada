@@ -26,6 +26,11 @@ class Order extends Model
         'total_amount',
         'amount_paid',
         'amount_left',
+        'subtotal',
+        'tax_total',
+        'service_charge_rate_bp',
+        'service_charge',
+        'grand_total',
         'is_grouped',
         'editor_id',
     ];
@@ -34,6 +39,10 @@ class Order extends Model
         'total_amount' => 'decimal:2',
         'amount_paid' => 'decimal:2',
         'amount_left' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'tax_total' => 'decimal:2',
+        'service_charge' => 'decimal:2',
+        'grand_total' => 'decimal:2',
         'is_grouped' => 'boolean',
     ];
 

@@ -34,6 +34,7 @@ class ProductsList extends Component
     
     #[Rule('required|numeric|min:0.01')]
     public $price = '';
+    public $taxCode = '';
     
     public $iconType = 'bootstrap';
     
@@ -114,12 +115,14 @@ class ProductsList extends Component
             $this->validate([
                 'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
                 'price' => 'required|numeric|decimal:0,2|min:0.01|max:99999.99',
+                'taxCode' => ['nullable', 'in:'.implode(',', array_keys(config('fiscal.iva_codes', [])))],
                 'bootstrapIcon' => ['required', 'regex:/^[a-z0-9 -]+$/i'],
             ]);
         } else {
             $this->validate([
                 'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
                 'price' => 'required|numeric|decimal:0,2|min:0.01|max:99999.99',
+                'taxCode' => ['nullable', 'in:'.implode(',', array_keys(config('fiscal.iva_codes', [])))],
                 'svgFile' => 'nullable|file|max:1024',
             ]);
         }
@@ -133,6 +136,7 @@ class ProductsList extends Component
         $data = [
             'name' => $this->name,
             'price' => $this->price,
+            'tax_code' => $this->taxCode !== '' && $this->taxCode !== null ? (string) $this->taxCode : null,
             'icon_type' => $this->iconType,
             'bootstrap_icon' => $this->bootstrapIcon,
             'icon_value_fallback' => $this->iconValue,
@@ -230,6 +234,7 @@ class ProductsList extends Component
         $this->authorize('update', $product);
         $this->name = $product->name;
         $this->price = $product->price;
+        $this->taxCode = $product->tax_code ?? '';
         $this->iconType = $product->icon_type ?? 'bootstrap';
         
         if ($this->iconType === 'bootstrap') {
@@ -331,6 +336,7 @@ class ProductsList extends Component
         $this->productId = null;
         $this->name = '';
         $this->price = '';
+        $this->taxCode = '';
         $this->iconType = 'bootstrap';
         $this->bootstrapIcon = 'bi-box';
         $this->svgFile = null;

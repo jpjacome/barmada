@@ -101,6 +101,41 @@
                             <p class="settings-form-error">{{ $message }}</p>
                         @enderror
                     </div>
+                    <h4 class="settings-subsection-title" style="margin-top:1.25rem;">Taxes &amp; service charge</h4>
+                    <div class="settings-form-group">
+                        <label for="default_tax_code" class="settings-form-label">Default IVA rate</label>
+                        <select name="default_tax_code" id="default_tax_code" class="settings-form-input">
+                            @foreach(\App\Support\Tax::catalogue() as $code => $row)
+                                <option value="{{ $code }}" {{ auth()->user()->defaultTaxCode() === (string) $code ? 'selected' : '' }}>{{ $row['label'] }} (SRI {{ $code }})</option>
+                            @endforeach
+                        </select>
+                        <p class="settings-form-helper">Applied to every product that does not set its own rate. The bill, the API and fiscal documents all use this breakdown.</p>
+                        @error('default_tax_code')
+                            <p class="settings-form-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="settings-form-group">
+                        <label class="settings-form-label" for="prices_include_tax">
+                            <input type="checkbox" name="prices_include_tax" id="prices_include_tax" value="1" {{ auth()->user()->pricesIncludeTax() ? 'checked' : '' }}>
+                            Menu prices already include IVA
+                        </label>
+                        <p class="settings-form-helper">Ticked: the price you type is what the guest pays and IVA is broken out of it. Unticked: IVA is added on top at order time.</p>
+                    </div>
+                    <div class="settings-form-group">
+                        <label class="settings-form-label" for="service_charge_enabled">
+                            <input type="checkbox" name="service_charge_enabled" id="service_charge_enabled" value="1" {{ auth()->user()->serviceChargeEnabled() ? 'checked' : '' }}>
+                            Charge the 10% servicio (propina)
+                        </label>
+                        <select name="service_charge_rate_bp" id="service_charge_rate_bp" class="settings-form-input" style="max-width:10rem;margin-top:0.35rem;">
+                            @foreach([1000 => '10%', 500 => '5%'] as $bp => $label)
+                                <option value="{{ $bp }}" {{ auth()->user()->serviceChargeRateBp() === $bp ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <p class="settings-form-helper">Only first- and second-category tourism establishments must charge it. It is computed on the pre-IVA subtotal and is not part of the IVA base.</p>
+                        @error('service_charge_rate_bp')
+                            <p class="settings-form-error">{{ $message }}</p>
+                        @enderror
+                    </div>
                     <div class="settings-form-actions">
                         <button type="submit" class="settings-button">Save Business Settings</button>
                     </div>
