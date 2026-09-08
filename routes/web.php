@@ -49,6 +49,7 @@ Route::get('/orders/{order}/ticket', [OrderController::class, 'ticket'])->middle
 
 // Products route (accessible to both admins and editors)
 Route::get('/products', [ProductsController::class, 'index'])->middleware(['auth'])->name('products.index');
+Route::get('/inventory', [\App\Http\Controllers\InventoryController::class, 'index'])->middleware(['auth'])->name('inventory.index');
 
 // Orders: the live board is the single orders page.
 Route::get('/orders/archive', [OrderController::class, 'archive'])->middleware(['auth', 'editor'])->name('orders.archive');

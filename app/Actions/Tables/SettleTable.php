@@ -41,6 +41,7 @@ class SettleTable
                 $order->status = 'delivered';
             }
             app(RecalculateOrderTotals::class)->handle($order);
+            app(\App\Inventory\StockLedger::class)->syncOrder($order, $actor);
         }
 
         ActivityLog::create([
