@@ -142,6 +142,79 @@
                 </form>
             </div>
         </div>
+        <div class="settings-section">
+            <h3 class="settings-section-title">Fiscal profile (facturación electrónica)</h3>
+            <div class="settings-card">
+                <p class="settings-card-description">Your venue's identity on every factura. Documents are numbered <code>{{ auth()->user()->fiscal_estab ?: '001' }}-{{ auth()->user()->fiscal_pto_emi ?: '001' }}-…</code> and carry the clave de acceso as authorisation number.</p>
+                <form action="{{ route('settings.update-fiscal') }}" method="POST" class="settings-form">
+                    @csrf
+                    <div class="settings-form-group">
+                        <label class="settings-form-label" for="fiscal_enabled">
+                            <input type="checkbox" name="fiscal_enabled" id="fiscal_enabled" value="1" {{ auth()->user()->fiscal_enabled ? 'checked' : '' }}>
+                            Enable electronic invoicing for this venue
+                        </label>
+                    </div>
+                    @foreach([
+                        'fiscal_ruc' => ['RUC (13 digits)', 'text', 13],
+                        'fiscal_razon_social' => ['Razón social', 'text', 300],
+                        'fiscal_nombre_comercial' => ['Nombre comercial (optional)', 'text', 300],
+                        'fiscal_dir_matriz' => ['Dirección matriz', 'text', 300],
+                        'fiscal_dir_establecimiento' => ['Dirección del establecimiento (optional)', 'text', 300],
+                        'fiscal_contribuyente_especial' => ['Contribuyente especial — resolution number (optional)', 'text', 13],
+                    ] as $field => [$label, $type, $max])
+                        <div class="settings-form-group">
+                            <label for="{{ $field }}" class="settings-form-label">{{ $label }}</label>
+                            <input type="{{ $type }}" name="{{ $field }}" id="{{ $field }}" class="settings-form-input" maxlength="{{ $max }}" value="{{ old($field, auth()->user()->{$field}) }}">
+                            @error($field)<p class="settings-form-error">{{ $message }}</p>@enderror
+                        </div>
+                    @endforeach
+                    <div class="settings-form-group" style="display:flex;gap:1rem;">
+                        <div>
+                            <label for="fiscal_estab" class="settings-form-label">Establecimiento</label>
+                            <input type="text" name="fiscal_estab" id="fiscal_estab" class="settings-form-input" maxlength="3" value="{{ old('fiscal_estab', auth()->user()->fiscal_estab ?: '001') }}">
+                        </div>
+                        <div>
+                            <label for="fiscal_pto_emi" class="settings-form-label">Punto de emisión</label>
+                            <input type="text" name="fiscal_pto_emi" id="fiscal_pto_emi" class="settings-form-input" maxlength="3" value="{{ old('fiscal_pto_emi', auth()->user()->fiscal_pto_emi ?: '001') }}">
+                        </div>
+                    </div>
+                    <div class="settings-form-group">
+                        <label class="settings-form-label" for="fiscal_obligado_contabilidad">
+                            <input type="checkbox" name="fiscal_obligado_contabilidad" id="fiscal_obligado_contabilidad" value="1" {{ auth()->user()->fiscal_obligado_contabilidad ? 'checked' : '' }}>
+                            Obligado a llevar contabilidad
+                        </label>
+                    </div>
+                    <div class="settings-form-group">
+                        <label for="fiscal_rimpe" class="settings-form-label">Régimen</label>
+                        <select name="fiscal_rimpe" id="fiscal_rimpe" class="settings-form-input">
+                            @foreach(['none' => 'Régimen general', 'emprendedor' => 'RIMPE Emprendedor', 'negocio_popular' => 'RIMPE Negocio Popular'] as $value => $label)
+                                <option value="{{ $value }}" {{ (auth()->user()->fiscal_rimpe ?: 'none') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="settings-form-group">
+                        <label for="fiscal_ambiente" class="settings-form-label">Ambiente SRI</label>
+                        <select name="fiscal_ambiente" id="fiscal_ambiente" class="settings-form-input">
+                            <option value="1" {{ (int) auth()->user()->fiscal_ambiente === 1 ? 'selected' : '' }}>Pruebas (certificación)</option>
+                            <option value="2" {{ (int) auth()->user()->fiscal_ambiente === 2 ? 'selected' : '' }}>Producción</option>
+                        </select>
+                        <p class="settings-form-helper">Start in pruebas. Documents issued there have no tax validity; sequences are kept separately per ambiente.</p>
+                    </div>
+                    <div class="settings-form-group">
+                        <label for="fiscal_provider" class="settings-form-label">Signing &amp; transmission</label>
+                        <select name="fiscal_provider" id="fiscal_provider" class="settings-form-input">
+                            @foreach(array_keys(config('fiscal.providers', [])) as $key)
+                                <option value="{{ $key }}" {{ (auth()->user()->fiscal_provider ?: 'none') === $key ? 'selected' : '' }}>{{ $key === 'none' ? 'None yet — build and store documents unsigned' : $key }}</option>
+                            @endforeach
+                        </select>
+                        <p class="settings-form-helper">With no provider, facturas are numbered, built and parked; connect a gateway later and submit them in order.</p>
+                    </div>
+                    <div class="settings-form-actions">
+                        <button type="submit" class="settings-button">Save Fiscal Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         @endif
         @if(auth()->user() && auth()->user()->is_admin)
         <div class="settings-section">

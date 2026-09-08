@@ -71,6 +71,12 @@ Route::prefix('v1')->group(function () {
         Route::post('/tables/{table}/archive', [TableController::class, 'archive']);
         Route::post('/tables/{table}/restore', [TableController::class, 'restore']);
         Route::post('/tables/{table}/invoice', [TableController::class, 'saveInvoice']);
+        // Fiscal ledger (comprobantes electrónicos).
+        Route::post('/tables/{table}/factura', [\App\Http\Controllers\Api\V1\FiscalDocumentController::class, 'issue']);
+        Route::get('/fiscal-documents', [\App\Http\Controllers\Api\V1\FiscalDocumentController::class, 'index']);
+        Route::get('/fiscal-documents/{fiscalDocument}', [\App\Http\Controllers\Api\V1\FiscalDocumentController::class, 'show']);
+        Route::get('/settings/fiscal', [\App\Http\Controllers\Api\V1\FiscalDocumentController::class, 'profile']);
+        Route::patch('/settings/fiscal', [\App\Http\Controllers\Api\V1\FiscalDocumentController::class, 'updateProfile']);
 
         Route::get('/approval-requests', [ApprovalRequestController::class, 'index']);
         Route::post('/approval-requests/{id}/approve', [ApprovalRequestController::class, 'approve'])
