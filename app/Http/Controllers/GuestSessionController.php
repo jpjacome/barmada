@@ -27,10 +27,7 @@ class GuestSessionController extends Controller
         }
         $currency = $editor ? $editor->currencySymbol() : '$';
 
-        $session = $table->sessions()
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $session = $table->currentSession();
 
         $orders = $session
             ? Order::where('table_id', $table->id)
@@ -84,10 +81,7 @@ class GuestSessionController extends Controller
             'type' => 'required|in:bill,waiter',
         ]);
 
-        $session = $table->sessions()
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $session = $table->currentSession();
 
         if ($session) {
             // One open request per type per session — repeat taps are a no-op.

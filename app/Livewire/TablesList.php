@@ -144,10 +144,6 @@ class TablesList extends Component
         $this->resetForm();
     }
 
-    public function resetForm()
-    {
-        // No form fields to reset
-    }
 
     public function addTable()
     {
@@ -201,7 +197,6 @@ class TablesList extends Component
         $this->showOrdersModal = true;
         
         // Debug log
-        \Log::info("Modal should be shown: tableId={$tableId}, showOrdersModal={$this->showOrdersModal}");
     }
     
     public function loadTableOrders()
@@ -233,14 +228,12 @@ class TablesList extends Component
         $this->tableOrders = [];
         
         // Debug log
-        \Log::info("Modal was closed, showOrdersModal={$this->showOrdersModal}");
     }
 
     public function refreshModal()
     {
         // This method keeps the modal data fresh while it's open
         if ($this->showOrdersModal && $this->selectedTable) {
-            \Log::info("Refreshing modal for table {$this->selectedTable}");
             $this->loadTableOrders();
         }
     }
@@ -255,7 +248,7 @@ class TablesList extends Component
         }
         $this->authorize('update', $order);
 
-        $item = app(ToggleItemPaid::class)->handle($order, (int) $productId, (int) $itemIndex);
+        $item = app(ToggleItemPaid::class)->handle($order, (int) $productId, (int) $itemIndex, Auth::user());
 
         if ($item) {
             $this->updateTableStatus($this->selectedTable);
@@ -284,7 +277,7 @@ class TablesList extends Component
     {
         $order = Order::findOrFail($orderId);
         $this->authorize('update', $order);
-        app(SettleOrder::class)->handle($order);
+        app(SettleOrder::class)->handle($order, Auth::user());
         $this->refreshTableOrders();
     }
 
@@ -296,7 +289,7 @@ class TablesList extends Component
         }
         $this->authorize('update', $table);
 
-        app(SettleTable::class)->handle($table);
+        app(SettleTable::class)->handle($table, Auth::user());
 
         $this->updateTableStatus($this->selectedTable);
         $this->refreshTableOrders();
@@ -391,7 +384,7 @@ class TablesList extends Component
         $table = Table::findOrFail($tableId);
         $this->authorize('update', $table);
 
-        $session = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
+        $session = $table->currentSession();
         if (! $session) {
             $this->errorMessage = 'Open the table first — invoice details attach to the current session.';
             $this->showErrorModal = true;
@@ -502,7 +495,7 @@ class TablesList extends Component
         $this->authorize('update', $guardTable);
 
         // Mark all items as paid, then close (now guaranteed fully paid).
-        app(SettleTable::class)->handle($guardTable);
+        app(SettleTable::class)->handle($guardTable, Auth::user());
         $this->refreshTableOrders();
 
         if ($guardTable->refresh()->status === 'open') {

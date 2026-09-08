@@ -31,7 +31,6 @@ class AllOrdersList extends Component
     public $tables = [];
     public $activeTables = [];
     public $pendingOrders = [];
-    public $lastPendingOrdersHash = '';
     public $lastUpdated;
     public $orderDetails = [];
     public $perPage = 15;
@@ -43,11 +42,21 @@ class AllOrdersList extends Component
     {
         $this->loadProducts();
         $this->loadTables();
-        $this->loadOrders();
         $this->loadPendingOrders();
-        $this->lastPendingOrdersHash = $this->calculatePendingOrdersHash();
         $this->lastUpdated = now()->format('H:i:s');
         $this->initializeOrderDetails();
+    }
+
+    /**
+     * One poll, one round trip. The board used to declare two independent
+     * 5-second polls on the same page; each was a full Livewire request
+     * that also re-ran render(), so every open browser hit the server
+     * twice per tick.
+     */
+    public function refreshBoard()
+    {
+        $this->loadTables();
+        $this->refreshPendingOrders();
     }
 
     public function loadProducts()
@@ -58,25 +67,58 @@ class AllOrdersList extends Component
     public function loadTables()
     {
         // EditorScope bounds this query to the caller's tenant; admins see all.
-        $this->tables = Table::whereIn('status', ['pending_approval', 'open'])->get();
-        $this->activeTables = $this->tables->map(function ($table) {
-            // For open tables, get the current session
-            $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
+        $tables = Table::whereIn('status', ['pending_approval', 'open'])->orderBy('table_number')->get();
+
+        // Public Livewire state holds plain arrays, never Eloquent models:
+        // Livewire re-hydrates every model in a public property with its
+        // own query on each request, which turned N tables + M pending
+        // devices into N+M queries per poll on top of the ones below.
+        $this->tables = $tables->map(fn ($t) => [
+            'id' => $t->id,
+            'table_number' => $t->table_number,
+            'status' => $t->status,
+        ])->all();
+
+        // Three queries for the whole board instead of three per table:
+        // current sessions, their requests, and the pre-session requests of
+        // tables still awaiting approval. At 50 open tables this poll used
+        // to run ~150 queries every five seconds.
+        $sessions = \App\Models\TableSession::whereIn('table_id', $tables->pluck('id'))
+            ->whereIn('status', ['open', 'reopened'])
+            ->orderByDesc('opened_at')
+            ->get()
+            ->unique('table_id')
+            ->keyBy('table_id');
+
+        $sessionRequests = TableSessionRequest::whereIn('table_session_id', $sessions->pluck('id'))
+            ->whereIn('status', ['approved', 'pending'])
+            ->get()
+            ->groupBy('table_session_id');
+
+        $orphanRequests = TableSessionRequest::whereNull('table_session_id')
+            ->whereIn('table_id', $tables->where('status', '!=', 'open')->pluck('id'))
+            ->where('status', 'pending')
+            ->whereDate('created_at', now()->toDateString())
+            ->get()
+            ->groupBy('table_id');
+
+        $asRow = fn ($request) => [
+            'id' => $request->id,
+            'ip_address' => $request->ip_address,
+        ];
+
+        $this->activeTables = $tables->map(function ($table) use ($sessions, $sessionRequests, $orphanRequests, $asRow) {
+            $currentSession = $sessions->get($table->id);
             $approvedClients = 0;
-            $pendingClients = collect();
+            $pendingClients = [];
             if ($table->status === 'open' && $currentSession) {
-                $approvedClients = $currentSession->sessionRequests()->where('status', 'approved')->count();
-                $pendingClients = $currentSession->sessionRequests()
-                    ->where('status', 'pending')
-                    ->get();
+                $requests = $sessionRequests->get($currentSession->id, collect());
+                $approvedClients = $requests->where('status', 'approved')->count();
+                $pendingClients = $requests->where('status', 'pending')->map($asRow)->values()->all();
             } else {
-                // For pending_approval, get this TABLE's requests recorded
+                // For pending_approval, this TABLE's requests recorded
                 // before a session exists. [F-1]
-                $pendingClients = TableSessionRequest::whereNull('table_session_id')
-                    ->where('table_id', $table->id)
-                    ->where('status', 'pending')
-                    ->whereDate('created_at', now()->toDateString())
-                    ->get();
+                $pendingClients = $orphanRequests->get($table->id, collect())->map($asRow)->values()->all();
             }
             return [
                 'id' => $table->id,
@@ -85,10 +127,10 @@ class AllOrdersList extends Component
                 'approved_clients' => $approvedClients,
                 'pending_clients' => $pendingClients,
             ];
-        });
+        })->values()->all();
 
         // Alert staff when a new device asks to join a table.
-        $pendingNow = $this->activeTables->sum(fn ($table) => $table['pending_clients']->count());
+        $pendingNow = collect($this->activeTables)->sum(fn ($table) => count($table['pending_clients']));
         if ($this->lastPendingClientsCount !== null && $pendingNow > $this->lastPendingClientsCount) {
             $this->dispatch('new-approval-request');
         }
@@ -131,14 +173,10 @@ class AllOrdersList extends Component
         // tenant are invisible. Admins resolve any.
         $request = \App\Models\ServiceRequest::find($requestId);
         if ($request) {
+            $this->authorize('update', $request);
             app(ResolveServiceRequest::class)->handle($request, Auth::user());
         }
         $this->loadServiceRequests();
-    }
-
-    public function loadOrders()
-    {
-        // This method is now empty as the orders are loaded in the mount method
     }
 
     public function loadPendingOrders()
@@ -166,18 +204,31 @@ class AllOrdersList extends Component
     protected function getOrderProducts($order)
     {
         $products = [];
-        
-        // Handle both array and model instances
+
+        // loadPendingOrders() eager-loads items; read them from the array
+        // instead of re-fetching every order on every poll (two extra
+        // queries per pending order, previously).
         if (is_array($order)) {
-            $order = Order::with('items')->find($order['id']);
+            $items = $order['items'] ?? null;
+            if ($items === null) {
+                $model = Order::with('items')->find($order['id']);
+                $items = $model ? $model->items->toArray() : [];
+            }
+            foreach ($items as $item) {
+                $pid = $item['product_id'];
+                // One row per unit: the quantity of a product is its row count.
+                $products[$pid] = ($products[$pid] ?? 0) + 1;
+            }
+
+            return $products;
         }
-        
+
         if ($order && $order->items) {
             foreach ($order->items as $item) {
-                $products[$item->product_id] = $item->quantity;
+                $products[$item->product_id] = ($products[$item->product_id] ?? 0) + 1;
             }
         }
-        
+
         return $products;
     }
 
@@ -231,10 +282,6 @@ class AllOrdersList extends Component
         }
     }
 
-    protected function calculatePendingOrdersHash()
-    {
-        return md5(json_encode($this->pendingOrders));
-    }
 
     public function sortBy($column)
     {
@@ -311,7 +358,6 @@ class AllOrdersList extends Component
                 );
                 
                 // Refresh both lists
-                $this->loadOrders();
                 $this->loadPendingOrders();
                 
                 // Update the last updated timestamp
@@ -398,14 +444,12 @@ class AllOrdersList extends Component
                 }
             }
 
+            $order->save();
+
             // Every item was just recreated unpaid, so the order's payment
             // columns have to follow. Leaving total_amount at its pre-edit
             // value is what made analytics and the bill drift apart.
-            $order->total_amount = $totalAmount;
-            $order->amount_paid = 0;
-            $order->amount_left = $totalAmount;
-
-            $order->save();
+            app(\App\Actions\Orders\RecalculateOrderTotals::class)->handle($order->fresh('items'));
             
             // Close the modal
             $this->closeModal();
@@ -424,7 +468,6 @@ class AllOrdersList extends Component
             $order->delete();
             
             // Force refresh both lists
-            $this->loadOrders();
             $this->loadPendingOrders();
             
             // Dispatch event to update UI
@@ -446,7 +489,6 @@ class AllOrdersList extends Component
         Order::query()->delete();
         
         // Force refresh both lists
-        $this->loadOrders();
         $this->loadPendingOrders();
         
         // Dispatch event to update UI

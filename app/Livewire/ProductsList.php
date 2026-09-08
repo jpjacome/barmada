@@ -113,13 +113,13 @@ class ProductsList extends Component
         if ($this->iconType === 'bootstrap') {
             $this->validate([
                 'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
-                'price' => 'required|numeric|min:0.01',
+                'price' => 'required|numeric|decimal:0,2|min:0.01|max:99999.99',
                 'bootstrapIcon' => ['required', 'regex:/^[a-z0-9 -]+$/i'],
             ]);
         } else {
             $this->validate([
                 'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
-                'price' => 'required|numeric|min:0.01',
+                'price' => 'required|numeric|decimal:0,2|min:0.01|max:99999.99',
                 'svgFile' => 'nullable|file|max:1024',
             ]);
         }

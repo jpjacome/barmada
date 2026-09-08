@@ -28,10 +28,7 @@ class ApproveTableAndAdoptRequests
         $table->status = 'open';
         $table->save();
 
-        $session = $table->sessions()
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $session = $table->currentSession();
 
         if ($session) {
             $orphans = TableSessionRequest::whereNull('table_session_id')

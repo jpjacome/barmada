@@ -72,8 +72,12 @@ class TableController extends Controller
     {
         $this->authorize('update', $table);
 
+        $validated = $request->validate([
+            'payment_method' => 'nullable|in:cash,card,transfer,other',
+        ]);
+
         if ($request->boolean('settle')) {
-            $settleTable->handle($table);
+            $settleTable->handle($table, $request->user(), $validated['payment_method'] ?? null);
         }
 
         $closeTable->handle($table);
@@ -94,11 +98,15 @@ class TableController extends Controller
         return response()->json($this->sessionPayload($table->refresh()));
     }
 
-    public function settle(Table $table, SettleTable $settleTable)
+    public function settle(Request $request, Table $table, SettleTable $settleTable)
     {
         $this->authorize('update', $table);
 
-        $settleTable->handle($table);
+        $validated = $request->validate([
+            'payment_method' => 'nullable|in:cash,card,transfer,other',
+        ]);
+
+        $settleTable->handle($table, $request->user(), $validated['payment_method'] ?? null);
 
         return response()->json($this->sessionPayload($table->refresh()));
     }
