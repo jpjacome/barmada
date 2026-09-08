@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', __('Order Confirmation'))
+
 @section('content')
 <link href="{{ asset('css/confirmation.css') }}" rel="stylesheet">
 <div class="confirmation-container py-12">

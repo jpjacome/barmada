@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', __('Analytics'))
+
 @section('content')
 <div class="analytics-dashboard-container">
     <link href="{{ asset('css/analytics.css') }}" rel="stylesheet">

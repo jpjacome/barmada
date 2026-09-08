@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', __('My Table & Bill'))
+
 @section('content')
 <link href="{{ asset('css/create-order.css') }}" rel="stylesheet">
 <div class="container page-container">

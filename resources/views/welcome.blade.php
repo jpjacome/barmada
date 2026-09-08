@@ -1,5 +1,18 @@
 @extends('layouts.app')
 
+@section('title', __('Barmada - QR Ordering & Table Management'))
+
+@section('meta_description', __('Barmada lets guests order from their phone by scanning a table QR code, while staff track orders and payments live. No app, no commissions, no subscriptions.'))
+
+@section('head_extra')
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ __('Barmada - QR Ordering & Table Management') }}">
+    <meta property="og:description" content="{{ __('Barmada lets guests order from their phone by scanning a table QR code, while staff track orders and payments live. No app, no commissions, no subscriptions.') }}">
+    <meta property="og:url" content="{{ url('/') }}">
+    <meta property="og:image" content="{{ asset('images/logo1.png') }}">
+    <meta name="theme-color" content="#0f172a">
+@endsection
+
 @section('content')
 <link rel="stylesheet" href="{{ asset('css/homepage.css') }}">
 
@@ -18,8 +31,11 @@
             <p class="hp-tagline">Let Your Tables <span class="hp-tagline-accent">Order Themselves!</span></p>
             <p class="hp-lede">Barmada makes managing orders effortless for owners and a breeze for customers. No more waiting for staff, no more mistakes&mdash;just fast, contactless, and accurate service every time. No commissions, no subscriptions&mdash;your hardware, your server, your data.</p>
             <div class="hp-actions">
+                @if (Route::has('register'))
+                    <a href="{{ route('register') }}" class="hp-btn hp-btn-primary">Get Started <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                @endif
                 @if (Route::has('login'))
-                    <a href="{{ route('login') }}" class="hp-btn hp-btn-primary">Get Started <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    <a href="{{ route('login') }}" class="hp-btn hp-btn-ghost">{{ __('Log in') }}</a>
                 @endif
                 <a href="#hp-features" class="hp-btn hp-btn-ghost">See how it works</a>
             </div>
@@ -40,8 +56,8 @@
             </article>
             <article class="hp-card" data-reveal style="--hp-reveal-delay: 80ms;">
                 <span class="hp-card-icon"><i class="bi bi-people" aria-hidden="true"></i></span>
-                <h3>Multi-Editor Dashboard</h3>
-                <p>Manage multiple venues or locations with ease. Each business gets its own secure dashboard.</p>
+                <h3>Staff Accounts, Scoped Access</h3>
+                <p>Create staff accounts for your team&mdash;each one scoped to your venue only, so everyone sees just what they need.</p>
             </article>
             <article class="hp-card" data-reveal style="--hp-reveal-delay: 160ms;">
                 <span class="hp-card-icon"><i class="bi bi-lightning-charge" aria-hidden="true"></i></span>
@@ -49,9 +65,9 @@
                 <p>Orders go straight to your team&mdash;no more missed tables or slowdowns. Happier guests, more sales!</p>
             </article>
         </div>
-        @if (Route::has('login'))
+        @if (Route::has('register'))
             <div class="hp-cta" data-reveal>
-                <a href="{{ route('login') }}" class="hp-btn hp-btn-primary hp-btn-lg">Get Started</a>
+                <a href="{{ route('register') }}" class="hp-btn hp-btn-primary hp-btn-lg">Get Started</a>
             </div>
         @endif
     </section>
