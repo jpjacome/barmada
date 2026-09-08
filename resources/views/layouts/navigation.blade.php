@@ -21,8 +21,8 @@
                     <form action="{{ route('settings.toggle-theme') }}" method="POST">
                         @csrf
                         <label class="theme-switch">
-                            <input type="checkbox" onchange="this.form.submit()" {{ session('theme', 'light') === 'dark' ? 'checked' : '' }}>
-                            <span class="slider"></span>
+                            <input type="checkbox" onchange="this.form.submit()" {{ session('theme', 'light') === 'dark' ? 'checked' : '' }} aria-label="{{ __('Toggle theme') }}">
+                            <span class="slider" aria-hidden="true"></span>
                         </label>
                     </form>
                 </div>
@@ -71,17 +71,17 @@
                 {{-- Staff & Analytics are editor-only pages; showing them to
                      admins produced 403s. [F-4] --}}
                 @if(Auth::user()->is_editor)
-                <a href="{{ route('staff.index') }}" class="dropdown-trigger" title="Staff">
-                    <i class="bi bi-person"></i>
+                <a href="{{ route('staff.index') }}" class="dropdown-trigger" aria-label="{{ __('Staff') }}" title="{{ __('Staff') }}">
+                    <i class="bi bi-person" aria-hidden="true"></i>
                 </a>
-                <a href="{{ route('analytics.dashboard') }}" class="dropdown-trigger" title="Analytics">
-                    <i class="bi bi-bar-chart"></i>
+                <a href="{{ route('analytics.dashboard') }}" class="dropdown-trigger" aria-label="{{ __('Analytics') }}" title="{{ __('Analytics') }}">
+                    <i class="bi bi-bar-chart" aria-hidden="true"></i>
                 </a>
                 @endif
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="dropdown-trigger">
-                            <i class="bi bi-gear"></i>
+                        <button class="dropdown-trigger" aria-label="{{ __('Settings') }}">
+                            <i class="bi bi-gear" aria-hidden="true"></i>
 
                             <div class="dropdown-trigger-icon">
                                 <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -113,18 +113,31 @@
                     </x-slot>
                 </x-dropdown>
                 @else
-                {{-- Guests: simple Log in button (desktop) --}}
-                <a href="{{ route('login') }}" class="dropdown-trigger" title="Login/Register">
-                    <i class="bi bi-person" style="font-size: 2rem;"></i>
+                {{-- Guests: simple Log in button (desktop, >=640px) --}}
+                <a href="{{ route('login') }}" class="dropdown-trigger" aria-label="{{ __('Log in') }}" title="{{ __('Log in') }}">
+                    <i class="bi bi-person" style="font-size: 2rem;" aria-hidden="true"></i>
                 </a>
                 @endauth
 
             </div>
 
+            {{-- Guests: always-visible, labelled login link reachable at every
+                 width (the icon-only link above is hidden below 640px, and the
+                 hamburger below is @auth-only, so phones need their own entry
+                 point to sign in). --}}
+            @guest
+            <div class="navigation-guest-mobile">
+                <a href="{{ route('login') }}" class="navigation-guest-mobile-link" aria-label="{{ __('Log in') }}">
+                    <i class="bi bi-person" aria-hidden="true"></i>
+                    <span>{{ __('Log in') }}</span>
+                </a>
+            </div>
+            @endguest
+
             <!-- Hamburger -->
             @auth
             <div class="navigation-hamburger">
-                <button @click="open = ! open" class="hamburger-button" :aria-expanded="open">
+                <button @click="open = ! open" class="hamburger-button" :aria-expanded="open" aria-label="{{ __('Open menu') }}">
                     <svg class="hamburger-icon" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open}" class="hamburger-icon-open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': !open}" class="hamburger-icon-close" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

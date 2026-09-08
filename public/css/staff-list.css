@@ -375,3 +375,33 @@
         padding: var(--spacing-2);
     }
 }
+
+@media (max-width: 360px) {
+    .staff-container {
+        padding: var(--spacing-2);
+    }
+    .staff-table {
+        font-size: var(--text-xs, 0.75rem);
+    }
+    .staff-table-header-cell {
+        padding: var(--spacing-2);
+    }
+}
+
+/* ==========================================================================
+   Reduced Motion
+   Speeds entrance/attention animations to imperceptible instead of
+   cancelling them, so elements still land on their final (visible) frame
+   instead of getting stuck at an animation-only opacity:0 start state.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
