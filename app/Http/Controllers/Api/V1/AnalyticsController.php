@@ -63,6 +63,49 @@ class AnalyticsController extends Controller
         ]);
     }
 
+    /** What guests paid with, and what is still owed, for one range. */
+    public function paymentMix(Request $request)
+    {
+        $venue = $this->venue($request);
+        $range = $this->range($request);
+
+        return response()->json([
+            'range' => $range,
+            'currency_symbol' => $venue->currencySymbol(),
+            'payment_mix' => VenueAnalytics::paymentMix($venue, $range),
+        ]);
+    }
+
+    /** Who took the money: payments per actor for one range. */
+    public function staff(Request $request)
+    {
+        $venue = $this->venue($request);
+        $range = $this->range($request);
+
+        return response()->json([
+            'range' => $range,
+            'currency_symbol' => $venue->currencySymbol(),
+            'staff' => VenueAnalytics::staffAccountability($venue, $range),
+        ]);
+    }
+
+    /**
+     * The per-business-month figures an accountant needs for the IVA
+     * return. months defaults to the trailing 12.
+     */
+    public function taxPeriods(Request $request)
+    {
+        $venue = $this->venue($request);
+        $validated = $request->validate([
+            'months' => 'nullable|integer|min:1|max:36',
+        ]);
+
+        return response()->json([
+            'currency_symbol' => $venue->currencySymbol(),
+            'periods' => VenueAnalytics::taxPeriods($venue, (int) ($validated['months'] ?? 12)),
+        ]);
+    }
+
     private function venue(Request $request)
     {
         $user = $request->user();
