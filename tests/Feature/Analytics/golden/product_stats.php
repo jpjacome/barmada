@@ -105,23 +105,30 @@ return array (
         'revenue' => 8.5,
       ),
     ),
-    'category_orders' => 
+    // Cocteles and Comida tie on quantity here. The pre-rewrite order
+    // put Comida first, but only because SQLite served the eager-loaded
+    // items through the (order_id, is_paid) index, so unpaid lines of an
+    // order were iterated before paid ones — an accident of the query
+    // plan, not a rule, and one MySQL would not reproduce. The SQL
+    // implementation breaks ties by first appearance in time, which is
+    // deterministic on both engines. Values are unchanged.
+    'category_orders' =>
     array (
-      0 => 
-      array (
-        'category_id' => 3,
-        'name' => 'Comida',
-        'quantity' => 4,
-        'revenue' => 26.0,
-      ),
-      1 => 
+      0 =>
       array (
         'category_id' => 2,
         'name' => 'Cocteles',
         'quantity' => 4,
         'revenue' => 28.0,
       ),
-      2 => 
+      1 =>
+      array (
+        'category_id' => 3,
+        'name' => 'Comida',
+        'quantity' => 4,
+        'revenue' => 26.0,
+      ),
+      2 =>
       array (
         'category_id' => 1,
         'name' => 'Cervezas',
@@ -130,7 +137,7 @@ return array (
       ),
     ),
   ),
-  '7days' => 
+  '7days' =>
   array (
     'top_products' => 
     array (
