@@ -12,7 +12,10 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                // Brand body face. Figtree was Breeze scaffolding the design
+                // system explicitly retired.
+                sans: ['Inter Tight', ...defaultTheme.fontFamily.sans],
+                serif: ['Crimson Text', ...defaultTheme.fontFamily.serif],
             },
         },
     },

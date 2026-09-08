@@ -114,7 +114,7 @@ class AllOrdersList extends Component
                 'id' => $request->id,
                 'type' => $request->type,
                 'table_number' => $request->table->table_number ?? $request->table_id,
-                'time' => $request->created_at->format('H:i'),
+                'time' => \App\Support\VenueClock::format(\App\Support\VenueClock::venueFor(Auth::user()), $request->created_at, 'H:i'),
             ];
         })->toArray();
 

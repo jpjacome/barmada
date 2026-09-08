@@ -23,7 +23,7 @@
                 <div class="session-order">
                     <div class="session-order-header">
                         <strong>{{ __('Order') }} #{{ $order->id }}</strong>
-                        <span class="session-order-time">{{ $order->created_at->format('H:i') }}</span>
+                        <span class="session-order-time">{{ \App\Support\VenueClock::format($table->editor, $order->created_at, 'H:i') }}</span>
                         <span class="session-order-status status-{{ $order->status }}">
                             @if($order->status === 'pending')
                                 {{ __('Being prepared') }}

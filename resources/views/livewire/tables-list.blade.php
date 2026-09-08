@@ -216,7 +216,7 @@
                                         @endphp
                                         {{ implode(', ', $summaryText) }}
                                     </span>
-                                    <span class="order-time">{{ \Carbon\Carbon::parse($order['created_at'])->format('H:i:s') }}</span>
+                                    <span class="order-time">{{ \App\Support\VenueClock::format(\App\Support\VenueClock::venueFor(auth()->user()), $order['created_at'], 'H:i:s') }}</span>
                                     <button 
                                         class="order-toggle-products {{ $this->isOrderProductsVisible($order['id']) ? 'rotated' : '' }}"
                                         wire:click="toggleOrderProducts({{ $order['id'] }})"

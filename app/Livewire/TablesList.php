@@ -77,24 +77,11 @@ class TablesList extends Component
 
     public function loadTables()
     {
-        $user = Auth::user();
-        $query = Table::whereNull('archived_at')->orderBy('table_number');
-        $archivedQuery = Table::whereNotNull('archived_at')->orderBy('table_number');
-        if ($user->is_admin) {
-            // no extra scoping
-        } else if ($user->is_editor) {
-            $query->where('editor_id', $user->id);
-            $archivedQuery->where('editor_id', $user->id);
-        } else if ($user->is_staff) {
-            $query->where('editor_id', $user->editor_id);
-            $archivedQuery->where('editor_id', $user->editor_id);
-        } else {
-            $this->tables = collect();
-            $this->archivedTables = collect();
-            return;
-        }
-        $this->tables = $query->get();
-        $this->archivedTables = $archivedQuery->get();
+        // Tenant bounding is EditorScope's job (admin bypass included);
+        // re-deriving it by hand here is how the products page lost its
+        // staff case.
+        $this->tables = Table::whereNull('archived_at')->orderBy('table_number')->get();
+        $this->archivedTables = Table::whereNotNull('archived_at')->orderBy('table_number')->get();
         $this->lastUpdated = now()->format('H:i:s');
         $this->status = 'Tables updated at ' . $this->lastUpdated;
     }

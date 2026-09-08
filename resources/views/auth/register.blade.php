@@ -1,7 +1,6 @@
 <x-guest-layout>
     <link href="{{ asset('css/auth.css') }}" rel="stylesheet">
     <link href="{{ asset('css/register-multistep.css') }}" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <div class="reg-form-outer">
         <div class="reg-form-card" x-data="{ step: 1 }">
             <div class="reg-form-header">

@@ -23,17 +23,21 @@
     --color-accents: #1f2937;    /* Dark Gray */
 
     
-    --color-success: #8ca3c6;    /* Celadon */
-    --color-success-dark: #5a7397; /* Cambridge Blue */
-    --color-success-light: #ADE1E5; /* Non Photo Blue */
-    
-    --color-warning: #79C7C5;    /* Tiffany Blue */
-    --color-warning-dark: #57B7B5; /* Darker Tiffany Blue */
+    /* Light-theme semantic colours per the design system: slate blue for
+       positive states, soft red for alerts. The dark/light variants below
+       used to point at teal and celadon — a hover on a delete button turned
+       it green. They now stay within their own hue. */
+    --color-success: #8ca3c6;    /* Slate blue */
+    --color-success-dark: #5a7397; /* Slate blue, darker */
+    --color-success-light: #c9d5e6; /* Slate blue, lighter */
+
+    --color-warning: #79C7C5;    /* Tiffany Blue — info/link colour */
+    --color-warning-dark: #57B7B5; /* Tiffany Blue, text-safe */
     --color-warning-light: #ADE1E5; /* Non Photo Blue */
-    
-    --color-danger: #fa8888;     /* Red */
-    --color-danger-dark: #79C7C5; /* Tiffany Blue */
-    --color-danger-light: #99D19C; /* Celadon */
+
+    --color-danger: #fa8888;     /* Soft red */
+    --color-danger-dark: #e05a5a; /* Soft red, darker */
+    --color-danger-light: #fdd4d4; /* Soft red, lighter */
     
     /* Spacing */
     --spacing-1: 0.25rem;

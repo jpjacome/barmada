@@ -18,16 +18,10 @@ class TableController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
-            $tables = Table::all();
-        } else if ($user->is_editor) {
-            $tables = Table::where('editor_id', $user->id)->get();
-        } else if ($user->is_staff) {
-            $tables = Table::where('editor_id', $user->editor_id)->get();
-        } else {
-            abort(403);
-        }
+        // EditorScope bounds the query to the caller's tenant; a user with
+        // no tenant and no admin flag matches nothing rather than 403ing.
+        $tables = Table::all();
+
         return view('tables.index', compact('tables'));
     }
 
