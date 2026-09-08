@@ -22,11 +22,11 @@
                                 <td class="staff-cell staff-name-cell">{{ $user->name }}</td>
                                 <td class="staff-cell staff-email-cell">{{ $user->email }}</td>
                                 <td class="staff-cell staff-actions">
-                                    <button wire:click="editStaff({{ $user->id }})" class="staff-edit-button" title="Edit Staff" style="background:transparent;border:none;cursor:pointer;margin-right:0.4rem;">
-                                        <i class="bi bi-pencil"></i>
+                                    <button wire:click="editStaff({{ $user->id }})" class="staff-edit-button" title="Edit Staff" style="background:transparent;border:none;cursor:pointer;margin-right:0.4rem;" aria-label="{{ __('Edit staff') }}">
+                                        <i class="bi bi-pencil" aria-hidden="true"></i>
                                     </button>
-                                    <button wire:click="confirmDelete({{ $user->id }})" class="staff-delete-button" title="Delete Staff">
-                                        <i class="bi bi-trash"></i>
+                                    <button wire:click="confirmDelete({{ $user->id }})" class="staff-delete-button" title="Delete Staff" aria-label="{{ __('Delete staff') }}">
+                                        <i class="bi bi-trash" aria-hidden="true"></i>
                                     </button>
                                 </td>
                             </tr>

@@ -13,8 +13,9 @@
                     @js($product->photo ? asset('storage/' . $product->photo) : asset('images/logo-light.png')),
                     @js($product->description ?: __('Description not available'))
                 )"
-                title="{{ __('View details') }}">
-                <i class="bi bi-info-circle"></i>
+                title="{{ __('View details') }}"
+                aria-label="{{ __('View details') }}">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
             </button>
         </div>
         <div class="product-info">
@@ -24,7 +25,7 @@
     </div>
     @if($product->is_available)
     <div class="quantity-controls">
-        <button type="button" class="quantity-button minus" onclick="decrementQuantity('product_{{ $product->id }}')">-</button>
+        <button type="button" class="quantity-button minus" onclick="decrementQuantity('product_{{ $product->id }}')" aria-label="{{ __('Decrease quantity') }}">-</button>
         <input
             type="number"
             name="products[{{ $product->id }}]"
@@ -35,8 +36,9 @@
             data-price="{{ $product->price }}"
             data-name="{{ $product->name }}"
             onchange="validateQuantity(this)"
+            aria-label="{{ __(':name quantity', ['name' => $product->name]) }}"
         >
-        <button type="button" class="quantity-button plus" onclick="incrementQuantity('product_{{ $product->id }}')">+</button>
+        <button type="button" class="quantity-button plus" onclick="incrementQuantity('product_{{ $product->id }}')" aria-label="{{ __('Increase quantity') }}">+</button>
     </div>
     @else
     <div class="quantity-controls">

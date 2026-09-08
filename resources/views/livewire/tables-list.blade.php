@@ -42,7 +42,7 @@
                                 class="reference-input"
                                 placeholder="Enter table reference..."
                                 @keydown.enter.prevent="null"
-                                @keydown.escape.prevent="null"
+                                @keydown.escape.prevent="$wire.cancelEditingReference()"
                                 x-init="$nextTick(() => $el.focus())"
                             >
                             <div class="reference-actions">
@@ -72,12 +72,13 @@
                 
                 <div class="table-card-footer">
                     <div class="table-card-actions">
-                        <button 
-                            wire:click="deleteTable({{ $table->id }})" 
+                        <button
+                            wire:click="deleteTable({{ $table->id }})"
                             class="table-delete-button"
                             onclick="return confirm('Are you sure you want to delete this table?')"
+                            aria-label="{{ __('Delete table') }}"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
@@ -85,23 +86,26 @@
                             class="table-qr-button"
                             wire:click="openInvoiceModal({{ $table->id }})"
                             title="Client invoice details (printed on the bill)"
+                            aria-label="{{ __('Client invoice details') }}"
                         >
-                            <i class="bi bi-receipt"></i>
+                            <i class="bi bi-receipt" aria-hidden="true"></i>
                         </button>
                         <button
                             class="table-qr-button"
                             wire:click="archiveTable({{ $table->id }})"
                             title="Archive table (retire from service, keep history)"
                             onclick="return confirm('Archive this table? It disappears from the grid and the QR flow; its order history is kept.')"
+                            aria-label="{{ __('Archive table') }}"
                         >
-                            <i class="bi bi-archive"></i>
+                            <i class="bi bi-archive" aria-hidden="true"></i>
                         </button>
                         <button
                             class="table-qr-button"
                             wire:click="openQrModal({{ $table->id }}, {{ $table->table_number ?? $table->id }})"
                             title="Show QR Code"
+                            aria-label="{{ __('Show QR code') }}"
                         >
-                            <i class="bi bi-qr-code"></i>
+                            <i class="bi bi-qr-code" aria-hidden="true"></i>
                         </button>
                         <a href="{{ url('/qr-entry/' . $table->editor->username . '/' . $table->table_number) }}" class="table-card-button" target="_blank">
                             New Order
@@ -133,8 +137,8 @@
                 @foreach($archivedTables as $archived)
                     <div style="border:1px dashed var(--color-accents2,#ccc);border-radius:8px;padding:0.5rem 0.9rem;display:flex;align-items:center;gap:0.6rem;opacity:0.8;" wire:key="archived-{{ $archived->id }}">
                         <span>Table {{ $archived->table_number ?? $archived->id }}</span>
-                        <button wire:click="restoreTable({{ $archived->id }})" class="table-qr-button" title="Restore table">
-                            <i class="bi bi-arrow-counterclockwise"></i>
+                        <button wire:click="restoreTable({{ $archived->id }})" class="table-qr-button" title="Restore table" aria-label="{{ __('Restore table') }}">
+                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                         </button>
                     </div>
                 @endforeach
@@ -157,12 +161,18 @@
     
     <!-- Error Modal -->
     @if($showErrorModal)
-        <div class="tables-modal-backdrop" wire:click="closeErrorModal">
-            <div class="tables-modal" wire:click.stop>
+        <div
+            class="tables-modal-backdrop"
+            wire:click="closeErrorModal"
+            wire:keydown.escape.window="closeErrorModal"
+            x-data
+            x-init="$nextTick(() => $el.querySelector('button, [href], input, select, textarea')?.focus())"
+        >
+            <div class="tables-modal" wire:click.stop role="dialog" aria-modal="true" aria-labelledby="error-modal-title">
                 <div class="tables-modal-header">
-                    <h3 class="tables-modal-title">Cannot Delete Table</h3>
-                    <button class="tables-modal-close" wire:click="closeErrorModal">
-                        <i class="bi bi-x-lg"></i>
+                    <h3 class="tables-modal-title" id="error-modal-title">Cannot Delete Table</h3>
+                    <button class="tables-modal-close" wire:click="closeErrorModal" aria-label="{{ __('Close') }}">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div class="tables-modal-body">
@@ -179,16 +189,21 @@
     
     <!-- Table Orders Modal -->
     @if($showOrdersModal)
-    <div class="modal-wrapper">
-        <div 
-            class="modal-backdrop" 
+    <div
+        class="modal-wrapper"
+        x-data
+        x-init="$nextTick(() => $el.querySelector('button, [href], input, select, textarea')?.focus())"
+        wire:keydown.escape.window="closeOrdersModal"
+    >
+        <div
+            class="modal-backdrop"
             wire:click="closeOrdersModal"
         >
-            <div class="modal" wire:click.stop>
+            <div class="modal" wire:click.stop role="dialog" aria-modal="true" aria-labelledby="orders-modal-title">
                 <div class="modal-header">
-                    <h3 class="modal-title">Orders for Table {{ $tables->firstWhere('id', $selectedTable)->table_number ?? $selectedTable }}</h3>
-                    <button wire:click="closeOrdersModal" class="modal-close">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <h3 class="modal-title" id="orders-modal-title">Orders for Table {{ $tables->firstWhere('id', $selectedTable)->table_number ?? $selectedTable }}</h3>
+                    <button wire:click="closeOrdersModal" class="modal-close" aria-label="{{ __('Close') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
@@ -217,11 +232,13 @@
                                         {{ implode(', ', $summaryText) }}
                                     </span>
                                     <span class="order-time">{{ \App\Support\VenueClock::format(\App\Support\VenueClock::venueFor(auth()->user()), $order['created_at'], 'H:i:s') }}</span>
-                                    <button 
+                                    <button
                                         class="order-toggle-products {{ $this->isOrderProductsVisible($order['id']) ? 'rotated' : '' }}"
                                         wire:click="toggleOrderProducts({{ $order['id'] }})"
+                                        aria-label="{{ __('Toggle order items') }}"
+                                        aria-expanded="{{ $this->isOrderProductsVisible($order['id']) ? 'true' : 'false' }}"
                                     >
-                                        <i class="bi bi-chevron-down"></i>
+                                        <i class="bi bi-chevron-down" aria-hidden="true"></i>
                                     </button>
                                 </div>
                                 
@@ -325,13 +342,18 @@
 
     <!-- QR Modal -->
     @if($showQrModal)
-        <div class="modal-wrapper">
+        <div
+            class="modal-wrapper"
+            x-data
+            x-init="$nextTick(() => $el.querySelector('button, [href], input, select, textarea')?.focus())"
+            wire:keydown.escape.window="closeQrModal"
+        >
             <div class="modal-backdrop" wire:click="closeQrModal">
-                <div class="modal" wire:click.stop>
+                <div class="modal" wire:click.stop role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
                     <div class="modal-header">
-                        <h3 class="modal-title">QR for Table {{ $qrTableNumber }}</h3>
-                        <button wire:click="closeQrModal" class="modal-close">
-                            <i class="bi bi-x-lg"></i>
+                        <h3 class="modal-title" id="qr-modal-title">QR for Table {{ $qrTableNumber }}</h3>
+                        <button wire:click="closeQrModal" class="modal-close" aria-label="{{ __('Close') }}">
+                            <i class="bi bi-x-lg" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="modal-body" style="text-align:center;">
@@ -345,12 +367,17 @@
 
     <!-- Client Invoice Modal (the real one — saves and prints on the bill) -->
     @if($showInvoiceModal)
-    <div class="modal-wrapper">
+    <div
+        class="modal-wrapper"
+        x-data
+        x-init="$nextTick(() => $el.querySelector('button, [href], input, select, textarea')?.focus())"
+        wire:keydown.escape.window="closeInvoiceModal"
+    >
         <div class="modal-backdrop" wire:click="closeInvoiceModal">
-            <div class="modal" wire:click.stop>
+            <div class="modal" wire:click.stop role="dialog" aria-modal="true" aria-labelledby="invoice-modal-title">
                 <div class="modal-header">
-                    <h3 class="modal-title">Client invoice details</h3>
-                    <button wire:click="closeInvoiceModal" class="modal-close"><i class="bi bi-x-lg"></i></button>
+                    <h3 class="modal-title" id="invoice-modal-title">Client invoice details</h3>
+                    <button wire:click="closeInvoiceModal" class="modal-close" aria-label="{{ __('Close') }}"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
                 </div>
                 <div class="modal-body">
                     <p style="color:#666;font-size:0.9em;margin-bottom:0.8rem;">

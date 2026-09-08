@@ -126,8 +126,8 @@
         </section>
         <!-- Chart Modal -->
         <div id="chartModal" class="chart-modal-overlay">
-            <div class="chart-modal-content">
-                <button class="chart-modal-close" onclick="closeChartModal()">&times;</button>
+            <div class="chart-modal-content" role="dialog" aria-modal="true" aria-label="{{ __('Chart detail') }}">
+                <button class="chart-modal-close" onclick="closeChartModal()" aria-label="{{ __('Close') }}">&times;</button>
                 <canvas id="modalChartCanvas" width="900" height="500"></canvas>
             </div>
         </div>
