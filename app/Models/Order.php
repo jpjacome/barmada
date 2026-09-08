@@ -27,15 +27,6 @@ class Order extends Model
         'amount_paid',
         'amount_left',
         'is_grouped',
-        'product1_qty',
-        'product2_qty',
-        'product3_qty',
-        'product4_qty',
-        'product5_qty',
-        'product6_qty',
-        'product7_qty',
-        'product8_qty',
-        'product9_qty',
         'editor_id',
     ];
 
@@ -60,16 +51,6 @@ class Order extends Model
     public function getTotalItemsAttribute()
     {
         return $this->items()->sum('quantity');
-    }
-    
-    /**
-     * Get the total price of the order.
-     */
-    public function getTotalPriceAttribute()
-    {
-        return $this->items()->sum(function($item) {
-            return $item->quantity * $item->price;
-        });
     }
 
     /**

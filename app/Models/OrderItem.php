@@ -15,12 +15,28 @@ class OrderItem extends Model
         'quantity',
         'price',
         'is_paid',
+        'paid_at',
+        'paid_by',
+        'payment_method',
         'item_index'
     ];
 
+    /**
+     * price is decimal(8,2): cast so it arrives the same way under MySQL
+     * (numeric string) and SQLite (float). Sum with App\Support\Money.
+     */
     protected $casts = [
         'is_paid' => 'boolean',
+        'price' => 'decimal:2',
+        'paid_at' => 'datetime',
     ];
+
+    public const PAYMENT_METHODS = ['cash', 'card', 'transfer', 'other'];
+
+    public function payer()
+    {
+        return $this->belongsTo(User::class, 'paid_by');
+    }
 
     public function order()
     {

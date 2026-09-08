@@ -93,10 +93,7 @@ class OrderController extends Controller
         }
         
         // Find the current open TableSession for this table
-        $currentSession = \App\Models\TableSession::where('table_id', $table->id)
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $currentSession = $table->currentSession();
         
         if (!$currentSession) {
             return redirect()->back()->withErrors(['table_id' => 'No open session for this table. Please open the table first.']);
@@ -328,7 +325,7 @@ class OrderController extends Controller
 
         // If table is open and has a unique token, handle session request
         if ($table->status === 'open' && $table->unique_token) {
-            $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
+            $currentSession = $table->currentSession();
             if ($currentSession) {
                 // Check if this device is already pending or approved
                 $existingRequest = $this->scopeToDevice(
@@ -490,7 +487,7 @@ class OrderController extends Controller
                 // Guest: require device approval
                 $ip = request()->ip();
                 $device = DeviceToken::ensure(request());
-                $currentSession = $table->sessions()->whereIn('status', ['open', 'reopened'])->latest('opened_at')->first();
+                $currentSession = $table->currentSession();
                 if ($currentSession) {
                     $approved = $this->scopeToDevice(
                         $currentSession->sessionRequests()->where('status', 'approved'),
@@ -549,21 +546,4 @@ class OrderController extends Controller
         return response()->json(['status' => $table->status]);
     }
 
-    /**
-     * Polling endpoint for customer waiting page: returns order status and redirect URL if approved.
-     */
-    public function pollOrderStatus($orderId)
-    {
-        $order = \App\Models\Order::find($orderId);
-        if ($order && $order->status === 'approved') {
-            $table = \App\Models\Table::find($order->table_id);
-            if ($table && $table->unique_token) {
-                return response()->json([
-                    'status' => 'approved',
-                    'redirect_url' => route('order.redirect', ['unique_token' => $table->unique_token])
-                ]);
-            }
-        }
-        return response()->json(['status' => $order ? $order->status : 'not_found']);
-    }
 }

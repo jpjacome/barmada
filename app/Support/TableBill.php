@@ -27,10 +27,7 @@ class TableBill
      */
     public static function build(Table $table): array
     {
-        $session = $table->sessions()
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $session = $table->currentSession();
 
         $orders = $session
             ? Order::countable()

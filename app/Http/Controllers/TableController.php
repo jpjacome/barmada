@@ -62,10 +62,7 @@ class TableController extends Controller
     {
         $this->authorize('view', $table);
 
-        $session = $table->sessions()
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $session = $table->currentSession();
 
         $orders = $session
             ? \App\Models\Order::countable()
@@ -172,10 +169,7 @@ class TableController extends Controller
         ]);
 
         // Find the current open TableSession for this table
-        $currentSession = \App\Models\TableSession::where('table_id', $table->id)
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $currentSession = $table->currentSession();
 
         if (!$currentSession) {
             // Stateless route: no session flash available, plain redirect.

@@ -38,10 +38,7 @@ class EnsureIpIsApprovedForTableSession
             return $next($request);
         }
 
-        $session = $table->sessions()
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $session = $table->currentSession();
 
         if (! $session) {
             abort(403, 'No open session for this table.');

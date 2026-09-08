@@ -32,27 +32,27 @@
     <!-- Active Tables Panel -->
     <div class="orders-panel compact-pending-orders">
         <h3 class="orders-panel-title">Active Tables</h3>
-        <div class="orders-panel-content" wire:poll.5s="loadTables">
+        <div class="orders-panel-content" wire:poll.5s="refreshBoard">
             <div class="orders-scroll-container">
-                @if($activeTables->count() > 0)
+                @if(count($activeTables) > 0)
                     @foreach($activeTables as $table)
-                        <div class="pending-order-card active-table-card @if(($table['status'] === 'pending_approval') || ($table['status'] === 'open' && $table['pending_clients']->count() > 0)) order-card-warning @endif">
+                        <div class="pending-order-card active-table-card @if(($table['status'] === 'pending_approval') || ($table['status'] === 'open' && count($table['pending_clients']) > 0)) order-card-warning @endif">
                             <span class="pending-order-table active-table-number">Table {{ $table['table_number'] }}</span>
                             <span class="active-table-clients">Clients: {{ $table['approved_clients'] }}</span>
                             @if($table['status'] === 'pending_approval')
                                 <button wire:click="approveTableAndFirstClient({{ $table['id'] }})" class="pending-order-accept-btn active-table-approve-btn">
                                     Approve
                                 </button>
-                                @if($table['pending_clients']->count() > 0)
-                                    <div class="active-table-pending-clients">Pending clients: {{ $table['pending_clients']->count() }}</div>
+                                @if(count($table['pending_clients']) > 0)
+                                    <div class="active-table-pending-clients">Pending clients: {{ count($table['pending_clients']) }}</div>
                                 @endif
-                            @elseif($table['status'] === 'open' && $table['pending_clients']->count() > 0)
+                            @elseif($table['status'] === 'open' && count($table['pending_clients']) > 0)
                                 <div class="active-table-pending-list">
                                     <div class="active-table-pending-label">Pending clients:</div>
                                     @foreach($table['pending_clients'] as $client)
                                         <div class="active-table-client-row">
-                                            <span class="active-table-client-ip">{{ $client->ip_address }}</span>
-                                            <button wire:click="approveClientRequest({{ $client->id }})" class="pending-order-accept-btn active-table-client-approve-btn">Approve</button>
+                                            <span class="active-table-client-ip">{{ $client['ip_address'] }}</span>
+                                            <button wire:click="approveClientRequest({{ $client['id'] }})" class="pending-order-accept-btn active-table-client-approve-btn">Approve</button>
                                         </div>
                                     @endforeach
                                 </div>
@@ -78,7 +78,7 @@
                         <i class="bi bi-bell-fill"></i>
                     </button>
                 </h3>
-                <div class="orders-panel-content" wire:poll.5s="refreshPendingOrders">
+                <div class="orders-panel-content">
                     <div class="orders-scroll-container">
                         @if(count($pendingOrders) > 0)
                             @foreach($pendingOrders as $pendingOrder)
@@ -100,33 +100,36 @@
                                         </div>
                                         <div class="order-card-products" wire:key="products-{{ $pendingOrder['id'] }}">
                                             @php
+                                                // Items (with their products) were eager-loaded by
+                                                // loadPendingOrders(); re-querying each order here
+                                                // ran two extra queries per card on every poll.
                                                 $productList = [];
-                                                $order = \App\Models\Order::with('items.product')->find($pendingOrder['id']);
                                                 $groupedItems = [];
-                                                
-                                                // Group items by product
-                                                foreach ($order->items as $item) {
-                                                    if (!isset($groupedItems[$item->product_id])) {
-                                                        $groupedItems[$item->product_id] = [
-                                                            'product' => $item->product,
+
+                                                foreach ($pendingOrder['items'] ?? [] as $item) {
+                                                    $pid = $item['product_id'];
+                                                    if (!isset($groupedItems[$pid])) {
+                                                        $groupedItems[$pid] = [
+                                                            'product' => $item['product'] ?? null,
                                                             'quantity' => 0
                                                         ];
                                                     }
-                                                    $groupedItems[$item->product_id]['quantity'] += $item->quantity;
+                                                    // One row per unit.
+                                                    $groupedItems[$pid]['quantity'] += 1;
                                                 }
-                                                
-                                                // Create product list with grouped quantities
+
                                                 foreach ($groupedItems as $item) {
-                                                    $icon = $item['product']->icon_value ?? 'bi-box';
-                                                    $iconType = $item['product']->icon_type ?? 'bootstrap';
-                                                    
+                                                    $product = $item['product'] ?? [];
+                                                    $icon = $product['icon_value'] ?? 'bi-box';
+                                                    $iconType = $product['icon_type'] ?? 'bootstrap';
+
                                                     if ($iconType === 'bootstrap') {
                                                         $iconHtml = "<i class='" . e($icon) . "'></i>";
                                                     } else {
                                                         $iconHtml = "<img src='" . e(asset('storage/' . $icon)) . "' class='order-product-icon'>";
                                                     }
-                                                    
-                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>" . e($item['product']->name) . "</span>: " . (int) $item['quantity'] . "</span>";
+
+                                                    $productList[] = "<span class='order-product-item'>{$iconHtml} <span class='order-product-name'>" . e($product['name'] ?? '—') . "</span>: " . (int) $item['quantity'] . "</span>";
                                                 }
                                             @endphp
                                             
@@ -370,8 +373,8 @@
                             class="orders-form-select"
                         >
                             @foreach($tables as $table)
-                                <option value="{{ $table->id }}" {{ $editingOrder['table_id'] == $table->id ? 'selected' : '' }}>
-                                    Table {{ $table->table_number ?? $table->id }}
+                                <option value="{{ $table['id'] }}" {{ $editingOrder['table_id'] == $table['id'] ? 'selected' : '' }}>
+                                    Table {{ $table['table_number'] ?? $table['id'] }}
                                 </option>
                             @endforeach
                         </select>

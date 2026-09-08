@@ -3,7 +3,9 @@
 namespace App\Support;
 
 use App\Models\Table;
+use App\Models\TableSession;
 use App\Models\TableSessionRequest;
+use Illuminate\Support\Carbon;
 
 /**
  * The device-approval queue as one flat list, mirroring the staff board:
@@ -14,6 +16,8 @@ use App\Models\TableSessionRequest;
  *    session — approved individually.
  *
  * Queries are bounded by EditorScope on Table; admins see all tenants.
+ * Four queries regardless of table count — this list is polled by the
+ * staff app and the web board every few seconds.
  */
 class PendingApprovals
 {
@@ -22,29 +26,39 @@ class PendingApprovals
      */
     public static function list(): array
     {
-        $rows = [];
-
         $tables = Table::whereIn('status', ['pending_approval', 'open'])->get();
+
+        $sessions = TableSession::whereIn('table_id', $tables->where('status', 'open')->pluck('id'))
+            ->whereIn('status', ['open', 'reopened'])
+            ->orderByDesc('opened_at')
+            ->get()
+            ->unique('table_id')
+            ->keyBy('table_id');
+
+        $sessionPending = TableSessionRequest::whereIn('table_session_id', $sessions->pluck('id'))
+            ->where('status', 'pending')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('table_session_id');
+
+        $orphanPending = TableSessionRequest::whereNull('table_session_id')
+            ->whereIn('table_id', $tables->where('status', 'pending_approval')->pluck('id'))
+            ->where('status', 'pending')
+            ->whereDate('created_at', now()->toDateString())
+            ->orderBy('requested_at')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('table_id');
+
+        $rows = [];
 
         foreach ($tables as $table) {
             if ($table->status === 'pending_approval') {
-                $pending = TableSessionRequest::whereNull('table_session_id')
-                    ->where('table_id', $table->id)
-                    ->where('status', 'pending')
-                    ->whereDate('created_at', now()->toDateString())
-                    ->orderBy('requested_at')
-                    ->orderBy('id')
-                    ->get();
+                $pending = $orphanPending->get($table->id, collect());
                 $scope = 'first_guest';
             } else {
-                $session = $table->sessions()
-                    ->whereIn('status', ['open', 'reopened'])
-                    ->latest('opened_at')
-                    ->first();
-
-                $pending = $session
-                    ? $session->sessionRequests()->where('status', 'pending')->orderBy('id')->get()
-                    : collect();
+                $session = $sessions->get($table->id);
+                $pending = $session ? $sessionPending->get($session->id, collect()) : collect();
                 $scope = 'additional_guest';
             }
 
@@ -53,7 +67,7 @@ class PendingApprovals
                 // normalize either source to ISO-8601.
                 $requestedAt = $request->requested_at ?? $request->created_at;
                 if ($requestedAt && ! $requestedAt instanceof \Carbon\CarbonInterface) {
-                    $requestedAt = \Illuminate\Support\Carbon::parse($requestedAt);
+                    $requestedAt = Carbon::parse($requestedAt);
                 }
 
                 $rows[] = [

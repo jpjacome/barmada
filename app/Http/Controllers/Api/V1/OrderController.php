@@ -10,7 +10,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\OrderResource;
 use App\Models\Order;
 use App\Models\Table;
-use App\Models\TableSession;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
@@ -64,10 +63,7 @@ class OrderController extends Controller
         // editors and staff; admins reach any tenant's table.
         $table = Table::findOrFail($validated['table_id']);
 
-        $session = TableSession::where('table_id', $table->id)
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $session = $table->currentSession();
 
         if (! $session) {
             return response()->json([
@@ -128,11 +124,18 @@ class OrderController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|integer',
             'item_index' => 'required|integer|min:0',
+            'payment_method' => 'nullable|in:cash,card,transfer,other',
         ]);
 
         $this->authorize('update', $order);
 
-        $item = $toggleItemPaid->handle($order, (int) $validated['product_id'], (int) $validated['item_index']);
+        $item = $toggleItemPaid->handle(
+            $order,
+            (int) $validated['product_id'],
+            (int) $validated['item_index'],
+            $request->user(),
+            $validated['payment_method'] ?? null,
+        );
 
         if (! $item) {
             return response()->json(['message' => __('Item not found on this order.')], 404);
@@ -141,11 +144,15 @@ class OrderController extends Controller
         return new OrderResource($order->refresh()->load(['table', 'items.product']));
     }
 
-    public function settle(Order $order, SettleOrder $settleOrder)
+    public function settle(Request $request, Order $order, SettleOrder $settleOrder)
     {
+        $validated = $request->validate([
+            'payment_method' => 'nullable|in:cash,card,transfer,other',
+        ]);
+
         $this->authorize('update', $order);
 
-        $settleOrder->handle($order);
+        $settleOrder->handle($order, $request->user(), $validated['payment_method'] ?? null);
 
         return new OrderResource($order->refresh()->load(['table', 'items.product']));
     }

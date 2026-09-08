@@ -16,6 +16,8 @@ class Product extends Model
 
     protected $casts = [
         'is_available' => 'boolean',
+        // decimal(8,2): identical shape under MySQL and SQLite.
+        'price' => 'decimal:2',
     ];
 
     public function category()

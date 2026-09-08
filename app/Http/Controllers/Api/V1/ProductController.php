@@ -15,7 +15,7 @@ class ProductController extends Controller
 
     private const RULES = [
         'name' => ['required', 'min:3', 'max:255', 'regex:/^[^<>]*$/'],
-        'price' => 'required|numeric|min:0.01',
+        'price' => 'required|numeric|decimal:0,2|min:0.01|max:99999.99',
         'icon_type' => 'nullable|in:bootstrap,svg',
         'bootstrap_icon' => ['nullable', 'regex:/^[a-z0-9 -]+$/i'],
         'icon' => 'nullable|file|max:1024',

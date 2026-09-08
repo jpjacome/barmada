@@ -42,6 +42,8 @@ class ServiceRequestController extends Controller
 
     public function done(Request $request, ServiceRequest $serviceRequest, ResolveServiceRequest $resolve)
     {
+        $this->authorize('update', $serviceRequest);
+
         $resolve->handle($serviceRequest, $request->user());
 
         return response()->json([

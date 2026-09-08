@@ -22,10 +22,7 @@ class SaveClientInvoice
      */
     public function handle(Table $table, array $data): ClientInvoice
     {
-        $session = $table->sessions()
-            ->whereIn('status', ['open', 'reopened'])
-            ->latest('opened_at')
-            ->first();
+        $session = $table->currentSession();
 
         if (! $session) {
             throw new DomainActionException(
