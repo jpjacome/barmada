@@ -67,6 +67,7 @@ class ToggleItemPaid
             if ($fresh->items->isNotEmpty() && $fresh->items->every(fn ($item) => $item->is_paid)) {
                 $fresh->status = 'delivered';
                 $fresh->save();
+                app(\App\Inventory\StockLedger::class)->syncOrder($fresh, $actor);
             }
         }
 

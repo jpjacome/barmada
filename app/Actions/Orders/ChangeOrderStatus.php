@@ -36,6 +36,9 @@ class ChangeOrderStatus
         $order->status = $status;
         $order->save();
 
+        // Delivered orders deplete their recipes; un-delivering reverses it.
+        app(\App\Inventory\StockLedger::class)->syncOrder($order);
+
         return $order;
     }
 }

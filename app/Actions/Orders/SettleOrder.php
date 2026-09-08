@@ -33,6 +33,7 @@ class SettleOrder
         }
         $order->setRelation('items', $items);
         app(RecalculateOrderTotals::class)->handle($order);
+        app(\App\Inventory\StockLedger::class)->syncOrder($order, $actor);
 
         ActivityLog::create([
             'type' => 'payment',

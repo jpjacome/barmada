@@ -71,6 +71,14 @@ Route::prefix('v1')->group(function () {
         Route::post('/tables/{table}/archive', [TableController::class, 'archive']);
         Route::post('/tables/{table}/restore', [TableController::class, 'restore']);
         Route::post('/tables/{table}/invoice', [TableController::class, 'saveInvoice']);
+        // Inventory: stock items, movements, recipes.
+        Route::get('/stock-items', [\App\Http\Controllers\Api\V1\StockController::class, 'index']);
+        Route::post('/stock-items', [\App\Http\Controllers\Api\V1\StockController::class, 'store']);
+        Route::patch('/stock-items/{stockItem}', [\App\Http\Controllers\Api\V1\StockController::class, 'update']);
+        Route::post('/stock-items/{stockItem}/movements', [\App\Http\Controllers\Api\V1\StockController::class, 'move']);
+        Route::get('/stock-items/{stockItem}/movements', [\App\Http\Controllers\Api\V1\StockController::class, 'movements']);
+        Route::get('/products/{product}/components', [\App\Http\Controllers\Api\V1\StockController::class, 'components']);
+        Route::put('/products/{product}/components', [\App\Http\Controllers\Api\V1\StockController::class, 'setComponents']);
         // Fiscal ledger (comprobantes electrónicos).
         Route::post('/tables/{table}/factura', [\App\Http\Controllers\Api\V1\FiscalDocumentController::class, 'issue']);
         Route::get('/fiscal-documents', [\App\Http\Controllers\Api\V1\FiscalDocumentController::class, 'index']);
