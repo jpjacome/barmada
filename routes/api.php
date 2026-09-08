@@ -125,6 +125,9 @@ Route::prefix('v1')->group(function () {
             Route::get('/service-ops', [AnalyticsController::class, 'serviceOps']);
             Route::get('/monthly', [AnalyticsController::class, 'monthly']);
             Route::get('/product-matrix', [AnalyticsController::class, 'productMatrix']);
+            Route::get('/payment-mix', [AnalyticsController::class, 'paymentMix']);
+            Route::get('/staff', [AnalyticsController::class, 'staff']);
+            Route::get('/tax-periods', [AnalyticsController::class, 'taxPeriods']);
         });
 
         // Platform admin.

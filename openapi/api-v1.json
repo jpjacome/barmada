@@ -370,6 +370,250 @@
                 }
             }
         },
+        "/v1/analytics/payment-mix": {
+            "get": {
+                "operationId": "analytics.paymentMix",
+                "tags": [
+                    "Analytics"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "range": {
+                                            "type": "string"
+                                        },
+                                        "currency_symbol": {
+                                            "type": "string"
+                                        },
+                                        "payment_mix": {
+                                            "type": "object",
+                                            "properties": {
+                                                "methods": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "method": {
+                                                                "type": "string",
+                                                                "description": "cash | card | transfer | other | unspecified"
+                                                            },
+                                                            "total": {
+                                                                "type": "number"
+                                                            },
+                                                            "units": {
+                                                                "type": "integer"
+                                                            },
+                                                            "lines": {
+                                                                "type": "integer"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "method",
+                                                            "total",
+                                                            "units",
+                                                            "lines"
+                                                        ]
+                                                    }
+                                                },
+                                                "paid_total": {
+                                                    "type": "number"
+                                                },
+                                                "unpaid_total": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "methods",
+                                                "paid_total",
+                                                "unpaid_total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "range",
+                                        "currency_symbol",
+                                        "payment_mix"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/analytics/staff": {
+            "get": {
+                "operationId": "analytics.staff",
+                "tags": [
+                    "Analytics"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "range": {
+                                            "type": "string"
+                                        },
+                                        "currency_symbol": {
+                                            "type": "string"
+                                        },
+                                        "staff": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user_id": {
+                                                        "type": [
+                                                            "integer",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "'unknown' when the payment was recorded with no actor"
+                                                    },
+                                                    "payments": {
+                                                        "type": "integer"
+                                                    },
+                                                    "amount": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "user_id",
+                                                    "name",
+                                                    "payments",
+                                                    "amount"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "range",
+                                        "currency_symbol",
+                                        "staff"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/analytics/tax-periods": {
+            "get": {
+                "operationId": "analytics.taxPeriods",
+                "tags": [
+                    "Analytics"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "currency_symbol": {
+                                            "type": "string"
+                                        },
+                                        "periods": {
+                                            "type": "object",
+                                            "description": "Keyed by business month (Y-n), newest first.",
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "order_count": {
+                                                        "type": "integer"
+                                                    },
+                                                    "subtotal": {
+                                                        "type": "number"
+                                                    },
+                                                    "tax_total": {
+                                                        "type": "number"
+                                                    },
+                                                    "tax_by_code": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "tax_code": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ],
+                                                                    "description": "SRI codigoPorcentaje"
+                                                                },
+                                                                "net": {
+                                                                    "type": "number"
+                                                                },
+                                                                "tax": {
+                                                                    "type": "number"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "tax_code",
+                                                                "net",
+                                                                "tax"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "service_charge_total": {
+                                                        "type": "number"
+                                                    },
+                                                    "grand_total": {
+                                                        "type": "number"
+                                                    },
+                                                    "fiscal_documents_count": {
+                                                        "type": "integer",
+                                                        "description": "Built and authorized documents"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "label",
+                                                    "order_count",
+                                                    "subtotal",
+                                                    "tax_total",
+                                                    "tax_by_code",
+                                                    "service_charge_total",
+                                                    "grand_total",
+                                                    "fiscal_documents_count"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "currency_symbol",
+                                        "periods"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/v1/approval-requests": {
             "get": {
                 "operationId": "approvalRequest.index",

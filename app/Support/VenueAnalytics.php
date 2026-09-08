@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\ActivityLog;
+use App\Models\FiscalDocument;
 use App\Models\Order;
 use App\Models\Table;
 use App\Models\TableSession;
@@ -34,29 +35,44 @@ use Illuminate\Support\Collection;
  *    plain rows (one query) and diffed in PHP.
  *
  * Business-month buckets are pushed into SQL as a CASE over the UTC
- * boundaries BusinessDay computes, which keeps monthly() at a couple of
- * queries instead of one per month, and stays portable between SQLite
- * (tests) and MySQL (production).
+ * boundaries BusinessDay computes, which keeps monthly()/taxPeriods() at
+ * a couple of queries instead of one per month, and stays portable
+ * between SQLite (tests) and MySQL (production).
  *
  * $venue is the editor account that owns the tenant.
  */
 class VenueAnalytics
 {
     /**
-     * Sales, order count, AOV, top product, peak hour (venue clock) and
-     * the per-hour order distribution for one range.
+     * Sales, order count, AOV, top product, peak hour (venue clock), the
+     * per-hour order distribution, and the money decomposition an
+     * operator needs to see margin: COGS, gross margin, tax and service.
      */
     public static function summary(User $venue, string $range): array
     {
         [$from, $to] = BusinessDay::rangeUtc($venue, $range);
 
         $totals = self::ordersIn($venue, $from, $to)
-            ->selectRaw('COUNT(*) as order_count, COALESCE(SUM(orders.total_amount), 0) as total_sales')
+            ->selectRaw(
+                'COUNT(*) as order_count'
+                .', COALESCE(SUM(orders.total_amount), 0) as total_sales'
+                .', COALESCE(SUM(orders.subtotal), 0) as subtotal'
+                .', COALESCE(SUM(orders.tax_total), 0) as tax_total'
+                .', COALESCE(SUM(orders.service_charge), 0) as service_charge_total'
+            )
             ->toBase()->first();
 
         $orderCount = (int) $totals->order_count;
         $totalSales = self::money($totals->total_sales);
         $averageOrderValue = $orderCount > 0 ? round($totalSales / $orderCount, 2) : 0;
+
+        $cogs = self::money(
+            self::ordersIn($venue, $from, $to)
+                ->join('order_items', 'order_items.order_id', '=', 'orders.id')
+                ->selectRaw('COALESCE(SUM(order_items.cost_amount), 0) as cogs')
+                ->toBase()->value('cogs')
+        );
+        $grossMargin = round($totalSales - $cogs, 2);
 
         $top = self::ordersIn($venue, $from, $to)
             ->join('order_items', 'order_items.order_id', '=', 'orders.id')
@@ -80,6 +96,14 @@ class VenueAnalytics
             'average_order_value' => $averageOrderValue,
             'peak_hour' => $peakHour,
             'hour_distribution' => $hourCounts,
+            // Money decomposition. total_sales stays gross consumption;
+            // these break it down and price it against what it cost.
+            'cogs' => $cogs,
+            'gross_margin' => $grossMargin,
+            'margin_pct' => $totalSales > 0 ? round($grossMargin / $totalSales * 100, 2) : null,
+            'subtotal' => self::money($totals->subtotal),
+            'tax_total' => self::money($totals->tax_total),
+            'service_charge_total' => self::money($totals->service_charge_total),
         ];
     }
 
@@ -326,6 +350,163 @@ class VenueAnalytics
         }
 
         return $matrix;
+    }
+
+    /**
+     * What the guests actually paid with, for one range: totals per
+     * payment method on paid items, plus what is still owed. Items with
+     * no recorded method are reported as 'unspecified' rather than
+     * silently folded into cash.
+     *
+     * Membership follows the order's business day, like every other
+     * figure here — not the moment the item happened to be ticked paid.
+     */
+    public static function paymentMix(User $venue, string $range): array
+    {
+        [$from, $to] = BusinessDay::rangeUtc($venue, $range);
+
+        $rows = self::ordersIn($venue, $from, $to)
+            ->join('order_items', 'order_items.order_id', '=', 'orders.id')
+            ->selectRaw(
+                "CASE WHEN order_items.is_paid = 1 THEN COALESCE(order_items.payment_method, 'unspecified') ELSE '__unpaid__' END as bucket"
+                .', SUM(order_items.quantity * order_items.price) as total'
+                .', SUM(order_items.quantity) as units'
+                .', COUNT(*) as lines'
+            )
+            ->groupBy('bucket')
+            ->toBase()->get();
+
+        $methods = [];
+        $unpaidTotal = 0.0;
+        $paidTotal = 0.0;
+        foreach ($rows as $row) {
+            if ($row->bucket === '__unpaid__') {
+                $unpaidTotal = self::money($row->total);
+
+                continue;
+            }
+            $paidTotal += (float) $row->total;
+            $methods[] = [
+                'method' => $row->bucket,
+                'total' => self::money($row->total),
+                'units' => (int) $row->units,
+                'lines' => (int) $row->lines,
+            ];
+        }
+
+        usort($methods, fn ($a, $b) => [$b['total'], $a['method']] <=> [$a['total'], $b['method']]);
+
+        return [
+            'methods' => $methods,
+            'paid_total' => round($paidTotal, 2),
+            'unpaid_total' => $unpaidTotal,
+        ];
+    }
+
+    /**
+     * Who took the money. One row per actor on the payment activity log
+     * for the range; payments recorded with no user (guest self-service,
+     * or history from before actors were tracked) report as 'unknown'.
+     */
+    public static function staffAccountability(User $venue, string $range): array
+    {
+        [$from, $to] = BusinessDay::rangeUtc($venue, $range);
+
+        return ActivityLog::query()
+            ->where('activity_logs.editor_id', $venue->id)
+            ->where('activity_logs.type', 'payment')
+            ->where('activity_logs.created_at', '>=', $from)
+            ->where('activity_logs.created_at', '<', $to)
+            ->leftJoin('users', 'users.id', '=', 'activity_logs.user_id')
+            ->selectRaw(
+                'activity_logs.user_id as user_id, MAX(users.name) as name'
+                .', COUNT(*) as payments, COALESCE(SUM(activity_logs.amount), 0) as amount'
+            )
+            ->groupBy('activity_logs.user_id')
+            ->orderByDesc('amount')->orderBy('activity_logs.user_id')
+            ->toBase()->get()
+            ->map(fn ($row) => [
+                'user_id' => $row->user_id === null ? null : (int) $row->user_id,
+                'name' => $row->name ?? 'unknown',
+                'payments' => (int) $row->payments,
+                'amount' => self::money($row->amount),
+            ])->all();
+    }
+
+    /**
+     * The IVA return, one row per business month: the taxable base, the
+     * tax split by SRI code, the servicio, the grand total and how many
+     * fiscal documents were actually issued against it.
+     *
+     * A document counts once it is built — the sequence is spent at that
+     * point, so an accountant reconciling a gapless series needs to see
+     * built and authorized documents alike.
+     */
+    public static function taxPeriods(User $venue, int $months = 12): array
+    {
+        $buckets = self::monthBuckets($venue, $months);
+        [$spanFrom, $spanTo] = self::span($buckets);
+        $case = self::bucketCase($buckets);
+        $bindings = self::bucketBindings($buckets);
+
+        $totals = self::ordersIn($venue, $spanFrom, $spanTo)
+            ->selectRaw(
+                $case.' as bucket, COUNT(*) as order_count'
+                .', COALESCE(SUM(orders.subtotal), 0) as subtotal'
+                .', COALESCE(SUM(orders.tax_total), 0) as tax_total'
+                .', COALESCE(SUM(orders.service_charge), 0) as service_charge_total'
+                .', COALESCE(SUM(orders.grand_total), 0) as grand_total',
+                $bindings
+            )
+            ->groupByRaw('bucket')
+            ->toBase()->get()->keyBy('bucket');
+
+        $byCode = self::ordersIn($venue, $spanFrom, $spanTo)
+            ->join('order_items', 'order_items.order_id', '=', 'orders.id')
+            ->selectRaw(
+                $case." as bucket, COALESCE(order_items.tax_code, '') as tax_code"
+                .', COALESCE(SUM(order_items.quantity * order_items.net_price), 0) as net'
+                .', COALESCE(SUM(order_items.quantity * order_items.tax_amount), 0) as tax',
+                $bindings
+            )
+            ->groupByRaw('bucket, tax_code')
+            ->orderByRaw('bucket, tax_code')
+            ->toBase()->get()->groupBy('bucket');
+
+        $documents = FiscalDocument::query()
+            ->where('fiscal_documents.editor_id', $venue->id)
+            ->whereIn('fiscal_documents.status', [FiscalDocument::STATUS_BUILT, FiscalDocument::STATUS_AUTHORIZED])
+            ->where('fiscal_documents.created_at', '>=', $spanFrom)
+            ->where('fiscal_documents.created_at', '<', $spanTo)
+            ->selectRaw(str_replace('orders.created_at', 'fiscal_documents.created_at', $case).' as bucket, COUNT(*) as documents', $bindings)
+            ->groupByRaw('bucket')
+            ->toBase()->get()->keyBy('bucket');
+
+        $periods = [];
+        foreach ($buckets as $i => $bucket) {
+            $date = $bucket['ref'];
+            $row = $totals->get($i);
+            $codes = ($byCode->get($i) ?? collect())
+                ->filter(fn ($c) => (float) $c->net !== 0.0 || (float) $c->tax !== 0.0)
+                ->map(fn ($c) => [
+                    'tax_code' => $c->tax_code === '' ? null : $c->tax_code,
+                    'net' => self::money($c->net),
+                    'tax' => self::money($c->tax),
+                ])->values()->all();
+
+            $periods[$date->year.'-'.$date->month] = [
+                'label' => $date->format('F Y'),
+                'order_count' => $row ? (int) $row->order_count : 0,
+                'subtotal' => $row ? self::money($row->subtotal) : 0.0,
+                'tax_total' => $row ? self::money($row->tax_total) : 0.0,
+                'tax_by_code' => $codes,
+                'service_charge_total' => $row ? self::money($row->service_charge_total) : 0.0,
+                'grand_total' => $row ? self::money($row->grand_total) : 0.0,
+                'fiscal_documents_count' => (int) (optional($documents->get($i))->documents ?? 0),
+            ];
+        }
+
+        return $periods;
     }
 
     // --- Internals -----------------------------------------------------

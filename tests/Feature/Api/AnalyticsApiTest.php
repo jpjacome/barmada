@@ -55,6 +55,35 @@ class AnalyticsApiTest extends TestCase
         ]);
     }
 
+    /**
+     * The fixtures above are built straight through the factories, which
+     * skip the tax snapshot the ordering flow writes. Apply it here so
+     * the money endpoints see a realistic decomposition.
+     */
+    private function snapshotTax($editor): void
+    {
+        foreach (\App\Models\Order::where('editor_id', $editor->id)->with('items')->get() as $order) {
+            $subtotal = 0.0;
+            $tax = 0.0;
+            foreach ($order->items as $item) {
+                $snapshot = \App\Support\Tax::unitSnapshot($item->price, '4', true);
+                $item->update([
+                    'net_price' => $snapshot['net_price'],
+                    'tax_amount' => $snapshot['tax_amount'],
+                    'tax_code' => '4',
+                    'tax_rate_bp' => $snapshot['tax_rate_bp'],
+                ]);
+                $subtotal += $snapshot['net_price'] * $item->quantity;
+                $tax += $snapshot['tax_amount'] * $item->quantity;
+            }
+            $order->update([
+                'subtotal' => round($subtotal, 2),
+                'tax_total' => round($tax, 2),
+                'grand_total' => $order->total_amount,
+            ]);
+        }
+    }
+
     public function test_summary_counts_sales_and_excludes_cancelled(): void
     {
         $editor = $this->apiActingAs($this->makeEditor());
@@ -107,16 +136,102 @@ class AnalyticsApiTest extends TestCase
         $this->assertSame(1, $ops['sessions_today']);
     }
 
+    public function test_summary_exposes_the_money_decomposition(): void
+    {
+        $editor = $this->apiActingAs($this->makeEditor());
+        $this->seedSales($editor);
+        $this->snapshotTax($editor);
+
+        $summary = $this->getJson('/api/v1/analytics/summary?range=today')->assertOk()->json('summary');
+
+        // The fixture's prices are IVA-inclusive, so subtotal + tax is
+        // what the guests owed, and nothing has been depleted yet.
+        $this->assertEqualsWithDelta(13, $summary['subtotal'] + $summary['tax_total'], 0.01);
+        $this->assertEquals(0, $summary['cogs']);
+        $this->assertEquals(13, $summary['gross_margin']);
+        $this->assertEquals(100, $summary['margin_pct']);
+        $this->assertEquals(0, $summary['service_charge_total']);
+    }
+
+    public function test_payment_mix_reports_methods_and_what_is_still_owed(): void
+    {
+        $editor = $this->apiActingAs($this->makeEditor());
+        $this->seedSales($editor);
+
+        // Settle one 2.50 beer in cash; everything else stays unpaid.
+        $item = \App\Models\OrderItem::query()->where('price', 2.50)->orderBy('id')->first();
+        $item->update(['is_paid' => true, 'payment_method' => 'cash', 'paid_at' => now(), 'paid_by' => $editor->id]);
+
+        $mix = $this->getJson('/api/v1/analytics/payment-mix?range=today')
+            ->assertOk()
+            ->assertJsonPath('range', 'today')
+            ->json('payment_mix');
+
+        $this->assertEquals([['method' => 'cash', 'total' => 5, 'units' => 2, 'lines' => 1]], $mix['methods']);
+        $this->assertEquals(5, $mix['paid_total']);
+        $this->assertEquals(8, $mix['unpaid_total']);
+    }
+
+    public function test_staff_endpoint_attributes_payments_to_actors(): void
+    {
+        $editor = $this->apiActingAs($this->makeEditor());
+        $this->seedSales($editor);
+
+        // Backdated for the same reason the sales fixtures are: the
+        // range's upper bound is now(), exclusive.
+        $log = function (array $attributes) use ($editor) {
+            $row = \App\Models\ActivityLog::create($attributes + ['editor_id' => $editor->id, 'description' => 'Logged']);
+            $row->created_at = now()->subMinutes(5);
+            $row->saveQuietly();
+        };
+        $log(['type' => 'payment', 'user_id' => $editor->id, 'amount' => 7.25]);
+        $log(['type' => 'payment', 'user_id' => null, 'amount' => 2.75]);
+        // A non-payment log must not show up here.
+        $log(['type' => 'qr_scan', 'user_id' => $editor->id]);
+
+        $staff = $this->getJson('/api/v1/analytics/staff?range=today')->assertOk()->json('staff');
+
+        $this->assertCount(2, $staff);
+        $this->assertSame($editor->name, $staff[0]['name']);
+        $this->assertEquals(7.25, $staff[0]['amount']);
+        $this->assertSame(1, $staff[0]['payments']);
+        $this->assertNull($staff[1]['user_id']);
+        $this->assertSame('unknown', $staff[1]['name']);
+        $this->assertEquals(2.75, $staff[1]['amount']);
+    }
+
+    public function test_tax_periods_return_the_requested_number_of_business_months(): void
+    {
+        $editor = $this->apiActingAs($this->makeEditor());
+        $this->seedSales($editor);
+        $this->snapshotTax($editor);
+
+        $periods = $this->getJson('/api/v1/analytics/tax-periods')->assertOk()->json('periods');
+        $this->assertCount(12, $periods);
+
+        $current = reset($periods);
+        $this->assertSame(2, $current['order_count']);
+        $this->assertEqualsWithDelta(13, $current['subtotal'] + $current['tax_total'], 0.01);
+        $this->assertSame(0, $current['fiscal_documents_count']);
+        $this->assertNotEmpty($current['tax_by_code']);
+
+        $this->assertCount(3, $this->getJson('/api/v1/analytics/tax-periods?months=3')->assertOk()->json('periods'));
+        $this->getJson('/api/v1/analytics/tax-periods?months=0')->assertStatus(422);
+    }
+
     public function test_analytics_are_editor_only_and_range_validated(): void
     {
         $editor = $this->makeEditor();
         $staff = $this->makeStaff($editor);
 
         $this->apiActingAs($staff);
-        $this->getJson('/api/v1/analytics/summary')->assertStatus(403);
+        foreach (['summary', 'payment-mix', 'staff', 'tax-periods'] as $endpoint) {
+            $this->getJson('/api/v1/analytics/'.$endpoint)->assertStatus(403);
+        }
 
         $this->apiActingAs($editor);
         $this->getJson('/api/v1/analytics/summary?range=yesterday')->assertStatus(422);
+        $this->getJson('/api/v1/analytics/payment-mix?range=yesterday')->assertStatus(422);
     }
 
     public function test_analytics_are_tenant_bounded(): void

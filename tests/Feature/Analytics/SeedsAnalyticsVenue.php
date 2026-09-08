@@ -159,7 +159,7 @@ trait SeedsAnalyticsVenue
                     $unitTax = round((float) $product->price - $unitNet, 2);
                     $paid = ($idx + $k) % 3 !== 0;
 
-                    OrderItem::create([
+                    $item = new OrderItem([
                         'order_id' => $order->id,
                         'product_id' => $product->id,
                         'quantity' => $quantity,
@@ -168,13 +168,16 @@ trait SeedsAnalyticsVenue
                         'tax_amount' => $unitTax,
                         'tax_code' => $product->tax_code,
                         'tax_rate_bp' => $rateBp,
-                        'cost_amount' => round((float) $product->price * 0.35, 4),
                         'is_paid' => $paid,
                         'paid_at' => $paid ? $order->created_at->copy()->addMinutes(30) : null,
                         'paid_by' => $paid ? $this->seedStaff[($idx + $k) % 2]->id : null,
                         'payment_method' => $paid ? $methods[($idx + $k) % 4] : null,
                         'item_index' => $k,
                     ]);
+                    // Cost of goods is snapshotted by the stock ledger, not
+                    // mass-assigned — set it the same way it does.
+                    $item->cost_amount = round((float) $product->price * 0.35, 4);
+                    $item->save();
 
                     $gross += (float) $product->price * $quantity;
                     $net += $unitNet * $quantity;
