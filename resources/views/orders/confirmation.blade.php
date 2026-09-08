@@ -1,9 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.guest-order')
+
+@section('styles')
+<link href="{{ asset('css/confirmation.css') }}" rel="stylesheet">
+@endsection
 
 @section('title', __('Order Confirmation'))
 
 @section('content')
-<link href="{{ asset('css/confirmation.css') }}" rel="stylesheet">
 <div class="confirmation-container py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">

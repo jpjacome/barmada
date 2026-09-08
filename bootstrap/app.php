@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\EnsureIpIsApprovedForTableSession;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsEditor;
+use App\Http\Middleware\SetLocale;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -26,6 +27,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // order routes (no EncryptCookies there), so it is excluded from
         // cookie encryption. It contains only a random identifier.
         $middleware->encryptCookies(except: ['barmada_device']);
+
+        // Resolve app()->getLocale() for every web request up front (see
+        // SetLocale for the operator vs. guest resolution order). Guest
+        // controllers with a venue in scope still override this per
+        // request — this just guarantees no route is left on the
+        // framework's English default.
+        $middleware->appendToGroup('web', SetLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Domain rules surface as 422s with their user-facing message on

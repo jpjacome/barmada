@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.guest-order')
 
 @section('title', __('Table Request Pending'))
 

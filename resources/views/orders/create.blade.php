@@ -1,10 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.guest-order')
+
+@section('styles')
+<link href="{{ asset('css/create-order.css') }}" rel="stylesheet">
+@endsection
 
 @section('title', __('Place Order'))
 
 @section('content')
-<link href="{{ asset('css/create-order.css') }}" rel="stylesheet">
-
 @php
     // Use the currentEditorId passed from the controller, fallback to the first product's editor_id if needed
     $currentEditorId = $currentEditorId ?? ($products->first()->editor_id ?? null);

@@ -151,18 +151,20 @@ class OrderController extends Controller
     public function confirmation(Request $request)
     {
         $tableNumber = null;
+        $venueName = null;
 
         if ($token = $request->query('t')) {
             $table = Table::where('unique_token', $token)->first();
             if ($table && $table->editor) {
                 app()->setLocale($table->editor->guestLocale());
                 $tableNumber = $table->table_number;
+                $venueName = $table->editor->business_name ?: $table->editor->name;
             }
         } elseif ($user = Auth::user()) {
             $this->applyVenuePresentation($user->is_admin ? $user->id : $user->effectiveEditorId(), $user);
         }
 
-        return view('orders.confirmation', compact('tableNumber'));
+        return view('orders.confirmation', compact('tableNumber', 'venueName'));
     }
     
     /**
