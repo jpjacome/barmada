@@ -76,21 +76,21 @@ class SettingsController extends Controller
                 ]);
                 
                 return redirect()->route('settings.index')
-                    ->with('success', ucfirst($theme) . ' theme logo updated successfully.');
+                    ->with('success', __(':theme theme logo updated successfully.', ['theme' => __(ucfirst($theme))]));
             } catch (\Exception $e) {
                 Log::error('Failed to upload theme logo', [
                     'theme' => $theme,
                     'error' => $e->getMessage(),
                     'path' => $path
                 ]);
-                
+
                 return redirect()->route('settings.index')
-                    ->with('error', 'Failed to update ' . $theme . ' theme logo: ' . $e->getMessage());
+                    ->with('error', __('Failed to update :theme theme logo: :error', ['theme' => $theme, 'error' => $e->getMessage()]));
             }
         }
 
         return redirect()->route('settings.index')
-            ->with('error', 'No file was uploaded.');
+            ->with('error', __('No file was uploaded.'));
     }
 
     /**
@@ -115,7 +115,7 @@ class SettingsController extends Controller
         app(\App\Actions\Settings\UpdateBusinessSettings::class)->handle($user, $validated);
 
         return redirect()->route('settings.index')
-            ->with('success', 'Business settings updated.');
+            ->with('success', __('Business settings updated.'));
     }
 
     public function toggleTheme(Request $request)
@@ -144,7 +144,7 @@ class SettingsController extends Controller
         }
         // For guests, just set the session (already done above)
         // Redirect back to previous page
-        return redirect()->back()->with('success', 'Theme updated successfully');
+        return redirect()->back()->with('success', __('Theme updated successfully'));
     }
 
     /**

@@ -52,7 +52,7 @@
                             {{ __('Orders') }}
                         </x-nav-link>
                         <a href="{{ route('orders.create') }}" class="nav-new-order-button">
-                            <span class="nav-button-text">New Order</span>
+                            <span class="nav-button-text">{{ __('New Order') }}</span>
                         </a>
                     @elseif(Auth::check() && Auth::user()->is_staff)
                         <x-nav-link :href="route('tables.index')" :active="request()->routeIs('tables.*')">
@@ -62,7 +62,7 @@
                             {{ __('Orders') }}
                         </x-nav-link>
                         <a href="{{ route('orders.create') }}" class="nav-new-order-button">
-                            <span class="nav-button-text">New Order</span>
+                            <span class="nav-button-text">{{ __('New Order') }}</span>
                         </a>
                     @endif
                 </div>
@@ -205,7 +205,7 @@
         <!-- Responsive Settings Options -->
         <div class="responsive-settings">
             <div class="responsive-settings-header">
-                <div class="responsive-settings-name">{{ Auth::check() ? Auth::user()->name : 'Guest' }}</div>
+                <div class="responsive-settings-name">{{ Auth::check() ? Auth::user()->name : __('Guest') }}</div>
                 <div class="responsive-settings-email">{{ Auth::check() ? Auth::user()->email : '' }}</div>
             </div>
 

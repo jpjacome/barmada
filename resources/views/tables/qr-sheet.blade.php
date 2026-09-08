@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>QR codes — {{ $venue ? ($venue->business_name ?: $venue->name) : 'Barmada' }}</title>
+    <title>{{ __('QR codes') }} — {{ $venue ? ($venue->business_name ?: $venue->name) : 'Barmada' }}</title>
     <style>
         body { font-family: "DejaVu Sans", Arial, sans-serif; margin: 1.5rem; color: #111; }
         h1 { text-align: center; font-size: 1.2rem; letter-spacing: 0.05em; text-transform: uppercase; }
@@ -17,17 +17,17 @@
     </style>
 </head>
 <body>
-    <button class="print-btn" onclick="window.print()">Print all</button>
+    <button class="print-btn" onclick="window.print()">{{ __('Print all') }}</button>
     <h1>{{ $venue ? ($venue->business_name ?: $venue->name) : 'Barmada' }}</h1>
     <div class="grid">
         @forelse($tables as $table)
             <div class="card">
-                <img src="{{ route('tables.qr', $table->id) }}" alt="QR Table {{ $table->table_number }}">
-                <h2>Table {{ $table->table_number }}</h2>
-                <p>Scan to order from your phone</p>
+                <img src="{{ route('tables.qr', $table->id) }}" alt="{{ __('QR Table :number', ['number' => $table->table_number]) }}">
+                <h2>{{ __('Table :number', ['number' => $table->table_number]) }}</h2>
+                <p>{{ __('Scan to order from your phone') }}</p>
             </div>
         @empty
-            <p>No tables yet.</p>
+            <p>{{ __('No tables yet.') }}</p>
         @endforelse
     </div>
 </body>

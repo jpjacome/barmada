@@ -175,9 +175,7 @@ class TablesList extends Component
         // recorded orders cannot be deleted. Say so honestly. [F-5]
         $hasOrderHistory = Order::where('table_id', $tableId)->exists();
         if ($hasOrderHistory) {
-            $this->errorMessage = 'Table ' . ($table->table_number ?? $tableId)
-                . ' has recorded orders, so it cannot be deleted — its history is kept for reporting.'
-                . ' Use Archive instead to retire it from service.';
+            $this->errorMessage = __('Table :number has recorded orders, so it cannot be deleted — its history is kept for reporting. Use Archive instead to retire it from service.', ['number' => $table->table_number ?? $tableId]);
             $this->showErrorModal = true;
             return;
         }
@@ -386,7 +384,7 @@ class TablesList extends Component
 
         $session = $table->currentSession();
         if (! $session) {
-            $this->errorMessage = 'Open the table first — invoice details attach to the current session.';
+            $this->errorMessage = __('Open the table first — invoice details attach to the current session.');
             $this->showErrorModal = true;
             return;
         }

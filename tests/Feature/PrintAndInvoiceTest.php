@@ -120,11 +120,13 @@ class PrintAndInvoiceTest extends TestCase
     public function test_qr_sheet_lists_active_tables_only(): void
     {
         $editor = $this->makeEditor();
+        $editor->forceFill(['locale' => 'en'])->save();
         $this->makeTableFor($editor, ['table_number' => 1]);
         $archived = $this->makeTableFor($editor, ['table_number' => 2]);
         $archived->forceFill(['archived_at' => now()])->save();
 
-        $response = $this->actingAs($editor)->get('/tables/qr-sheet')->assertOk();
+        $response = $this->actingAs($editor)
+            ->get('/tables/qr-sheet')->assertOk();
         $response->assertSee('Table 1');
         $response->assertDontSee('Table 2');
     }

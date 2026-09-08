@@ -190,7 +190,7 @@ class AnalyticsDashboard extends Component
             'data' => [
                 'labels' => $labels,
                 'datasets' => [[
-                    'label' => 'Sales ('.$this->currency.')',
+                    'label' => __('Sales (:currency)', ['currency' => $this->currency]),
                     'data' => $data,
                     'borderColor' => 'rgba(75, 192, 192, 1)',
                     'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
@@ -202,7 +202,7 @@ class AnalyticsDashboard extends Component
                 'responsive' => true,
                 'plugins' => [
                     'legend' => ['display' => true],
-                    'title' => ['display' => true, 'text' => 'Sales This Week']
+                    'title' => ['display' => true, 'text' => __('Sales This Week')]
                 ],
                 'scales' => [
                     'y' => ['beginAtZero' => true]
@@ -234,7 +234,7 @@ class AnalyticsDashboard extends Component
             'data' => [
                 'labels' => $labels,
                 'datasets' => [[
-                    'label' => 'Sales ('.$this->currency.')',
+                    'label' => __('Sales (:currency)', ['currency' => $this->currency]),
                     'data' => $data,
                     'borderColor' => 'rgba(255, 159, 64, 1)',
                     'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
@@ -246,7 +246,7 @@ class AnalyticsDashboard extends Component
                 'responsive' => true,
                 'plugins' => [
                     'legend' => ['display' => true],
-                    'title' => ['display' => true, 'text' => 'Sales Last Week']
+                    'title' => ['display' => true, 'text' => __('Sales Last Week')]
                 ],
                 'scales' => [
                     'y' => ['beginAtZero' => true]
@@ -277,7 +277,7 @@ class AnalyticsDashboard extends Component
             'data' => [
                 'labels' => $labels,
                 'datasets' => [[
-                    'label' => 'Sales ('.$this->currency.')',
+                    'label' => __('Sales (:currency)', ['currency' => $this->currency]),
                     'data' => $data,
                     'borderColor' => 'rgba(54, 162, 235, 1)',
                     'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
@@ -289,7 +289,7 @@ class AnalyticsDashboard extends Component
                 'responsive' => true,
                 'plugins' => [
                     'legend' => ['display' => true],
-                    'title' => ['display' => true, 'text' => 'Sales Last 30 Days']
+                    'title' => ['display' => true, 'text' => __('Sales Last 30 Days')]
                 ],
                 'scales' => [
                     'y' => ['beginAtZero' => true]
@@ -304,9 +304,9 @@ class AnalyticsDashboard extends Component
         $user = auth()->user();
         $editorId = $user ? $user->id : null;
         $periods = [
-            '30' => ['label' => 'Last 30 Days', 'days' => 30],
-            '7' => ['label' => 'Last 7 Days', 'days' => 7],
-            '1' => ['label' => 'Today', 'days' => 1],
+            '30' => ['label' => __('Last 30 Days'), 'days' => 30],
+            '7' => ['label' => __('Last 7 Days'), 'days' => 7],
+            '1' => ['label' => __('Today'), 'days' => 1],
         ];
         $colorPalette = [
             'rgba(54, 162, 235, 0.7)',
@@ -345,7 +345,7 @@ class AnalyticsDashboard extends Component
             foreach ($orders as $order) {
                 foreach ($order->items as $item) {
                     $pid = $item->product_id;
-                    $name = $item->product ? $item->product->name : 'Unknown';
+                    $name = $item->product ? $item->product->name : __('Unknown');
                     if (!isset($productStats[$pid])) {
                         $productStats[$pid] = [
                             'name' => $name,
@@ -371,7 +371,7 @@ class AnalyticsDashboard extends Component
                 'data' => $data,
                 'orders' => $ordersArr,
                 'datasets' => [[
-                    'label' => 'Revenue ('.$this->currency.')',
+                    'label' => __('Revenue (:currency)', ['currency' => $this->currency]),
                     'data' => $data,
                     'backgroundColor' => $barColors,
                     'borderColor' => $borderColors,

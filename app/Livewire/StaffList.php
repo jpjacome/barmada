@@ -95,7 +95,7 @@ class StaffList extends Component
 
         $this->staffId = $user->id;
         $this->dispatch('showDeleteConfirmation', [
-            'message' => "Are you sure you want to delete staff member '{$user->name}'?"
+            'message' => __("Are you sure you want to delete staff member ':name'?", ['name' => $user->name])
         ]);
     }
 

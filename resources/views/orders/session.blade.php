@@ -1,9 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.guest-order')
 
-@section('title', __('My Table & Bill'))
+@section('styles')
+<link href="{{ asset('css/create-order.css') }}" rel="stylesheet">
+@endsection
+
+@section('title', __('My table & bill'))
 
 @section('content')
-<link href="{{ asset('css/create-order.css') }}" rel="stylesheet">
 <div class="container page-container">
     <div class="content-card content-card-body" style="max-width: 560px; margin: 2rem auto;">
         <h1 class="page-title" style="text-align:center;">{{ __('Table') }} {{ $table->table_number ?? $table->id }}</h1>

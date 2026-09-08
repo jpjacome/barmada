@@ -50,7 +50,7 @@ class CategoriesPanel extends Component
         $tenantId = $user->is_admin ? $user->id : $user->effectiveEditorId();
         app(\App\Actions\Categories\CreateCategory::class)->handle($tenantId, $this->newCategoryName);
         $this->newCategoryName = '';
-        $this->status = 'Category added successfully!';
+        $this->status = __('Category added successfully!');
         $this->loadCategories();
         $this->dispatch('categoryAdded');
     }
@@ -59,12 +59,12 @@ class CategoriesPanel extends Component
     {
         $category = Category::find($id);
         if (!$category) {
-            $this->status = 'Error: Category not found';
+            $this->status = __('Error: Category not found');
             return;
         }
         $this->authorize('delete', $category);
         app(\App\Actions\Categories\DeleteCategory::class)->handle($category);
-        $this->status = 'Category deleted successfully!';
+        $this->status = __('Category deleted successfully!');
         $this->loadCategories();
     }
 

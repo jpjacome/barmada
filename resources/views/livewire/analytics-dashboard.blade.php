@@ -5,13 +5,13 @@
 @section('content')
 <div class="analytics-dashboard-container">
     <link href="{{ asset('css/analytics.css') }}" rel="stylesheet">
-    <h1 class="analytics-title"><i class="bi bi-bar-chart"></i> Analytics Dashboard</h1>
+    <h1 class="analytics-title"><i class="bi bi-bar-chart"></i> {{ __('Analytics Dashboard') }}</h1>
     <div class="analytics-sections">
         <!-- Sales & Revenue (with chart) -->
         <section class="analytics-section analytics-section-sales">
             <div class="analytics-section-header">
                 <i class="bi bi-cash-coin"></i>
-                <h2>Sales & Revenue</h2>
+                <h2>{{ __('Sales & Revenue') }}</h2>
             </div>
             <div class="analytics-section-grid">
                 @php
@@ -24,11 +24,11 @@
                     <div class="analytics-card-group-title month-title">{{ $now->format('F') }}</div>
                     <div class="analytics-card month-stats-col">
                         <ul>
-                            <li>Sales for {{ $now->format('F') }}: <strong>{{ $currency }}{{ number_format($monthlyStats[$currentMonthKey]['total_sales'] ?? 0, 2) }}</strong></li>
-                            <li>Orders for {{ $now->format('F') }}: <strong>{{ $monthlyStats[$currentMonthKey]['order_count'] ?? 0 }}</strong></li>
-                            <li>Top Product: <strong>{{ $monthlyStats[$currentMonthKey]['top_product'] ?? '—' }}</strong></li>
-                            <li>Average Order Value: <strong>{{ $currency }}{{ number_format($monthlyStats[$currentMonthKey]['average_order_value'] ?? 0, 2) }}</strong></li>
-                            <li>Peak Hour: <strong>{{ $monthlyStats[$currentMonthKey]['peak_hour'] ?? '—' }}</strong></li>
+                            <li>{{ __('Sales for :month', ['month' => $now->format('F')]) }}: <strong>{{ $currency }}{{ number_format($monthlyStats[$currentMonthKey]['total_sales'] ?? 0, 2) }}</strong></li>
+                            <li>{{ __('Orders for :month', ['month' => $now->format('F')]) }}: <strong>{{ $monthlyStats[$currentMonthKey]['order_count'] ?? 0 }}</strong></li>
+                            <li>{{ __('Top Product') }}: <strong>{{ $monthlyStats[$currentMonthKey]['top_product'] ?? '—' }}</strong></li>
+                            <li>{{ __('Average Order Value') }}: <strong>{{ $currency }}{{ number_format($monthlyStats[$currentMonthKey]['average_order_value'] ?? 0, 2) }}</strong></li>
+                            <li>{{ __('Peak Hour') }}: <strong>{{ $monthlyStats[$currentMonthKey]['peak_hour'] ?? '—' }}</strong></li>
                         </ul>
                     </div>
                     <div class="analytics-card month-stats-col">
@@ -48,11 +48,11 @@
                             @endfor
                         </div>
                         <ul id="prevMonthStats">
-                            <li>Sales for {{ $prevMonth->format('F') }}: <strong>{{ $currency }}{{ number_format($monthlyStats[$prevMonthKey]['total_sales'] ?? 0, 2) }}</strong></li>
-                            <li>Orders for {{ $prevMonth->format('F') }}: <strong>{{ $monthlyStats[$prevMonthKey]['order_count'] ?? 0 }}</strong></li>
-                            <li>Top Product: <strong>{{ $monthlyStats[$prevMonthKey]['top_product'] ?? '—' }}</strong></li>
-                            <li>Average Order Value: <strong>{{ $currency }}{{ number_format($monthlyStats[$prevMonthKey]['average_order_value'] ?? 0, 2) }}</strong></li>
-                            <li>Peak Hour: <strong>{{ $monthlyStats[$prevMonthKey]['peak_hour'] ?? '—' }}</strong></li>
+                            <li>{{ __('Sales for :month', ['month' => $prevMonth->format('F')]) }}: <strong>{{ $currency }}{{ number_format($monthlyStats[$prevMonthKey]['total_sales'] ?? 0, 2) }}</strong></li>
+                            <li>{{ __('Orders for :month', ['month' => $prevMonth->format('F')]) }}: <strong>{{ $monthlyStats[$prevMonthKey]['order_count'] ?? 0 }}</strong></li>
+                            <li>{{ __('Top Product') }}: <strong>{{ $monthlyStats[$prevMonthKey]['top_product'] ?? '—' }}</strong></li>
+                            <li>{{ __('Average Order Value') }}: <strong>{{ $currency }}{{ number_format($monthlyStats[$prevMonthKey]['average_order_value'] ?? 0, 2) }}</strong></li>
+                            <li>{{ __('Peak Hour') }}: <strong>{{ $monthlyStats[$prevMonthKey]['peak_hour'] ?? '—' }}</strong></li>
                         </ul>
                     </div>
                 </div>
@@ -60,55 +60,55 @@
                     <div class="analytics-card-group analytics-flex-1">
                         <div class="analytics-card-group-title">
                             <select wire:model="range" class="form-select form-select-sm" style="width:auto;display:inline-block;">
-                                <option value="today">Today</option>
-                                <option value="7days">Last 7 Days</option>
-                                <option value="30days">Last 30 Days</option>
-                                <option value="month">This Month</option>
+                                <option value="today">{{ __('Today') }}</option>
+                                <option value="7days">{{ __('Last 7 Days') }}</option>
+                                <option value="30days">{{ __('Last 30 Days') }}</option>
+                                <option value="month">{{ __('This Month') }}</option>
                             </select>
                         </div>
                         <div class="analytics-card">
                             <ul>
-                                <li>Total Sales: <strong>{{ $currency }}{{ number_format($stats[$range]['total_sales'], 2) }}</strong></li>
-                                <li>Orders: <strong>{{ $stats[$range]['order_count'] }}</strong></li>
-                                <li>Top Product: <strong>{{ $stats[$range]['top_product'] ?? '—' }}</strong></li>
-                                <li>Average Order Value: <strong>{{ $currency }}{{ number_format($stats[$range]['average_order_value'], 2) }}</strong></li>
-                                <li>Peak Hour: <strong>{{ $stats[$range]['peak_hour'] ?? '—' }}</strong></li>
+                                <li>{{ __('Total Sales') }}: <strong>{{ $currency }}{{ number_format($stats[$range]['total_sales'], 2) }}</strong></li>
+                                <li>{{ __('Orders') }}: <strong>{{ $stats[$range]['order_count'] }}</strong></li>
+                                <li>{{ __('Top Product') }}: <strong>{{ $stats[$range]['top_product'] ?? '—' }}</strong></li>
+                                <li>{{ __('Average Order Value') }}: <strong>{{ $currency }}{{ number_format($stats[$range]['average_order_value'], 2) }}</strong></li>
+                                <li>{{ __('Peak Hour') }}: <strong>{{ $stats[$range]['peak_hour'] ?? '—' }}</strong></li>
                             </ul>
                         </div>
                     </div>
                     <div class="analytics-card-group analytics-flex-1">
-                        <div class="analytics-card-group-title">Today</div>
+                        <div class="analytics-card-group-title">{{ __('Today') }}</div>
                         <div class="analytics-card">
                             <ul>
-                                <li>Total Sales: <strong>{{ $currency }}{{ number_format($stats['today']['total_sales'], 2) }}</strong></li>
-                                <li>Orders: <strong>{{ $stats['today']['order_count'] }}</strong></li>
-                                <li>Top Product: <strong>{{ $stats['today']['top_product'] ?? '—' }}</strong></li>
-                                <li>Average Order Value: <strong>{{ $currency }}{{ number_format($stats['today']['average_order_value'], 2) }}</strong></li>
-                                <li>Peak Hour: <strong>{{ $stats['today']['peak_hour'] ?? '—' }}</strong></li>
+                                <li>{{ __('Total Sales') }}: <strong>{{ $currency }}{{ number_format($stats['today']['total_sales'], 2) }}</strong></li>
+                                <li>{{ __('Orders') }}: <strong>{{ $stats['today']['order_count'] }}</strong></li>
+                                <li>{{ __('Top Product') }}: <strong>{{ $stats['today']['top_product'] ?? '—' }}</strong></li>
+                                <li>{{ __('Average Order Value') }}: <strong>{{ $currency }}{{ number_format($stats['today']['average_order_value'], 2) }}</strong></li>
+                                <li>{{ __('Peak Hour') }}: <strong>{{ $stats['today']['peak_hour'] ?? '—' }}</strong></li>
                             </ul>
                         </div>
                     </div>
                     <div class="analytics-card-group analytics-flex-1">
-                        <div class="analytics-card-group-title">Last 7 Days</div>
+                        <div class="analytics-card-group-title">{{ __('Last 7 Days') }}</div>
                         <div class="analytics-card">
                             <ul>
-                                <li>Total Sales: <strong>{{ $currency }}{{ number_format($stats['7days']['total_sales'], 2) }}</strong></li>
-                                <li>Orders: <strong>{{ $stats['7days']['order_count'] }}</strong></li>
-                                <li>Top Product: <strong>{{ $stats['7days']['top_product'] ?? '—' }}</strong></li>
-                                <li>Average Order Value: <strong>{{ $currency }}{{ number_format($stats['7days']['average_order_value'], 2) }}</strong></li>
-                                <li>Peak Hour: <strong>{{ $stats['7days']['peak_hour'] ?? '—' }}</strong></li>
+                                <li>{{ __('Total Sales') }}: <strong>{{ $currency }}{{ number_format($stats['7days']['total_sales'], 2) }}</strong></li>
+                                <li>{{ __('Orders') }}: <strong>{{ $stats['7days']['order_count'] }}</strong></li>
+                                <li>{{ __('Top Product') }}: <strong>{{ $stats['7days']['top_product'] ?? '—' }}</strong></li>
+                                <li>{{ __('Average Order Value') }}: <strong>{{ $currency }}{{ number_format($stats['7days']['average_order_value'], 2) }}</strong></li>
+                                <li>{{ __('Peak Hour') }}: <strong>{{ $stats['7days']['peak_hour'] ?? '—' }}</strong></li>
                             </ul>
                         </div>
                     </div>
                     <div class="analytics-card-group analytics-flex-1">
-                        <div class="analytics-card-group-title">Last 30 Days</div>
+                        <div class="analytics-card-group-title">{{ __('Last 30 Days') }}</div>
                         <div class="analytics-card">
                             <ul>
-                                <li>Total Sales: <strong>{{ $currency }}{{ number_format($stats['30days']['total_sales'], 2) }}</strong></li>
-                                <li>Orders: <strong>{{ $stats['30days']['order_count'] }}</strong></li>
-                                <li>Top Product: <strong>{{ $stats['30days']['top_product'] ?? '—' }}</strong></li>
-                                <li>Average Order Value: <strong>{{ $currency }}{{ number_format($stats['30days']['average_order_value'], 2) }}</strong></li>
-                                <li>Peak Hour: <strong>{{ $stats['30days']['peak_hour'] ?? '—' }}</strong></li>
+                                <li>{{ __('Total Sales') }}: <strong>{{ $currency }}{{ number_format($stats['30days']['total_sales'], 2) }}</strong></li>
+                                <li>{{ __('Orders') }}: <strong>{{ $stats['30days']['order_count'] }}</strong></li>
+                                <li>{{ __('Top Product') }}: <strong>{{ $stats['30days']['top_product'] ?? '—' }}</strong></li>
+                                <li>{{ __('Average Order Value') }}: <strong>{{ $currency }}{{ number_format($stats['30days']['average_order_value'], 2) }}</strong></li>
+                                <li>{{ __('Peak Hour') }}: <strong>{{ $stats['30days']['peak_hour'] ?? '—' }}</strong></li>
                             </ul>
                         </div>
                     </div>
@@ -137,20 +137,20 @@
         <section class="analytics-section analytics-section-products">
             <div class="analytics-section-header">
                 <i class="bi bi-cup-straw"></i>
-                <h2>Product & Category Analytics</h2>
+                <h2>{{ __('Product & Category Analytics') }}</h2>
             </div>
             <div class="analytics-section-grid">
                 <div class="analytics-cards">
                     <div class="analytics-card-group analytics-card-group-month">
                         <div class="analytics-card-group-title">{{ date('F') }}</div>
-                        <div class="analytics-card">Top Selling Products:
+                        <div class="analytics-card">{{ __('Top Selling Products:') }}
                             <ul>
                                 @foreach ($productCategoryStats['month']['top_products'] as $prod)
                                     <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
-                        <div class="analytics-card">Least Selling Products:
+                        <div class="analytics-card">{{ __('Least Selling Products:') }}
                             <ul>
                                 @foreach ($productCategoryStats['month']['least_products'] as $prod)
                                     <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
@@ -161,15 +161,15 @@
                 </div>
                 <div class="analytics-cards">
                     <div class="analytics-card-group">
-                        <div class="analytics-card-group-title">Today</div>
-                        <div class="analytics-card">Top Selling Products:
+                        <div class="analytics-card-group-title">{{ __('Today') }}</div>
+                        <div class="analytics-card">{{ __('Top Selling Products:') }}
                             <ul>
                                 @foreach ($productCategoryStats['today']['top_products'] as $prod)
                                     <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
-                        <div class="analytics-card">Least Selling Products:
+                        <div class="analytics-card">{{ __('Least Selling Products:') }}
                             <ul>
                                 @foreach ($productCategoryStats['today']['least_products'] as $prod)
                                     <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
@@ -178,15 +178,15 @@
                         </div>
                     </div>
                     <div class="analytics-card-group">
-                        <div class="analytics-card-group-title">Last 7 Days</div>
-                        <div class="analytics-card">Top Selling Products:
+                        <div class="analytics-card-group-title">{{ __('Last 7 Days') }}</div>
+                        <div class="analytics-card">{{ __('Top Selling Products:') }}
                             <ul>
                                 @foreach ($productCategoryStats['7days']['top_products'] as $prod)
                                     <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
-                        <div class="analytics-card">Least Selling Products:
+                        <div class="analytics-card">{{ __('Least Selling Products:') }}
                             <ul>
                                 @foreach ($productCategoryStats['7days']['least_products'] as $prod)
                                     <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
@@ -195,15 +195,15 @@
                         </div>
                     </div>
                     <div class="analytics-card-group">
-                        <div class="analytics-card-group-title">Last 30 Days</div>
-                        <div class="analytics-card">Top Selling Products:
+                        <div class="analytics-card-group-title">{{ __('Last 30 Days') }}</div>
+                        <div class="analytics-card">{{ __('Top Selling Products:') }}
                             <ul>
                                 @foreach ($productCategoryStats['30days']['top_products'] as $prod)
                                     <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
                                 @endforeach
                             </ul>
                         </div>
-                        <div class="analytics-card">Least Selling Products:
+                        <div class="analytics-card">{{ __('Least Selling Products:') }}
                             <ul>
                                 @foreach ($productCategoryStats['30days']['least_products'] as $prod)
                                     <li><strong>{{ $prod['name'] }}</strong> ({{ $currency }}{{ number_format($prod['revenue'], 2) }})</li>
@@ -217,10 +217,10 @@
                         <table class="product-sales-table">
                             <thead>
                                 <tr>
-                                    <th>Product</th>
-                                    <th>Last Day</th>
-                                    <th>Last 7 Days</th>
-                                    <th>Last 30 Days</th>
+                                    <th>{{ __('Product') }}</th>
+                                    <th>{{ __('Last Day') }}</th>
+                                    <th>{{ __('Last 7 Days') }}</th>
+                                    <th>{{ __('Last 30 Days') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -232,7 +232,7 @@
                                         <td>{{ $sales['30days'] }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4">No product sales data available.</td></tr>
+                                    <tr><td colspan="4">{{ __('No product sales data available.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -242,9 +242,9 @@
                 <div class="analytics-chart-container chart-bg analytics-product-sales-chart-fullwidth">
                     <div class="analytics-chart-controls">
                         <select id="productBarChartRange">
-                            <option value="30">Last 30 Days</option>
-                            <option value="7">Last 7 Days</option>
-                            <option value="1">Today</option>
+                            <option value="30">{{ __('Last 30 Days') }}</option>
+                            <option value="7">{{ __('Last 7 Days') }}</option>
+                            <option value="1">{{ __('Today') }}</option>
                         </select>
                     </div>    
                     <canvas id="productBarChart"></canvas>
@@ -258,7 +258,7 @@
                     ] as $col)
                     <div class="category-orders-card">
                         <div class="category-orders-title">
-                            <span>{{ $col['label'] }}</span>
+                            <span>{{ __($col['label']) }}</span>
                             <div class="container">
                                 <button class="toggle-metric-btn" data-period="{{ $col['key'] }}">
                                     <i class="bi bi-hash"></i>
@@ -296,35 +296,35 @@
         <section class="analytics-section analytics-section-service-operations">
             <div class="analytics-section-header">
                 <i class="bi bi-gear"></i>
-                <h2>Service & Operations Analytics</h2>
+                <h2>{{ __('Service & Operations Analytics') }}</h2>
             </div>
             <div class="analytics-service-ops-columns">
                 <div class="analytics-card analytics-service-ops-col">
-                    <div><strong>Most Used Table:</strong> {{ $serviceOpsStats['month']['most_used_table'] ?? '—' }}</div>
-                    <div><strong>Average Session Duration:</strong> {{ $serviceOpsStats['month']['avg_session_duration'] ? $serviceOpsStats['month']['avg_session_duration'] . ' min' : '—' }}</div>
-                    <div><strong>Sessions Today:</strong> {{ $serviceOpsStats['today']['sessions_today'] ?? '—' }}</div>
-                    <div><strong>Session Reopenings:</strong> {{ $serviceOpsStats['month']['session_reopenings'] ?? '—' }}</div>
-                    <div><strong>Table Turnover Rate:</strong> {{ $serviceOpsStats['month']['table_turnover'] ?? '—' }}</div>
-                    <div><strong>Downtime per Table:</strong> {{ $serviceOpsStats['month']['downtime_per_table'] ? $serviceOpsStats['month']['downtime_per_table'] . ' min' : '—' }}</div>
+                    <div><strong>{{ __('Most Used Table:') }}</strong> {{ $serviceOpsStats['month']['most_used_table'] ?? '—' }}</div>
+                    <div><strong>{{ __('Average Session Duration:') }}</strong> {{ $serviceOpsStats['month']['avg_session_duration'] ? __(':minutes min', ['minutes' => $serviceOpsStats['month']['avg_session_duration']]) : '—' }}</div>
+                    <div><strong>{{ __('Sessions Today:') }}</strong> {{ $serviceOpsStats['today']['sessions_today'] ?? '—' }}</div>
+                    <div><strong>{{ __('Session Reopenings:') }}</strong> {{ $serviceOpsStats['month']['session_reopenings'] ?? '—' }}</div>
+                    <div><strong>{{ __('Table Turnover Rate:') }}</strong> {{ $serviceOpsStats['month']['table_turnover'] ?? '—' }}</div>
+                    <div><strong>{{ __('Downtime per Table:') }}</strong> {{ $serviceOpsStats['month']['downtime_per_table'] ? __(':minutes min', ['minutes' => $serviceOpsStats['month']['downtime_per_table']]) : '—' }}</div>
                 </div>
                 <div class="analytics-card analytics-service-ops-col">
-                    <div><strong>QR Scans (Today):</strong> {{ $serviceOpsStats['today']['qr_scans'] ?? '—' }}</div>
-                    <div><strong>QR to Order Conversion:</strong> {{ $serviceOpsStats['month']['qr_to_order_conversion'] ? $serviceOpsStats['month']['qr_to_order_conversion'] . '%' : '—' }}</div>
-                    <div><strong>Avg. Time QR to Order:</strong> {{ $serviceOpsStats['month']['avg_time_qr_to_order'] ? $serviceOpsStats['month']['avg_time_qr_to_order'] . ' min' : '—' }}</div>
+                    <div><strong>{{ __('QR Scans (Today):') }}</strong> {{ $serviceOpsStats['today']['qr_scans'] ?? '—' }}</div>
+                    <div><strong>{{ __('QR to Order Conversion:') }}</strong> {{ $serviceOpsStats['month']['qr_to_order_conversion'] ? $serviceOpsStats['month']['qr_to_order_conversion'] . '%' : '—' }}</div>
+                    <div><strong>{{ __('Avg. Time QR to Order:') }}</strong> {{ $serviceOpsStats['month']['avg_time_qr_to_order'] ? __(':minutes min', ['minutes' => $serviceOpsStats['month']['avg_time_qr_to_order']]) : '—' }}</div>
                 </div>
                 <div class="analytics-card analytics-service-ops-col">
                     @foreach (($serviceOpsStats['month']['staff_order_counts'] ?? []) as $staff)
-                        <div><strong>{{ $staff['name'] }}:</strong> {{ $staff['orders'] }} Orders</div>
+                        <div><strong>{{ $staff['name'] }}:</strong> {{ __(':count Orders', ['count' => $staff['orders']]) }}</div>
                     @endforeach
                 </div>
             </div>
             <div class="analytics-chart-container chart-bg">
                 <div class="analytics-chart-controls">
                     <select id="tablePieChartRange">
-                        <option value="all">All Time</option>
-                        <option value="month">Last 30 Days</option>
-                        <option value="week">Last 7 Days</option>
-                        <option value="day">Today</option>
+                        <option value="all">{{ __('All Time') }}</option>
+                        <option value="month">{{ __('Last 30 Days') }}</option>
+                        <option value="week">{{ __('Last 7 Days') }}</option>
+                        <option value="day">{{ __('Today') }}</option>
                     </select>
                 </div>
                 <canvas id="tablePieChart"></canvas>
@@ -334,7 +334,7 @@
         <section class="analytics-section analytics-section-advanced">
             <div class="analytics-cards">
                 <div class="analytics-card">
-                    <div class="section-title" style="font-size: 1.1em; margin-bottom: 0.5em;">Export:</div>
+                    <div class="section-title" style="font-size: 1.1em; margin-bottom: 0.5em;">{{ __('Export:') }}</div>
                     <form id="pdf-export-form" method="POST" action="{{ route('analytics.pdf.export.withcharts') }}" style="display:inline;">
                         @csrf
                         <input type="hidden" name="sales_chart" id="sales_chart_input">

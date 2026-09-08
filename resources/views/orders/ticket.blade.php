@@ -5,11 +5,11 @@
     $paperMm = $isNarrow ? '58mm' : '80mm';
     $paperPx = $isNarrow ? '219px' : '302px';
 @endphp
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ticket — Order #{{ $order->id }}</title>
+    <title>{{ __('Ticket') }} — {{ __('Order #:id', ['id' => $order->id]) }}</title>
     <style>
         @page { size: {{ $paperMm }} auto; margin: 2mm; }
         body { font-family: "DejaVu Sans", Arial, sans-serif; max-width: {{ $paperPx }}; margin: 1.5rem auto; padding: 0 0.5rem; color: #111; word-wrap: break-word; overflow-wrap: break-word; }
@@ -24,8 +24,8 @@
     </style>
 </head>
 <body>
-    <h1>Table {{ $order->table->table_number ?? $order->table_id }}</h1>
-    <p class="meta">Order #{{ $order->id }} · {{ \App\Support\VenueClock::format($order->editor, $order->created_at, 'H:i') }}</p>
+    <h1>{{ __('Table :number', ['number' => $order->table->table_number ?? $order->table_id]) }}</h1>
+    <p class="meta">{{ __('Order #:id', ['id' => $order->id]) }} · {{ \App\Support\VenueClock::format($order->editor, $order->created_at, 'H:i') }}</p>
     <ul>
         @foreach($lines as $name => $qty)
             <li><strong>{{ $qty }}×</strong> {{ $name }}</li>
@@ -34,7 +34,7 @@
     @if($order->note)
         <div class="note">{{ $order->note }}</div>
     @endif
-    <button class="print-btn" onclick="window.print()">Print</button>
+    <button class="print-btn" onclick="window.print()">{{ __('Print') }}</button>
     <a class="paper-switch" href="?{{ $isNarrow ? '' : 'w=58' }}">
         {{ $isNarrow ? __('Switch to 80mm paper') : __('Switch to 58mm paper') }}
     </a>

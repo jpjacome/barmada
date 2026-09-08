@@ -62,6 +62,7 @@ class BusinessSettingsTest extends TestCase
     public function test_settings_page_shows_business_settings_to_editors(): void
     {
         $editor = $this->makeEditor();
+        $editor->forceFill(['locale' => 'en'])->save();
 
         $this->actingAs($editor)
             ->get('/settings')

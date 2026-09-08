@@ -5,22 +5,22 @@
     <!-- Service Requests Panel (guest bill / waiter calls) -->
     @if(count($serviceRequests) > 0)
     <div class="orders-panel compact-pending-orders">
-        <h3 class="orders-panel-title">Service Requests</h3>
+        <h3 class="orders-panel-title">{{ __('Service Requests') }}</h3>
         <div class="orders-panel-content">
             <div class="orders-scroll-container">
                 @foreach($serviceRequests as $serviceRequest)
                     <div class="pending-order-card active-table-card order-card-warning" wire:key="service-{{ $serviceRequest['id'] }}">
-                        <span class="pending-order-table active-table-number">Table {{ $serviceRequest['table_number'] }}</span>
+                        <span class="pending-order-table active-table-number">{{ __('Table :number', ['number' => $serviceRequest['table_number']]) }}</span>
                         <span class="active-table-clients">
                             @if($serviceRequest['type'] === 'bill')
-                                <i class="bi bi-receipt"></i> Bill requested
+                                <i class="bi bi-receipt"></i> {{ __('Bill requested') }}
                             @else
-                                <i class="bi bi-hand-index-thumb"></i> Waiter called
+                                <i class="bi bi-hand-index-thumb"></i> {{ __('Waiter called') }}
                             @endif
                             · {{ $serviceRequest['time'] }}
                         </span>
                         <button wire:click="markServiceRequestDone({{ $serviceRequest['id'] }})" class="pending-order-accept-btn active-table-approve-btn">
-                            Done
+                            {{ __('Done') }}
                         </button>
                     </div>
                 @endforeach
@@ -31,28 +31,28 @@
 
     <!-- Active Tables Panel -->
     <div class="orders-panel compact-pending-orders">
-        <h3 class="orders-panel-title">Active Tables</h3>
+        <h3 class="orders-panel-title">{{ __('Active Tables') }}</h3>
         <div class="orders-panel-content" wire:poll.5s="refreshBoard">
             <div class="orders-scroll-container">
                 @if(count($activeTables) > 0)
                     @foreach($activeTables as $table)
                         <div class="pending-order-card active-table-card @if(($table['status'] === 'pending_approval') || ($table['status'] === 'open' && count($table['pending_clients']) > 0)) order-card-warning @endif">
-                            <span class="pending-order-table active-table-number">Table {{ $table['table_number'] }}</span>
-                            <span class="active-table-clients">Clients: {{ $table['approved_clients'] }}</span>
+                            <span class="pending-order-table active-table-number">{{ __('Table :number', ['number' => $table['table_number']]) }}</span>
+                            <span class="active-table-clients">{{ __('Clients: :count', ['count' => $table['approved_clients']]) }}</span>
                             @if($table['status'] === 'pending_approval')
                                 <button wire:click="approveTableAndFirstClient({{ $table['id'] }})" class="pending-order-accept-btn active-table-approve-btn">
-                                    Approve
+                                    {{ __('Approve') }}
                                 </button>
                                 @if(count($table['pending_clients']) > 0)
-                                    <div class="active-table-pending-clients">Pending clients: {{ count($table['pending_clients']) }}</div>
+                                    <div class="active-table-pending-clients">{{ __('Pending clients: :count', ['count' => count($table['pending_clients'])]) }}</div>
                                 @endif
                             @elseif($table['status'] === 'open' && count($table['pending_clients']) > 0)
                                 <div class="active-table-pending-list">
-                                    <div class="active-table-pending-label">Pending clients:</div>
+                                    <div class="active-table-pending-label">{{ __('Pending clients:') }}</div>
                                     @foreach($table['pending_clients'] as $client)
                                         <div class="active-table-client-row">
                                             <span class="active-table-client-ip">{{ $client['ip_address'] }}</span>
-                                            <button wire:click="approveClientRequest({{ $client['id'] }})" class="pending-order-accept-btn active-table-client-approve-btn">Approve</button>
+                                            <button wire:click="approveClientRequest({{ $client['id'] }})" class="pending-order-accept-btn active-table-client-approve-btn">{{ __('Approve') }}</button>
                                         </div>
                                     @endforeach
                                 </div>
@@ -60,7 +60,7 @@
                         </div>
                     @endforeach
                 @else
-                    <p class="no-orders-message">No active tables.</p>
+                    <p class="no-orders-message">{{ __('No active tables.') }}</p>
                 @endif
             </div>
         </div>
@@ -72,8 +72,8 @@
             <!-- Pending Orders Panel -->
             <div class="orders-panel">
                 <h3 class="orders-panel-title" style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
-                    <span>Pending Orders</span>
-                    <button type="button" id="barmada-sound-toggle" title="New-order sound alerts"
+                    <span>{{ __('Pending Orders') }}</span>
+                    <button type="button" id="barmada-sound-toggle" title="{{ __('New-order sound alerts') }}"
                             style="background:transparent;border:none;cursor:pointer;font-size:1.1em;line-height:1;"
                             aria-label="{{ __('Toggle new-order sound alerts') }}">
                         <i class="bi bi-bell-fill" aria-hidden="true"></i>
@@ -89,13 +89,13 @@
                                      wire:key="card-{{ $pendingOrder['id'] }}"
                                      wire:ignore>
                                     <div class="order-card-header">
-                                        <h4 class="order-card-title">Order #{{ $pendingOrder['id'] }}</h4>
-                                        <span class="order-card-table" wire:key="table-{{ $pendingOrder['id'] }}">Table {{ $pendingOrder['table']['table_number'] ?? $pendingOrder['table']['id'] }}</span>
+                                        <h4 class="order-card-title">{{ __('Order #:id', ['id' => $pendingOrder['id']]) }}</h4>
+                                        <span class="order-card-table" wire:key="table-{{ $pendingOrder['id'] }}">{{ __('Table :number', ['number' => $pendingOrder['table']['table_number'] ?? $pendingOrder['table']['id']]) }}</span>
                                     </div>
-                                    
+
                                     <div class="order-card-body">
                                         <div class="order-card-time">
-                                            <span class="order-time-label">Created:</span>
+                                            <span class="order-time-label">{{ __('Created:') }}</span>
                                             <span class="order-created-time">{{ \App\Support\VenueClock::format(\App\Support\VenueClock::venueFor(auth()->user()), $pendingOrder['created_at'], 'H:i:s') }}</span>
                                             <span class="chronometer">00:00</span>
                                         </div>
@@ -137,7 +137,7 @@
                                             @if(count($productList) > 0)
                                                 {!! implode(', ', $productList) !!}
                                             @else
-                                                <span class="order-no-products">No products</span>
+                                                <span class="order-no-products">{{ __('No products') }}</span>
                                             @endif
                                         </div>
                                         @if(!empty($pendingOrder['note']))
@@ -155,10 +155,10 @@
                                                 wire:loading.attr="disabled"
                                                 wire:key="status-{{ $pendingOrder['id'] }}"
                                             >
-                                                Pending
+                                                {{ __('Pending') }}
                                             </button>
                                             <a href="{{ url('/orders/'.$pendingOrder['id'].'/ticket') }}" target="_blank" rel="noopener"
-                                               class="orders-action-button orders-edit-button" title="Print ticket"
+                                               class="orders-action-button orders-edit-button" title="{{ __('Print ticket') }}"
                                                aria-label="{{ __('Print ticket') }}"
                                                wire:key="ticket-{{ $pendingOrder['id'] }}">
                                                 <i class="bi bi-printer" aria-hidden="true"></i>
@@ -166,8 +166,8 @@
                                             <button
                                                 wire:click="cancelOrder({{ $pendingOrder['id'] }})"
                                                 class="orders-action-button orders-delete-button"
-                                                title="Cancel order (kept in history, excluded from revenue)"
-                                                onclick="return confirm('Cancel this order?')"
+                                                title="{{ __('Cancel order (kept in history, excluded from revenue)') }}"
+                                                onclick="return confirm({{ Js::from(__('Cancel this order?')) }})"
                                                 wire:key="cancel-{{ $pendingOrder['id'] }}"
                                                 aria-label="{{ __('Cancel order') }}"
                                             >
@@ -178,7 +178,7 @@
                                 </div>
                             @endforeach
                         @else
-                            <p class="no-orders-message">No pending orders at the moment.</p>
+                            <p class="no-orders-message">{{ __('No pending orders at the moment.') }}</p>
                         @endif
                     </div>
                 </div>
@@ -201,7 +201,7 @@
                                 </th>
                                 <th wire:click="sortBy('table_id')" class="orders-table-cell orders-sort-header">
                                     <div class="orders-sort-wrapper">
-                                        <span>Table</span>
+                                        <span>{{ __('Table') }}</span>
                                         @if($sort === 'table_id')
                                             <svg xmlns="http://www.w3.org/2000/svg" class="orders-sort-icon orders-sort-{{ $direction === 'asc' ? 'asc' : 'desc' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
@@ -211,7 +211,7 @@
                                 </th>
                                 <th wire:click="sortBy('status')" class="orders-table-cell orders-sort-header">
                                     <div class="orders-sort-wrapper">
-                                        <span>Status</span>
+                                        <span>{{ __('Status') }}</span>
                                         @if($sort === 'status')
                                             <svg xmlns="http://www.w3.org/2000/svg" class="orders-sort-icon orders-sort-{{ $direction === 'asc' ? 'asc' : 'desc' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
@@ -221,7 +221,7 @@
                                 </th>
                                 <th wire:click="sortBy('created_at')" class="orders-table-cell orders-sort-header">
                                     <div class="orders-sort-wrapper">
-                                        <span>Created</span>
+                                        <span>{{ __('Created') }}</span>
                                         @if($sort === 'created_at')
                                             <svg xmlns="http://www.w3.org/2000/svg" class="orders-sort-icon orders-sort-{{ $direction === 'asc' ? 'asc' : 'desc' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
@@ -229,8 +229,8 @@
                                         @endif
                                     </div>
                                 </th>
-                                <th class="orders-table-cell">Items</th>
-                                <th class="orders-table-cell">Actions</th>
+                                <th class="orders-table-cell">{{ __('Items') }}</th>
+                                <th class="orders-table-cell">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="orders-table-body">
@@ -252,13 +252,13 @@
                                 @endphp
                                 <tr class="orders-table-row{{ $isToday ? '' : ' orders-table-row-previous-day' }}">
                                     <td class="orders-table-cell">{{ $order->id }}</td>
-                                    <td class="orders-table-cell">Table {{ $order->table->table_number ?? $order->table->id }}</td>
+                                    <td class="orders-table-cell">{{ __('Table :number', ['number' => $order->table->table_number ?? $order->table->id]) }}</td>
                                     <td class="orders-table-cell">
-                                        <button 
-                                            wire:click="toggleStatus({{ $order->id }})" 
+                                        <button
+                                            wire:click="toggleStatus({{ $order->id }})"
                                             class="order-status-badge order-status-{{ $order->status }}"
                                         >
-                                            {{ ucfirst($order->status) }}
+                                            {{ __(ucfirst($order->status)) }}
                                         </button>
                                     </td>
                                     <td class="orders-table-cell">{{ \App\Support\VenueClock::format(\App\Support\VenueClock::venueFor(auth()->user()), $order->created_at, 'M d, Y H:i') }}</td>
@@ -280,7 +280,7 @@
                                             @if(count($productList) > 0)
                                                 {!! implode(', ', $productList) !!}
                                             @else
-                                                <span class="order-no-products">No products</span>
+                                                <span class="order-no-products">{{ __('No products') }}</span>
                                             @endif
                                         </div>
                                     </td>
@@ -289,7 +289,7 @@
                                             <button
                                                 wire:click="openStatusModal({{ $order->id }})"
                                                 class="orders-action-button orders-edit-button"
-                                                title="Edit Status"
+                                                title="{{ __('Edit Status') }}"
                                                 aria-label="{{ __('Edit status') }}"
                                             >
                                                 <i class="bi bi-pencil" aria-hidden="true"></i>
@@ -297,8 +297,8 @@
                                             <button
                                                 wire:click="deleteOrder({{ $order->id }})"
                                                 class="orders-action-button orders-delete-button"
-                                                title="Delete Order"
-                                                onclick="return confirm('Are you sure you want to delete this order?')"
+                                                title="{{ __('Delete Order') }}"
+                                                onclick="return confirm({{ Js::from(__('Are you sure you want to delete this order?')) }})"
                                                 aria-label="{{ __('Delete order') }}"
                                             >
                                                 <i class="bi bi-trash" aria-hidden="true"></i>
@@ -308,7 +308,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="orders-empty-message">No orders found</td>
+                                    <td colspan="6" class="orders-empty-message">{{ __('No orders found') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -323,16 +323,16 @@
     
     <div class="orders-footer">
         <div class="orders-footer-actions">
-            <a href="#" wire:click.prevent="deleteAllOrders" class="orders-erase-all" onclick="return confirm('Are you sure you want to delete ALL orders? This action cannot be undone.')">
-                Erase all
+            <a href="#" wire:click.prevent="deleteAllOrders" class="orders-erase-all" onclick="return confirm({{ Js::from(__('Are you sure you want to delete ALL orders? This action cannot be undone.')) }})">
+                {{ __('Erase all') }}
             </a>
-            <button 
-                wire:click="exportOrdersAsXml" 
-                class="orders-export-button-footer" 
-                title="Export Orders as XML"
+            <button
+                wire:click="exportOrdersAsXml"
+                class="orders-export-button-footer"
+                title="{{ __('Export Orders as XML') }}"
             >
                 <i class="bi bi-download"></i>
-                Save XML
+                {{ __('Save XML') }}
             </button>
         </div>
         
@@ -357,41 +357,41 @@
         >
             <div class="orders-modal" role="dialog" aria-modal="true" aria-labelledby="orders-status-modal-title">
                 <div class="orders-modal-header">
-                    <h3 class="orders-modal-title" id="orders-status-modal-title">Change Order Status</h3>
+                    <h3 class="orders-modal-title" id="orders-status-modal-title">{{ __('Change Order Status') }}</h3>
                     <button wire:click="closeModal" class="orders-modal-close" aria-label="{{ __('Close') }}">
                         <i class="bi bi-x-lg" aria-hidden="true"></i>
                     </button>
                 </div>
-                
+
                 <div class="orders-modal-body">
                     <div class="orders-form-group">
-                        <label class="orders-form-label">Current Status</label>
+                        <label class="orders-form-label">{{ __('Current Status') }}</label>
                         <div class="orders-status-display">
-                            <button 
-                                wire:click="toggleStatusInModal" 
+                            <button
+                                wire:click="toggleStatusInModal"
                                 class="order-status-badge order-status-{{ $editingOrder['status'] ?? 'pending' }}"
                             >
-                                {{ ucfirst($editingOrder['status'] ?? 'pending') }}
+                                {{ __(ucfirst($editingOrder['status'] ?? 'pending')) }}
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="orders-form-group">
-                        <label class="orders-form-label">Table</label>
-                        <select 
+                        <label class="orders-form-label">{{ __('Table') }}</label>
+                        <select
                             wire:model="editingOrder.table_id"
                             class="orders-form-select"
                         >
                             @foreach($tables as $table)
                                 <option value="{{ $table['id'] }}" {{ $editingOrder['table_id'] == $table['id'] ? 'selected' : '' }}>
-                                    Table {{ $table['table_number'] ?? $table['id'] }}
+                                    {{ __('Table :number', ['number' => $table['table_number'] ?? $table['id']]) }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
 
                     <div class="orders-form-group">
-                        <label class="orders-form-label">Products</label>
+                        <label class="orders-form-label">{{ __('Products') }}</label>
                         <div class="orders-products-grid">
                             @foreach($products as $product)
                                 <div class="orders-product-card">
@@ -436,10 +436,10 @@
                 
                 <div class="orders-modal-footer">
                     <button type="button" wire:click="closeModal" class="orders-modal-cancel">
-                        Cancel
+                        {{ __('Cancel') }}
                     </button>
                     <button wire:click="saveChanges" class="orders-modal-save">
-                        Save Changes
+                        {{ __('Save Changes') }}
                     </button>
                 </div>
             </div>
@@ -449,6 +449,12 @@
 
 @push('scripts')
 <script>
+const BarmadaI18n = {
+    newOrder: {{ Js::from(__('New order!')) }},
+    approvalRequest: {{ Js::from(__('Table approval request')) }},
+    serviceRequested: {{ Js::from(__('Service requested')) }},
+};
+
 // Create a separate namespace for our timer functionality
 const OrderTimer = {
     cards: new Map(),
@@ -588,16 +594,16 @@ document.addEventListener('livewire:initialized', () => {
             : (Array.isArray(payload) && payload[0] && payload[0].changes) ? payload[0].changes
             : payload;
         if (changes && Object.values(changes).includes('new')) {
-            BarmadaAlerts.notify([880, 1175], 'New order!');
+            BarmadaAlerts.notify([880, 1175], BarmadaI18n.newOrder);
         }
     });
 
     Livewire.on('new-approval-request', () => {
-        BarmadaAlerts.notify([660, 660], 'Table approval request');
+        BarmadaAlerts.notify([660, 660], BarmadaI18n.approvalRequest);
     });
 
     Livewire.on('new-service-request', () => {
-        BarmadaAlerts.notify([990, 660, 990], 'Service requested');
+        BarmadaAlerts.notify([990, 660, 990], BarmadaI18n.serviceRequested);
     });
 });
 </script>

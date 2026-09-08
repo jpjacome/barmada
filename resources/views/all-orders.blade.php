@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('Orders'))
 @section('header')
-    <h1 class="page-title">Orders</h1>
+    <h1 class="page-title">{{ __('Orders') }}</h1>
 @endsection
 @section('content')
     <div class="py-12">
