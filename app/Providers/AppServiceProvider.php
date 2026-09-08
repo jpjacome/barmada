@@ -48,25 +48,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         /*--------------------------------------------------------------
-        | 2.  Custom directive that prints the correct Livewire script
-        --------------------------------------------------------------*/
-        if (class_exists(Livewire::class)) {
-            Blade::directive('fixedLivewireScripts', function () {
-                $src = asset('vendor/livewire/livewire.js');
-                $csrf = csrf_token();
-                $update = url('livewire/update');            // honours forceRootUrl
-
-                return <<<HTML
-<script src="{$src}"
-        data-csrf="{$csrf}"
-        data-update-uri="{$update}"
-        data-navigate-once="true"></script>
-HTML;
-            });
-        }
-
-        /*--------------------------------------------------------------
-        | 3.  SVG upload helpers (unchanged)
+        | 2.  SVG upload helpers
         --------------------------------------------------------------*/
         \Illuminate\Http\UploadedFile::macro('isSvg', function () {
             $mimeType = $this->getMimeType();

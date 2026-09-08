@@ -27,7 +27,7 @@
     <p class="meta">
         Table {{ $table->table_number ?? $table->id }}
         @if($session) · session #{{ $session->session_number }} @endif
-        · {{ now()->format('Y-m-d H:i') }}
+        · {{ \App\Support\VenueClock::now($venue)->format('Y-m-d H:i') }}
     </p>
 
     @if(empty($lines))

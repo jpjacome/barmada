@@ -17,7 +17,7 @@
 </head>
 <body>
     <h1>Table {{ $order->table->table_number ?? $order->table_id }}</h1>
-    <p class="meta">Order #{{ $order->id }} · {{ $order->created_at->format('H:i') }}</p>
+    <p class="meta">Order #{{ $order->id }} · {{ \App\Support\VenueClock::format($order->editor, $order->created_at, 'H:i') }}</p>
     <ul>
         @foreach($lines as $name => $qty)
             <li><strong>{{ $qty }}×</strong> {{ $name }}</li>

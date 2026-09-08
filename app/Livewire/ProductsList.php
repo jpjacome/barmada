@@ -82,33 +82,20 @@ class ProductsList extends Component
         }
         $this->sortDirection = $this->sortDirection === 'desc' ? 'desc' : 'asc';
 
-        $user = Auth::user();
-        if ($user->is_admin) {
-            $this->products = Product::with('category')
-                ->orderBy($this->sortField, $this->sortDirection)
-                ->get();
-        } else if ($user->is_editor) {
-            $this->products = Product::with('category')
-                ->where('editor_id', $user->id)
-                ->orderBy($this->sortField, $this->sortDirection)
-                ->get();
-        } else {
-            $this->products = collect();
-        }
+        // EditorScope bounds this to the caller's tenant (and lets admins
+        // see everything). The hand-rolled admin/editor branch it replaces
+        // had no staff case, so staff saw "No products found" on the web
+        // while the API served them the catalog.
+        $this->products = Product::with('category')
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->get();
         $this->lastUpdated = now()->format('H:i:s');
         $this->status = 'Products updated at ' . $this->lastUpdated;
     }
 
     public function loadCategories()
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
-            $this->categories = Category::orderBy('name')->get();
-        } else if ($user->is_editor) {
-            $this->categories = Category::where('editor_id', $user->id)->orderBy('name')->get();
-        } else {
-            $this->categories = collect();
-        }
+        $this->categories = Category::orderBy('name')->get(); // tenant-bounded by EditorScope
     }
 
     #[On('refresh-products')]
@@ -393,13 +380,7 @@ class ProductsList extends Component
     public function render()
     {
         $user = Auth::user();
-        if ($user->is_admin) {
-            $products = Product::with('category')->get();
-        } else if ($user->is_editor) {
-            $products = Product::with('category')->where('editor_id', $user->id)->get();
-        } else {
-            $products = collect();
-        }
+        $products = Product::with('category')->get(); // tenant-bounded by EditorScope
         $tenant = $user->is_admin ? $user : \App\Models\User::find($user->effectiveEditorId());
         return view('livewire.products-list', [
             'products' => $products,

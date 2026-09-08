@@ -11,10 +11,6 @@
 
     RewriteEngine On
 
-    # Handle malformed Livewire script URLs
-    # Redirect bare 'public' to the Livewire JS file
-    RewriteRule ^public$ /barmada/public/vendor/livewire/livewire.js [L,R=301]
-    
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -28,15 +24,6 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
-</IfModule>
-
-# Set environment variables for shared hosting
-<IfModule mod_env.c>
-    # Ensure REQUEST_URI is available
-    SetEnv REQUEST_URI /barmada/public
-    
-    # Set the base URL for asset generation
-    SetEnv ASSET_URL https://orustravel.org/barmada/public
 </IfModule>
 
 # Prevent index listings

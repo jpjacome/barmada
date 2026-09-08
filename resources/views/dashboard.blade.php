@@ -12,7 +12,16 @@
         @php $user = Auth::user(); @endphp
         <div class="dashboard-container">
             <div class="dashboard-header">
-                <h1 class="dashboard-title">Hello, {{ $user->username }}</h1>
+                @php
+                    // Staff belong to a venue; editors are one. Every figure on
+                    // this page is that venue's, never the staff user's own id.
+                    $tenantId = $user->effectiveEditorId();
+                    $venue = $user->is_editor ? $user : ($tenantId ? \App\Models\User::withoutGlobalScopes()->find($tenantId) : null);
+                @endphp
+                <h1 class="dashboard-title">Hello, {{ $user->first_name ?: $user->name ?: $user->username }}</h1>
+                @if($venue && $venue->business_name)
+                    <p class="dashboard-subtitle">{{ $venue->business_name }}</p>
+                @endif
             </div>
             <!-- Recent Activity Section -->
             <div class="recent-activity">
@@ -22,16 +31,15 @@
                 </h3>
                 <ul class="activity-list">
                     @php
-                        $orderActivities = $user->is_admin
-                            ? App\Models\Order::latest()->take(3)->get()
-                            : App\Models\Order::where('editor_id', $user->id)->latest()->take(3)->get();
-                        $paymentActivities = $user->is_admin
-                            ? App\Models\ActivityLog::latest()->take(3)->get()
-                            : App\Models\ActivityLog::where('editor_id', $user->id)->latest()->take(3)->get();
+                        // EditorScope already bounds these to the caller's tenant
+                        // (staff included) and lets admins see everything.
+                        $orderActivities = App\Models\Order::with('table')->latest()->take(3)->get();
+                        $paymentActivities = App\Models\ActivityLog::latest()->take(3)->get();
                         $allActivities = collect($orderActivities->map(function($order) {
                             return [
                                 'type' => 'order',
-                                'description' => $order->table ? "New order #{$order->id} for Table {$order->table->id}" : "New order #{$order->id}",
+                                // The venue's table number, not the database id.
+                                'description' => $order->table ? "New order #{$order->id} for Table {$order->table->table_number}" : "New order #{$order->id}",
                                 'created_at' => $order->created_at
                             ];
                         })->concat($paymentActivities->map(function($activity) {
@@ -74,7 +82,7 @@
                         </div>
                     </div>
                     <div class="action-card-body">
-                        <div class="stat-card-value">{{ $user->is_admin ? App\Models\Table::count() : App\Models\Table::where('editor_id', $user->id)->count() }}
+                        <div class="stat-card-value">{{ App\Models\Table::whereNull('archived_at')->count() }}
                             <p class="stat-card-description">Active tables in your venue</p>
                         </div>
                         <p class="action-card-description">
@@ -98,7 +106,7 @@
                         </div>
                     </div>
                     <div class="action-card-body">
-                        <div class="stat-card-value">{{ $user->is_admin ? App\Models\Product::count() : App\Models\Product::where('editor_id', $user->id)->count() }}
+                        <div class="stat-card-value">{{ App\Models\Product::count() }}
                             <p class="stat-card-description">Products in your catalog</p>
                         </div>
                         <p class="action-card-description">
@@ -122,7 +130,7 @@
                         </div>
                     </div>
                     <div class="action-card-body">
-                        <div class="stat-card-value">{{ $user->is_admin ? App\Models\Order::count() : App\Models\Order::where('editor_id', $user->id)->count() }}
+                        <div class="stat-card-value">{{ App\Models\Order::count() }}
                             <p class="stat-card-description">Total orders processed</p>
                         </div>
                         <p class="action-card-description">
@@ -136,9 +144,12 @@
                         <a href="{{ route('all-orders') }}" class="btn btn-outline btn-orders">
                             <i class="bi bi-list-ul btn-icon"></i> View Orders
                         </a>
+                        @if($user->is_editor || $user->is_admin)
+                        {{-- Archives are owner-only (the route 403s for staff). --}}
                         <a href="{{ route('orders.archive') }}" class="btn btn-outline btn-archive">
                             <i class="bi bi-archive btn-icon"></i> Archives
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>

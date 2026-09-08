@@ -29,9 +29,12 @@
     --color-warning-dark: #73AB84; /* Cambridge Blue */
     --color-warning-light: #ADE1E5; /* Non Photo Blue */
     
-    --color-danger: #d1074a;     /* Non Photo Blue */
-    --color-danger-dark: #79C7C5; /* Tiffany Blue */
-    --color-danger-light: #99D19C; /* Celadon */
+    /* Raspberry: alerts, pending (urgent by design in a bar), destructive
+       actions. Its variants used to be teal and celadon; a hover on a
+       destructive control flipped to a success colour. Same hue now. */
+    --color-danger: #d1074a;     /* Raspberry */
+    --color-danger-dark: #a3053a; /* Raspberry, darker */
+    --color-danger-light: #f06a93; /* Raspberry, lighter — text-safe on aubergine */
     
     
     /* Spacing */

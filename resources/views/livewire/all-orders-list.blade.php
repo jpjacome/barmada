@@ -95,7 +95,7 @@
                                     <div class="order-card-body">
                                         <div class="order-card-time">
                                             <span class="order-time-label">Created:</span>
-                                            <span class="order-created-time">{{ \Carbon\Carbon::parse($pendingOrder['created_at'])->format('H:i:s') }}</span>
+                                            <span class="order-created-time">{{ \App\Support\VenueClock::format(\App\Support\VenueClock::venueFor(auth()->user()), $pendingOrder['created_at'], 'H:i:s') }}</span>
                                             <span class="chronometer">00:00</span>
                                         </div>
                                         <div class="order-card-products" wire:key="products-{{ $pendingOrder['id'] }}">
@@ -255,7 +255,7 @@
                                             {{ ucfirst($order->status) }}
                                         </button>
                                     </td>
-                                    <td class="orders-table-cell">{{ $order->created_at->format('M d, Y H:i') }}</td>
+                                    <td class="orders-table-cell">{{ \App\Support\VenueClock::format(\App\Support\VenueClock::venueFor(auth()->user()), $order->created_at, 'M d, Y H:i') }}</td>
                                     <td class="orders-table-cell">
                                         <div class="orders-product-list">
                                             @php

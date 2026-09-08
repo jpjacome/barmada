@@ -4,27 +4,17 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <!-- Help identify errors -->
-        <meta name="public-url-check" content="{{ url('/') }}">
-        <!-- For Livewire asset URL -->
-        <meta name="livewire-asset-path" content="{{ asset('/') }}">
 
-        <title>Barmada - Bar Management Dashboard</title>
-        
-        <!-- Debug mode check -->
-        @if(request()->has('debug'))
-        <script>
-            console.log('Debug mode activated');
-            window.DEBUG_MODE = true;
-        </script>
+        <title>@yield('title', 'Barmada')</title>
+        @hasSection('meta_description')
+            <meta name="description" content="@yield('meta_description')">
         @endif
 
-        <!-- No base tag needed - using relative URLs -->
-        
-        <!-- Fonts -->
+        {{-- Fonts: one CDN, the two brand families only. Figtree was Breeze
+             scaffolding the design system retired; Google's "Inter" was a
+             second copy of a font nothing referenced. --}}
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600|crimson-text:400,600,700|inter-tight:400,500,600,700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.bunny.net/css?family=crimson-text:400,600,700|inter-tight:400,500,600,700&display=swap" rel="stylesheet" />
 
         <!-- Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -42,29 +32,6 @@
         
         <!-- Livewire Styles -->
         @livewireStyles
-        {{-- DEBUG: show APP_URL the framework is using --}}
-        {!! '<!-- APP_URL = '.e(config('app.url')).' -->' !!}
-
-        <!-- Scripts -->
-        <script>
-            // Define the base URL for assets - using the asset helper
-            window.assetBaseUrl = "{{ asset('') }}";
-            if (window.DEBUG_MODE) {
-                console.log('Asset base URL:', window.assetBaseUrl);
-                console.log('Current location:', window.location.href);
-                console.log('Meta public URL:', document.querySelector('meta[name="public-url-check"]').content);
-            }
-            
-            // Handle the "public" script error
-            window.addEventListener('error', function(e) {
-                if (e.filename && e.filename.includes('public') && e.message && e.message.includes('Unexpected token')) {
-                    console.error('Detected error loading "public" script. This is likely caused by Livewire URL issues.');
-                    if (window.DEBUG_MODE) {
-                        alert('Detected issue with script loading. Check console for details.');
-                    }
-                }
-            }, true);
-        </script>
     </head>
     <body class="theme-{{ session('theme', 'light') }}">
         @if (request()->is('/'))
@@ -106,7 +73,13 @@
         
         <!-- Application Scripts -->
         <script src="{{ asset('js/order-timer.js') }}"></script>
-        
-        @fixedLivewireScripts   {{-- our new directive from AppServiceProvider --}}
+
+        {{-- Plain @livewireScripts. The old @fixedLivewireScripts directive
+             was a Blade::directive, which runs at COMPILE time: it froze
+             asset() and csrf_token() into the cached view, so a layout
+             compiled on one host (a CLI test run, a deploy script) served
+             that host's Livewire URL to every page until view:clear. It
+             existed for a sub-folder deployment that no longer exists. --}}
+        @livewireScripts
     </body>
 </html>
