@@ -25,14 +25,14 @@
             </div>
         @endif
         <div class="settings-section">
-            <h3 class="settings-section-title">Theme Settings</h3>
+            <h3 class="settings-section-title">{{ __('Theme Settings') }}</h3>
             <div class="settings-card">
                 <div class="settings-theme-container">
-                    <span class="settings-form-label">Current Theme: {{ session('theme', 'light') === 'light' ? 'Light' : 'Dark' }}</span>
+                    <span class="settings-form-label">{{ __('Current Theme: :theme', ['theme' => session('theme', 'light') === 'light' ? __('Light') : __('Dark')]) }}</span>
                     <form action="{{ route('settings.toggle-theme') }}" method="POST" class="settings-theme-form">
                         @csrf
                         <button type="submit" class="settings-button">
-                            Switch to {{ session('theme', 'light') === 'light' ? 'Dark' : 'Light' }} Theme
+                            {{ session('theme', 'light') === 'light' ? __('Switch to :theme Theme', ['theme' => __('Dark')]) : __('Switch to :theme Theme', ['theme' => __('Light')]) }}
                         </button>
                     </form>
                 </div>
@@ -40,13 +40,13 @@
         </div>
         @if(auth()->user() && auth()->user()->is_editor)
         <div class="settings-section">
-            <h3 class="settings-section-title">Business Settings</h3>
+            <h3 class="settings-section-title">{{ __('Business Settings') }}</h3>
             <div class="settings-card">
-                <p class="settings-card-description">Currency and language used on your guest (QR) ordering pages, payment screens, analytics and exports.</p>
+                <p class="settings-card-description">{{ __('Currency and language used on your guest (QR) ordering pages, payment screens, analytics and exports.') }}</p>
                 <form action="{{ route('settings.update-business') }}" method="POST" class="settings-form">
                     @csrf
                     <div class="settings-form-group">
-                        <label for="currency_symbol" class="settings-form-label">Currency symbol</label>
+                        <label for="currency_symbol" class="settings-form-label">{{ __('Currency symbol') }}</label>
                         <select name="currency_symbol" id="currency_symbol" class="settings-form-input">
                             @foreach(['$', '€', '£', 'S/', 'Bs.', 'Q', '₡', 'MX$', 'COP$', 'AR$'] as $symbol)
                                 <option value="{{ $symbol }}" {{ auth()->user()->currencySymbol() === $symbol ? 'selected' : '' }}>{{ $symbol }}</option>
@@ -57,7 +57,7 @@
                         @enderror
                     </div>
                     <div class="settings-form-group">
-                        <label for="locale" class="settings-form-label">Guest menu language</label>
+                        <label for="locale" class="settings-form-label">{{ __('Guest menu language') }}</label>
                         <select name="locale" id="locale" class="settings-form-input">
                             <option value="es" {{ auth()->user()->guestLocale() === 'es' ? 'selected' : '' }}>Español</option>
                             <option value="en" {{ auth()->user()->guestLocale() === 'en' ? 'selected' : '' }}>English</option>
@@ -67,7 +67,7 @@
                         @enderror
                     </div>
                     <div class="settings-form-group">
-                        <label for="business_timezone" class="settings-form-label">Venue timezone</label>
+                        <label for="business_timezone" class="settings-form-label">{{ __('Venue timezone') }}</label>
                         @php
                             $commonTimezones = [
                                 'UTC', 'America/Guayaquil', 'America/Bogota', 'America/Lima', 'America/Mexico_City',
@@ -86,19 +86,19 @@
                                 <option value="{{ $tz }}" {{ $currentTz === $tz ? 'selected' : '' }}>{{ $tz }}</option>
                             @endforeach
                         </select>
-                        <p class="settings-form-helper">Used to bucket your analytics by your local clock.</p>
+                        <p class="settings-form-helper">{{ __('Used to bucket your analytics by your local clock.') }}</p>
                         @error('business_timezone')
                             <p class="settings-form-error">{{ $message }}</p>
                         @enderror
                     </div>
                     <div class="settings-form-group">
-                        <label for="day_cutoff_hour" class="settings-form-label">Business day starts at</label>
+                        <label for="day_cutoff_hour" class="settings-form-label">{{ __('Business day starts at') }}</label>
                         <select name="day_cutoff_hour" id="day_cutoff_hour" class="settings-form-input">
                             @for($hour = 0; $hour <= 12; $hour++)
                                 <option value="{{ $hour }}" {{ auth()->user()->dayCutoffHour() === $hour ? 'selected' : '' }}>{{ sprintf('%02d:00', $hour) }}</option>
                             @endfor
                         </select>
-                        <p class="settings-form-helper">Sales after midnight but before this hour count toward the previous day — a Friday night ends on "Friday".</p>
+                        <p class="settings-form-helper">{{ __('Sales after midnight but before this hour count toward the previous day — a Friday night ends on "Friday".') }}</p>
                         @error('day_cutoff_hour')
                             <p class="settings-form-error">{{ $message }}</p>
                         @enderror
@@ -139,7 +139,7 @@
                         @enderror
                     </div>
                     <div class="settings-form-actions">
-                        <button type="submit" class="settings-button">Save Business Settings</button>
+                        <button type="submit" class="settings-button">{{ __('Save Business Settings') }}</button>
                     </div>
                 </form>
             </div>
@@ -220,10 +220,10 @@
         @endif
         @if(auth()->user() && auth()->user()->is_admin)
         <div class="settings-section">
-            <h3 class="settings-section-title">Logo Settings</h3>
+            <h3 class="settings-section-title">{{ __('Logo Settings') }}</h3>
             <div class="settings-card">
-                <h4 class="settings-card-title">Light Theme Logo</h4>
-                <p class="settings-card-description">This logo will be displayed when the light theme is active.</p>
+                <h4 class="settings-card-title">{{ __('Light Theme Logo') }}</h4>
+                <p class="settings-card-description">{{ __('This logo will be displayed when the light theme is active.') }}</p>
                 <div class="settings-logo-container">
                     @php
                         $lightPngExists = file_exists(public_path('images/logo-light.png'));
@@ -239,11 +239,11 @@
                         }
                     @endphp
                     @if($lightLogoPath)
-                        <img src="{{ asset($lightLogoPath) }}" alt="Light Theme Logo" class="settings-logo-image">
+                        <img src="{{ asset($lightLogoPath) }}" alt="{{ __('Light Theme Logo') }}" class="settings-logo-image">
                     @else
                         <div class="settings-logo-placeholder">
                             <i class="bi bi-image"></i>
-                            <p>No light theme logo uploaded yet</p>
+                            <p>{{ __('No light theme logo uploaded yet') }}</p>
                         </div>
                     @endif
                 </div>
@@ -251,23 +251,23 @@
                     @csrf
                     <input type="hidden" name="theme" value="light">
                     <div class="settings-form-group">
-                        <label for="logo_light" class="settings-form-label">Upload Light Theme Logo</label>
+                        <label for="logo_light" class="settings-form-label">{{ __('Upload Light Theme Logo') }}</label>
                         <input type="file" name="logo" id="logo_light" class="settings-form-input" accept="image/png,image/jpeg,image/gif,image/svg+xml">
-                        <p class="settings-form-helper">PNG, JPG, GIF or SVG. Max size: 2MB</p>
+                        <p class="settings-form-helper">{{ __('PNG, JPG, GIF or SVG. Max size: 2MB') }}</p>
                         @error('logo')
                             <p class="settings-form-error">{{ $message }}</p>
                         @enderror
                     </div>
                     <div class="settings-form-actions">
                         <button type="submit" class="settings-button">
-                            Update Light Theme Logo
+                            {{ __('Update Light Theme Logo') }}
                         </button>
                     </div>
                 </form>
             </div>
             <div class="settings-card">
-                <h4 class="settings-card-title">Dark Theme Logo</h4>
-                <p class="settings-card-description">This logo will be displayed when the dark theme is active.</p>
+                <h4 class="settings-card-title">{{ __('Dark Theme Logo') }}</h4>
+                <p class="settings-card-description">{{ __('This logo will be displayed when the dark theme is active.') }}</p>
                 <div class="settings-logo-container">
                     @php
                         $darkPngExists = file_exists(public_path('images/logo-dark.png'));
@@ -283,11 +283,11 @@
                         }
                     @endphp
                     @if($darkLogoPath)
-                        <img src="{{ asset($darkLogoPath) }}" alt="Dark Theme Logo" class="settings-logo-image">
+                        <img src="{{ asset($darkLogoPath) }}" alt="{{ __('Dark Theme Logo') }}" class="settings-logo-image">
                     @else
                         <div class="settings-logo-placeholder">
                             <i class="bi bi-image"></i>
-                            <p>No dark theme logo uploaded yet</p>
+                            <p>{{ __('No dark theme logo uploaded yet') }}</p>
                         </div>
                     @endif
                 </div>
@@ -295,16 +295,16 @@
                     @csrf
                     <input type="hidden" name="theme" value="dark">
                     <div class="settings-form-group">
-                        <label for="logo_dark" class="settings-form-label">Upload Dark Theme Logo</label>
+                        <label for="logo_dark" class="settings-form-label">{{ __('Upload Dark Theme Logo') }}</label>
                         <input type="file" name="logo" id="logo_dark" class="settings-form-input" accept="image/png,image/jpeg,image/gif,image/svg+xml">
-                        <p class="settings-form-helper">PNG, JPG, GIF or SVG. Max size: 2MB</p>
+                        <p class="settings-form-helper">{{ __('PNG, JPG, GIF or SVG. Max size: 2MB') }}</p>
                         @error('logo')
                             <p class="settings-form-error">{{ $message }}</p>
                         @enderror
                     </div>
                     <div class="settings-form-actions">
                         <button type="submit" class="settings-button">
-                            Update Dark Theme Logo
+                            {{ __('Update Dark Theme Logo') }}
                         </button>
                     </div>
                 </form>

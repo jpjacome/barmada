@@ -256,9 +256,9 @@ class ProductsList extends Component
         $this->productId = $id;
         
         $this->dispatch('showDeleteConfirmation', [
-            'title' => 'Delete Product',
-            'message' => "Are you sure you want to delete the product '{$product->name}'?",
-            'confirmButtonText' => 'Delete',
+            'title' => __('Delete Product'),
+            'message' => __("Are you sure you want to delete the product ':name'?", ['name' => $product->name]),
+            'confirmButtonText' => __('Delete'),
             'eraseAll' => false
         ]);
     }
@@ -366,7 +366,7 @@ class ProductsList extends Component
     {
         $count = Product::count();
         $this->dispatch('showDeleteConfirmation', [
-            'message' => "Are you sure you want to erase ALL (" . $count . ") products? This action cannot be undone.",
+            'message' => __('Are you sure you want to erase ALL (:count) products? This action cannot be undone.', ['count' => $count]),
             'eraseAll' => 'true'
         ]);
     }

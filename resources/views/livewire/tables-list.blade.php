@@ -1,5 +1,5 @@
 @section('header')
-    <h1 class="page-title">Tables</h1>
+    <h1 class="page-title">{{ __('Tables') }}</h1>
 @endsection
 
 <div class="tables-container {{ $showOrdersModal ? 'modal-open' : '' }}">
@@ -20,15 +20,15 @@
                 wire:key="table-{{ $table->id }}"
             >
                 <div class="table-card-header">
-                    <h4 class="table-card-title">Table {{ $table->table_number ?? $table->id }}</h4>
+                    <h4 class="table-card-title">{{ __('Table :number', ['number' => $table->table_number ?? $table->id]) }}</h4>
                     <span class="table-status status-{{ $table->status }}"
                           style="cursor:pointer;"
                           wire:click="toggleTableStatus({{ $table->id }})"
-                          title="Click to change table status">
+                          title="{{ __('Click to change table status') }}">
                         @if($table->status === 'pending_approval')
-                            Pending Approval
+                            {{ __('Pending Approval') }}
                         @else
-                            {{ ucfirst($table->status) }}
+                            {{ __(ucfirst($table->status)) }}
                         @endif
                     </span>
                 </div>
@@ -40,7 +40,7 @@
                                 type="text"
                                 wire:model="referenceText"
                                 class="reference-input"
-                                placeholder="Enter table reference..."
+                                placeholder="{{ __('Enter table reference...') }}"
                                 @keydown.enter.prevent="null"
                                 @keydown.escape.prevent="$wire.cancelEditingReference()"
                                 x-init="$nextTick(() => $el.focus())"
@@ -50,22 +50,22 @@
                                     wire:click="saveReference({{ $table->id }})"
                                     class="reference-save"
                                 >
-                                    Save
+                                    {{ __('Save') }}
                                 </button>
-                                <button 
+                                <button
                                     wire:click="cancelEditingReference"
                                     class="reference-cancel"
                                 >
-                                    Cancel
+                                    {{ __('Cancel') }}
                                 </button>
                             </div>
                         </div>
                     @else
-                        <div 
+                        <div
                             class="reference-display"
                             wire:click="startEditingReference({{ $table->id }})"
                         >
-                            {{ $table->reference ?: 'Click to add reference...' }}
+                            {{ $table->reference ?: __('Click to add reference...') }}
                         </div>
                     @endif
                 </div>
@@ -75,7 +75,7 @@
                         <button
                             wire:click="deleteTable({{ $table->id }})"
                             class="table-delete-button"
-                            onclick="return confirm('Are you sure you want to delete this table?')"
+                            onclick="return confirm({{ Js::from(__('Are you sure you want to delete this table?')) }})"
                             aria-label="{{ __('Delete table') }}"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -85,7 +85,7 @@
                         <button
                             class="table-qr-button"
                             wire:click="openInvoiceModal({{ $table->id }})"
-                            title="Client invoice details (printed on the bill)"
+                            title="{{ __('Client invoice details (printed on the bill)') }}"
                             aria-label="{{ __('Client invoice details') }}"
                         >
                             <i class="bi bi-receipt" aria-hidden="true"></i>
@@ -93,8 +93,8 @@
                         <button
                             class="table-qr-button"
                             wire:click="archiveTable({{ $table->id }})"
-                            title="Archive table (retire from service, keep history)"
-                            onclick="return confirm('Archive this table? It disappears from the grid and the QR flow; its order history is kept.')"
+                            title="{{ __('Archive table (retire from service, keep history)') }}"
+                            onclick="return confirm({{ Js::from(__('Archive this table? It disappears from the grid and the QR flow; its order history is kept.')) }})"
                             aria-label="{{ __('Archive table') }}"
                         >
                             <i class="bi bi-archive" aria-hidden="true"></i>
@@ -102,42 +102,42 @@
                         <button
                             class="table-qr-button"
                             wire:click="openQrModal({{ $table->id }}, {{ $table->table_number ?? $table->id }})"
-                            title="Show QR Code"
+                            title="{{ __('Show QR Code') }}"
                             aria-label="{{ __('Show QR code') }}"
                         >
                             <i class="bi bi-qr-code" aria-hidden="true"></i>
                         </button>
                         <a href="{{ url('/qr-entry/' . $table->editor->username . '/' . $table->table_number) }}" class="table-card-button" target="_blank">
-                            New Order
+                            {{ __('New Order') }}
                         </a>
                     </div>
-                    
-                    <button 
-                        wire:click="viewTableOrders({{ $table->id }})" 
+
+                    <button
+                        wire:click="viewTableOrders({{ $table->id }})"
                         class="table-view-button"
                     >
-                        View Orders
+                        {{ __('View Orders') }}
                     </button>
                 </div>
             </div>
         @empty
             <div class="tables-empty">
-                No tables have been added yet. Add your first table to get started!
+                {{ __('No tables have been added yet. Add your first table to get started!') }}
             </div>
         @endforelse
     </div>
-    
+
     <!-- Archived tables (retired from service, history kept) -->
     @if(count($archivedTables) > 0)
         <details style="margin-top:1.25rem;">
             <summary style="cursor:pointer;color:var(--color-accents,#777);">
-                Archived tables ({{ count($archivedTables) }})
+                {{ __('Archived tables (:count)', ['count' => count($archivedTables)]) }}
             </summary>
             <div style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.75rem;">
                 @foreach($archivedTables as $archived)
                     <div style="border:1px dashed var(--color-accents2,#ccc);border-radius:8px;padding:0.5rem 0.9rem;display:flex;align-items:center;gap:0.6rem;opacity:0.8;" wire:key="archived-{{ $archived->id }}">
-                        <span>Table {{ $archived->table_number ?? $archived->id }}</span>
-                        <button wire:click="restoreTable({{ $archived->id }})" class="table-qr-button" title="Restore table" aria-label="{{ __('Restore table') }}">
+                        <span>{{ __('Table :number', ['number' => $archived->table_number ?? $archived->id]) }}</span>
+                        <button wire:click="restoreTable({{ $archived->id }})" class="table-qr-button" title="{{ __('Restore table') }}" aria-label="{{ __('Restore table') }}">
                             <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                         </button>
                     </div>
@@ -149,16 +149,16 @@
     <!-- Add Table Button -->
     <div class="tables-add-button-container">
         <a href="{{ route('tables.qr-sheet') }}" target="_blank" rel="noopener" class="tables-add-button" style="text-decoration:none;">
-            <i class="bi bi-printer"></i> Print all QR codes
+            <i class="bi bi-printer"></i> {{ __('Print all QR codes') }}
         </a>
         <button wire:click="addTable" class="tables-add-button">
             <svg xmlns="http://www.w3.org/2000/svg" class="tables-add-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            Add New Table
+            {{ __('Add New Table') }}
         </button>
     </div>
-    
+
     <!-- Error Modal -->
     @if($showErrorModal)
         <div
@@ -170,7 +170,7 @@
         >
             <div class="tables-modal" wire:click.stop role="dialog" aria-modal="true" aria-labelledby="error-modal-title">
                 <div class="tables-modal-header">
-                    <h3 class="tables-modal-title" id="error-modal-title">Cannot Delete Table</h3>
+                    <h3 class="tables-modal-title" id="error-modal-title">{{ __('Cannot Delete Table') }}</h3>
                     <button class="tables-modal-close" wire:click="closeErrorModal" aria-label="{{ __('Close') }}">
                         <i class="bi bi-x-lg" aria-hidden="true"></i>
                     </button>
@@ -180,7 +180,7 @@
                 </div>
                 <div class="tables-modal-footer">
                     <button class="tables-modal-button" wire:click="closeErrorModal">
-                        Close
+                        {{ __('Close') }}
                     </button>
                 </div>
             </div>
@@ -201,7 +201,7 @@
         >
             <div class="modal" wire:click.stop role="dialog" aria-modal="true" aria-labelledby="orders-modal-title">
                 <div class="modal-header">
-                    <h3 class="modal-title" id="orders-modal-title">Orders for Table {{ $tables->firstWhere('id', $selectedTable)->table_number ?? $selectedTable }}</h3>
+                    <h3 class="modal-title" id="orders-modal-title">{{ __('Orders for Table :number', ['number' => $tables->firstWhere('id', $selectedTable)->table_number ?? $selectedTable]) }}</h3>
                     <button wire:click="closeOrdersModal" class="modal-close" aria-label="{{ __('Close') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -214,7 +214,7 @@
                         @foreach($tableOrders as $order)
                             <div class="order-card" id="order-{{ $order['id'] }}">
                                 <div class="order-header">
-                                    <span class="order-id">Order #{{ $order['id'] }}</span>
+                                    <span class="order-id">{{ __('Order #:id', ['id' => $order['id']]) }}</span>
                                     <span class="order-products-summary">
                                         @php
                                             $productSummary = [];
@@ -265,12 +265,12 @@
                                 
                                 <div class="order-footer">
                                     <div class="order-totals">
-                                        <span>Total: {{ $currency }}{{ number_format($order['total_amount'], 2) }}</span>
-                                        <span>Paid: {{ $currency }}{{ number_format($order['amount_paid'], 2) }}</span>
-                                        <span>Left: {{ $currency }}{{ number_format($order['amount_left'], 2) }}</span>
+                                        <span>{{ __('Total') }}: {{ $currency }}{{ number_format($order['total_amount'], 2) }}</span>
+                                        <span>{{ __('Paid') }}: {{ $currency }}{{ number_format($order['amount_paid'], 2) }}</span>
+                                        <span>{{ __('Left') }}: {{ $currency }}{{ number_format($order['amount_left'], 2) }}</span>
                                     </div>
                                     <div class="order-actions">
-                                        <button 
+                                        <button
                                             class="order-action-button"
                                             wire:click="toggleAllItems({{ $order['id'] }})"
                                         >
@@ -279,7 +279,7 @@
                                                     return $item['is_paid'];
                                                 });
                                             @endphp
-                                            Mark as Paid
+                                            {{ __('Mark as Paid') }}
                                         </button>
                                     </div>
                                 </div>
@@ -287,7 +287,7 @@
                         @endforeach
                     @else
                         <div class="order-empty">
-                            No orders found for this table.
+                            {{ __('No orders found for this table.') }}
                         </div>
                     @endif
                 </div>
@@ -306,31 +306,31 @@
                         @endphp
                         <div class="footer-summary">
                             <div class="footer-summary-item">
-                                <span class="footer-summary-label">Table Total:</span>
+                                <span class="footer-summary-label">{{ __('Table Total:') }}</span>
                                 <span class="footer-summary-value">{{ $currency }}{{ number_format($tableTotal, 2) }}</span>
                             </div>
                             <div class="footer-summary-item">
-                                <span class="footer-summary-label">Total Paid:</span>
+                                <span class="footer-summary-label">{{ __('Total Paid:') }}</span>
                                 <span class="footer-summary-value footer-summary-paid">{{ $currency }}{{ number_format($tablePaid, 2) }}</span>
                             </div>
                             <div class="footer-summary-item">
-                                <span class="footer-summary-label">Total Left:</span>
+                                <span class="footer-summary-label">{{ __('Total Left:') }}</span>
                                 <span class="footer-summary-value">{{ $currency }}{{ number_format($tableLeft, 2) }}</span>
                             </div>
                         </div>
                         <div class="footer-actions">
                             <a href="{{ url('/tables/'.$selectedTable.'/bill') }}" target="_blank" rel="noopener" class="modal-button" style="text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;">
-                                <i class="bi bi-printer"></i> Print bill
+                                <i class="bi bi-printer"></i> {{ __('Print bill') }}
                             </a>
                             <button
                                 class="modal-button"
                                 wire:click="payAndCloseTable"
-                                onclick="return confirm('Are you sure you want to mark all items as paid and close this table?')"
+                                onclick="return confirm({{ Js::from(__('Are you sure you want to mark all items as paid and close this table?')) }})"
                             >
-                                Mark All as Paid & Close Table
+                                {{ __('Mark All as Paid & Close Table') }}
                             </button>
                             <button wire:click="closeOrdersModal" class="modal-button">
-                                Close
+                                {{ __('Close') }}
                             </button>
                         </div>
                     @endif
@@ -351,14 +351,14 @@
             <div class="modal-backdrop" wire:click="closeQrModal">
                 <div class="modal" wire:click.stop role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
                     <div class="modal-header">
-                        <h3 class="modal-title" id="qr-modal-title">QR for Table {{ $qrTableNumber }}</h3>
+                        <h3 class="modal-title" id="qr-modal-title">{{ __('QR for Table :number', ['number' => $qrTableNumber]) }}</h3>
                         <button wire:click="closeQrModal" class="modal-close" aria-label="{{ __('Close') }}">
                             <i class="bi bi-x-lg" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="modal-body" style="text-align:center;">
-                        <img src="{{ url('/tables/' . $qrTableId . '/qr') }}" alt="QR Code for Table {{ $qrTableNumber }}" style="max-width: 320px; width: 100%; height: auto; margin-bottom: 1rem;" />
-                        <div style="font-size: 1.2em; font-weight: bold; margin-top: 1rem;">Table {{ $qrTableNumber }}</div>
+                        <img src="{{ url('/tables/' . $qrTableId . '/qr') }}" alt="{{ __('QR Code for Table :number', ['number' => $qrTableNumber]) }}" style="max-width: 320px; width: 100%; height: auto; margin-bottom: 1rem;" />
+                        <div style="font-size: 1.2em; font-weight: bold; margin-top: 1rem;">{{ __('Table :number', ['number' => $qrTableNumber]) }}</div>
                     </div>
                 </div>
             </div>
@@ -376,39 +376,39 @@
         <div class="modal-backdrop" wire:click="closeInvoiceModal">
             <div class="modal" wire:click.stop role="dialog" aria-modal="true" aria-labelledby="invoice-modal-title">
                 <div class="modal-header">
-                    <h3 class="modal-title" id="invoice-modal-title">Client invoice details</h3>
+                    <h3 class="modal-title" id="invoice-modal-title">{{ __('Client invoice details') }}</h3>
                     <button wire:click="closeInvoiceModal" class="modal-close" aria-label="{{ __('Close') }}"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
                 </div>
                 <div class="modal-body">
                     <p style="color:#666;font-size:0.9em;margin-bottom:0.8rem;">
-                        Saved for this table's current session and printed on the bill.
+                        {{ __("Saved for this table's current session and printed on the bill.") }}
                     </p>
                     <div class="mb-3">
-                        <label class="block font-semibold mb-1">Full name or business name *</label>
+                        <label class="block font-semibold mb-1">{{ __('Full name or business name *') }}</label>
                         <input type="text" class="reference-input w-full" wire:model="invName">
                         @error('invName')<div style="color:var(--color-danger,#c0392b);font-size:0.85em;">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
-                        <label class="block font-semibold mb-1">Tax ID (RUC, NIF, VAT…) *</label>
+                        <label class="block font-semibold mb-1">{{ __('Tax ID (RUC, NIF, VAT…) *') }}</label>
                         <input type="text" class="reference-input w-full" wire:model="invTaxId">
                         @error('invTaxId')<div style="color:var(--color-danger,#c0392b);font-size:0.85em;">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
-                        <label class="block font-semibold mb-1">Address</label>
+                        <label class="block font-semibold mb-1">{{ __('Address') }}</label>
                         <input type="text" class="reference-input w-full" wire:model="invAddress">
                     </div>
                     <div class="mb-3">
-                        <label class="block font-semibold mb-1">Email</label>
+                        <label class="block font-semibold mb-1">{{ __('Email') }}</label>
                         <input type="email" class="reference-input w-full" wire:model="invEmail">
                         @error('invEmail')<div style="color:var(--color-danger,#c0392b);font-size:0.85em;">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
-                        <label class="block font-semibold mb-1">Phone</label>
+                        <label class="block font-semibold mb-1">{{ __('Phone') }}</label>
                         <input type="tel" class="reference-input w-full" wire:model="invPhone">
                     </div>
                     <div class="reference-actions">
-                        <button type="button" class="reference-cancel" wire:click="closeInvoiceModal">Cancel</button>
-                        <button type="button" class="reference-save" wire:click="saveInvoice">Save</button>
+                        <button type="button" class="reference-cancel" wire:click="closeInvoiceModal">{{ __('Cancel') }}</button>
+                        <button type="button" class="reference-save" wire:click="saveInvoice">{{ __('Save') }}</button>
                     </div>
                 </div>
             </div>

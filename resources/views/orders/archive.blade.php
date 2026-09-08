@@ -147,15 +147,15 @@
                     <div>
                         <h2 class="archive-title">
                             <i class="bi bi-person archive-icon"></i>
-                            Orders XML Archives
+                            {{ __('Orders XML Archives') }}
                         </h2>
                         <p class="archive-description">
-                            Download previously exported XML files of your orders.
+                            {{ __('Download previously exported XML files of your orders.') }}
                         </p>
                     </div>
                     <a href="{{ route('dashboard') }}" class="archive-back">
                         <i class="bi bi-arrow-left"></i>
-                        Back to Dashboard
+                        {{ __('Back to Dashboard') }}
                     </a>
                 </div>
                 <div class="archive-table-container">
@@ -163,11 +163,11 @@
                         <table class="archive-table">
                             <thead class="archive-table-head">
                                 <tr>
-                                    <th>Filename</th>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Size</th>
-                                    <th>Actions</th>
+                                    <th>{{ __('Filename') }}</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('Time') }}</th>
+                                    <th>{{ __('Size') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="archive-table-body">
@@ -180,7 +180,7 @@
                                         <td>
                                             <a href="{{ $file['download_url'] }}" class="archive-download">
                                                 <i class="bi bi-download"></i>
-                                                Download
+                                                {{ __('Download') }}
                                             </a>
                                         </td>
                                     </tr>
@@ -189,7 +189,7 @@
                         </table>
                     @else
                         <div class="archive-empty">
-                            No archived XML files found. You can create XML exports from the All Orders page.
+                            {{ __('No archived XML files found. You can create XML exports from the All Orders page.') }}
                         </div>
                     @endif
                 </div>

@@ -20,7 +20,7 @@
                     $tenantId = $user->effectiveEditorId();
                     $venue = $user->is_editor ? $user : ($tenantId ? \App\Models\User::withoutGlobalScopes()->find($tenantId) : null);
                 @endphp
-                <h1 class="dashboard-title">Hello, {{ $user->first_name ?: $user->name ?: $user->username }}</h1>
+                <h1 class="dashboard-title">{{ __('Hello, :username', ['username' => $user->first_name ?: $user->name ?: $user->username]) }}</h1>
                 @if($venue && $venue->business_name)
                     <p class="dashboard-subtitle">{{ $venue->business_name }}</p>
                 @endif
@@ -29,7 +29,7 @@
             <div class="recent-activity">
                 <h3 class="recent-activity-title">
                     <i class="bi bi-activity recent-activity-icon"></i>
-                    Recent Activity
+                    {{ __('Recent Activity') }}
                 </h3>
                 <ul class="activity-list">
                     @php
@@ -41,7 +41,9 @@
                             return [
                                 'type' => 'order',
                                 // The venue's table number, not the database id.
-                                'description' => $order->table ? "New order #{$order->id} for Table {$order->table->table_number}" : "New order #{$order->id}",
+                                'description' => $order->table
+                                    ? __('New order #:id for Table :table', ['id' => $order->id, 'table' => $order->table->table_number])
+                                    : __('New order #:id', ['id' => $order->id]),
                                 'created_at' => $order->created_at
                             ];
                         })->concat($paymentActivities->map(function($activity) {
@@ -55,7 +57,7 @@
                     @if($allActivities->isEmpty())
                         <li class="activity-item">
                             <div class="activity-content">
-                                <div class="activity-title">No recent activity</div>
+                                <div class="activity-title">{{ __('No recent activity') }}</div>
                             </div>
                         </li>
                     @else
@@ -79,21 +81,21 @@
                             <i class="bi bi-table stat-card-icon"></i>
                         </div>
                         <div class="action-card-title-container">
-                            <h3 class="action-card-title">Table Management</h3>
-                            <p class="action-card-subtitle">Organize your venue layout</p>
+                            <h3 class="action-card-title">{{ __('Table Management') }}</h3>
+                            <p class="action-card-subtitle">{{ __('Organize your venue layout') }}</p>
                         </div>
                     </div>
                     <div class="action-card-body">
                         <div class="stat-card-value">{{ App\Models\Table::whereNull('archived_at')->count() }}
-                            <p class="stat-card-description">Active tables in your venue</p>
+                            <p class="stat-card-description">{{ __('Active tables in your venue') }}</p>
                         </div>
                         <p class="action-card-description">
-                            Set up and manage tables in your venue. View table status, add new tables, and monitor orders per table.
+                            {{ __('Set up and manage tables in your venue. View table status, add new tables, and monitor orders per table.') }}
                         </p>
                     </div>
                     <div class="action-card-footer">
                         <a href="{{ route('tables.index') }}" class="btn btn-primary">
-                            <i class="bi bi-table btn-icon"></i> Manage Tables
+                            <i class="bi bi-table btn-icon"></i> {{ __('Manage Tables') }}
                         </a>
                     </div>
                 </div>
@@ -103,21 +105,21 @@
                             <i class="bi bi-box stat-card-icon"></i>
                         </div>
                         <div class="action-card-title-container">
-                            <h3 class="action-card-title">Product Catalog</h3>
-                            <p class="action-card-subtitle">Manage your menu items</p>
+                            <h3 class="action-card-title">{{ __('Product Catalog') }}</h3>
+                            <p class="action-card-subtitle">{{ __('Manage your menu items') }}</p>
                         </div>
                     </div>
                     <div class="action-card-body">
                         <div class="stat-card-value">{{ App\Models\Product::count() }}
-                            <p class="stat-card-description">Products in your catalog</p>
+                            <p class="stat-card-description">{{ __('Products in your catalog') }}</p>
                         </div>
                         <p class="action-card-description">
-                            Manage your product catalog with custom icons and organized categories. Update prices and availability.
+                            {{ __('Manage your product catalog with custom icons and organized categories. Update prices and availability.') }}
                         </p>
                     </div>
                     <div class="action-card-footer">
                         <a href="{{ route('products.index') }}" class="btn btn-primary">
-                            <i class="bi bi-box-fill btn-icon"></i> Manage Products
+                            <i class="bi bi-box-fill btn-icon"></i> {{ __('Manage Products') }}
                         </a>
                     </div>
                 </div>
@@ -127,29 +129,29 @@
                             <i class="bi bi-cart stat-card-icon"></i>
                         </div>
                         <div class="action-card-title-container">
-                            <h3 class="action-card-title">Order Management</h3>
-                            <p class="action-card-subtitle">Track and process orders</p>
+                            <h3 class="action-card-title">{{ __('Order Management') }}</h3>
+                            <p class="action-card-subtitle">{{ __('Track and process orders') }}</p>
                         </div>
                     </div>
                     <div class="action-card-body">
                         <div class="stat-card-value">{{ App\Models\Order::count() }}
-                            <p class="stat-card-description">Total orders processed</p>
+                            <p class="stat-card-description">{{ __('Total orders processed') }}</p>
                         </div>
                         <p class="action-card-description">
-                            Create new orders, monitor pending orders in real-time, and keep track of order history. Export orders to XML for backup.
+                            {{ __('Create new orders, monitor pending orders in real-time, and keep track of order history. Export orders to XML for backup.') }}
                         </p>
                     </div>
                     <div class="action-card-footer">
                         <a href="{{ route('orders.create') }}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle btn-icon"></i> New Order
+                            <i class="bi bi-plus-circle btn-icon"></i> {{ __('New Order') }}
                         </a>
                         <a href="{{ route('all-orders') }}" class="btn btn-outline btn-orders">
-                            <i class="bi bi-list-ul btn-icon"></i> View Orders
+                            <i class="bi bi-list-ul btn-icon"></i> {{ __('View Orders') }}
                         </a>
                         @if($user->is_editor || $user->is_admin)
                         {{-- Archives are owner-only (the route 403s for staff). --}}
                         <a href="{{ route('orders.archive') }}" class="btn btn-outline btn-archive">
-                            <i class="bi bi-archive btn-icon"></i> Archives
+                            <i class="bi bi-archive btn-icon"></i> {{ __('Archives') }}
                         </a>
                         @endif
                     </div>
@@ -157,9 +159,9 @@
             </div>
             <!-- App Info -->
             <div class="dashboard-footer">
-                <h4 class="dashboard-footer-subtitle">Barmada Bar Management Dashboard</h4>
+                <h4 class="dashboard-footer-subtitle">{{ __('Barmada Bar Management Dashboard') }}</h4>
                 <p class="dashboard-footer-text">
-                    Version 1.0
+                    {{ __('Version 1.0') }}
                 </p>
             </div>
         </div>

@@ -506,7 +506,7 @@ class AllOrdersList extends Component
         $editorId = $user->is_admin ? null : $user->effectiveEditorId();
         if (!$editorId) {
             // Optionally, block admin from exporting or export all data to a separate admin folder
-            session()->flash('message', 'Only editors can export their own orders.');
+            session()->flash('message', __('Only editors can export their own orders.'));
             return;
         }
         // Create per-editor archive directory if it doesn't exist. This lives
@@ -547,7 +547,7 @@ class AllOrdersList extends Component
         // Save XML to file
         $xml->asXML($filepath);
         // Show success message with storage location
-        session()->flash('message', "Orders exported to XML file: {$filename}. Stored in your archive folder.");
+        session()->flash('message', __('Orders exported to XML file: :filename. Stored in your archive folder.', ['filename' => $filename]));
     }
 
     /**

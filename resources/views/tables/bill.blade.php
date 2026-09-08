@@ -5,11 +5,11 @@
     $paperMm = $isNarrow ? '58mm' : '80mm';
     $paperPx = $isNarrow ? '219px' : '302px';
 @endphp
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bill — Table {{ $table->table_number ?? $table->id }}</title>
+    <title>{{ __('Bill') }} — {{ __('Table :number', ['number' => $table->table_number ?? $table->id]) }}</title>
     <style>
         @page { size: {{ $paperMm }} auto; margin: 2mm; }
         body { font-family: "DejaVu Sans", Arial, sans-serif; max-width: {{ $paperPx }}; margin: 1.5rem auto; padding: 0 0.5rem; color: #111; word-wrap: break-word; overflow-wrap: break-word; }
@@ -33,13 +33,13 @@
 <body>
     <h1>{{ $venue ? ($venue->business_name ?: $venue->name) : 'Barmada' }}</h1>
     <p class="meta">
-        Table {{ $table->table_number ?? $table->id }}
-        @if($session) · session #{{ $session->session_number }} @endif
+        {{ __('Table :number', ['number' => $table->table_number ?? $table->id]) }}
+        @if($session) · {{ __('session #:number', ['number' => $session->session_number]) }} @endif
         · {{ \App\Support\VenueClock::now($venue)->format('Y-m-d H:i') }}
     </p>
 
     @if(empty($lines))
-        <p style="text-align:center;color:#777;">No orders this session.</p>
+        <p style="text-align:center;color:#777;">{{ __('No orders this session.') }}</p>
     @else
         <table>
             @foreach($lines as $name => $line)
@@ -52,25 +52,25 @@
         </table>
         <div class="totals">
             @if(!empty($bill['taxes']))
-                <div><span>Subtotal</span><span>{{ $currency }}{{ number_format($bill['subtotal'], 2) }}</span></div>
+                <div><span>{{ __('Subtotal') }}</span><span>{{ $currency }}{{ number_format($bill['subtotal'], 2) }}</span></div>
                 @foreach($bill['taxes'] as $tax)
                     <div><span>{{ $tax['label'] }}</span><span>{{ $currency }}{{ number_format($tax['amount'], 2) }}</span></div>
                 @endforeach
             @endif
             @if($bill['service_charge'] > 0)
-                <div><span>Servicio {{ $venue ? $venue->serviceChargeRateBp() / 100 : 10 }}% (propina)</span><span>{{ $currency }}{{ number_format($bill['service_charge'], 2) }}</span></div>
+                <div><span>{{ __('Service charge') }} ({{ $venue ? $venue->serviceChargeRateBp() / 100 : 10 }}%)</span><span>{{ $currency }}{{ number_format($bill['service_charge'], 2) }}</span></div>
             @endif
-            <div><span>Total</span><span>{{ $currency }}{{ number_format($bill['grand_total'], 2) }}</span></div>
-            <div><span>Paid</span><span>{{ $currency }}{{ number_format($paid, 2) }}</span></div>
-            <div class="due"><span>Due</span><span>{{ $currency }}{{ number_format($bill['grand_left'], 2) }}</span></div>
+            <div><span>{{ __('Total') }}</span><span>{{ $currency }}{{ number_format($bill['grand_total'], 2) }}</span></div>
+            <div><span>{{ __('Paid') }}</span><span>{{ $currency }}{{ number_format($paid, 2) }}</span></div>
+            <div class="due"><span>{{ __('Due') }}</span><span>{{ $currency }}{{ number_format($bill['grand_left'], 2) }}</span></div>
         </div>
     @endif
 
     @if($invoice)
         <div class="invoice">
-            <h2>Invoice details</h2>
+            <h2>{{ __('Invoice details') }}</h2>
             <div>{{ $invoice->name }}</div>
-            <div>Tax ID: {{ $invoice->tax_id }}</div>
+            <div>{{ __('Tax ID') }}: {{ $invoice->tax_id }}</div>
             @if($invoice->address)<div>{{ $invoice->address }}</div>@endif
             @if($invoice->email)<div>{{ $invoice->email }}</div>@endif
             @if($invoice->phone)<div>{{ $invoice->phone }}</div>@endif
@@ -84,25 +84,25 @@
     @endphp
     @if($fiscalDoc)
         <div class="invoice">
-            <h2>Factura {{ $fiscalDoc->number() }}</h2>
-            <div>Estado: {{ $fiscalDoc->status }}</div>
+            <h2>{{ __('Invoice :number', ['number' => $fiscalDoc->number()]) }}</h2>
+            <div>{{ __('Status') }}: {{ $fiscalDoc->status }}</div>
             <div style="word-break:break-all;font-size:0.75rem;">{{ $fiscalDoc->clave_acceso }}</div>
-            <a class="print-btn" style="text-decoration:none;text-align:center;" href="{{ route('fiscal.ride', $fiscalDoc) }}">Ver RIDE</a>
+            <a class="print-btn" style="text-decoration:none;text-align:center;" href="{{ route('fiscal.ride', $fiscalDoc) }}">{{ __('View RIDE') }}</a>
         </div>
-        <p class="footer">Comprobante electrónico emitido — ver RIDE para la representación fiscal.</p>
+        <p class="footer">{{ __('Electronic invoice issued — see RIDE for the fiscal representation.') }}</p>
     @else
         @if($errors->has('factura'))
             <p class="footer" style="color:#b00020;">{{ $errors->first('factura') }}</p>
         @endif
         @if($venue && $venue->fiscal_enabled && $session && !empty($lines))
-            <form method="POST" action="{{ route('tables.factura', $table) }}" onsubmit="return confirm('Emitir factura electrónica para esta cuenta?')">
+            <form method="POST" action="{{ route('tables.factura', $table) }}" onsubmit="return confirm({{ Js::from(__('Issue an electronic invoice for this bill?')) }})">
                 @csrf
-                <button type="submit" class="print-btn">Emitir factura</button>
+                <button type="submit" class="print-btn">{{ __('Issue invoice') }}</button>
             </form>
         @endif
-        <p class="footer">Not a fiscal receipt — internal bill summary.</p>
+        <p class="footer">{{ __('Not a fiscal receipt — internal bill summary.') }}</p>
     @endif
-    <button class="print-btn" onclick="window.print()">Print</button>
+    <button class="print-btn" onclick="window.print()">{{ __('Print') }}</button>
     <a class="paper-switch" href="?{{ $isNarrow ? '' : 'w=58' }}">
         {{ $isNarrow ? __('Switch to 80mm paper') : __('Switch to 58mm paper') }}
     </a>

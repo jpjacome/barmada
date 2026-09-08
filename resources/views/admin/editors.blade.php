@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('Establishments'))
 @section('header')
-    <h1 class="page-title">Establishments</h1>
+    <h1 class="page-title">{{ __('Establishments') }}</h1>
 @endsection
 @section('content')
 <div class="editors-container">
@@ -11,10 +11,10 @@
             <table class="editors-table">
                 <thead class="editors-table-header">
                     <tr>
-                        <th class="editors-table-header-cell">Name</th>
-                        <th class="editors-table-header-cell">Email</th>
-                        <th class="editors-table-header-cell">Created</th>
-                        <th class="editors-table-header-cell editors-table-cell-right">Actions</th>
+                        <th class="editors-table-header-cell">{{ __('Name') }}</th>
+                        <th class="editors-table-header-cell">{{ __('Email') }}</th>
+                        <th class="editors-table-header-cell">{{ __('Created') }}</th>
+                        <th class="editors-table-header-cell editors-table-cell-right">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="editors-table-body">
@@ -26,15 +26,15 @@
                             <td class="editor-cell editor-actions">
                                 <form method="POST" action="{{ route('admin.impersonate', $editor->id) }}" style="display:inline">
                                     @csrf
-                                    <button class="editor-dashboard-button" title="Enter Dashboard">
+                                    <button class="editor-dashboard-button" title="{{ __('Enter Dashboard') }}">
                                         <i class="bi bi-box-arrow-in-right"></i>
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.editors.destroy', $editor->id) }}" style="display:inline"
-                                      onsubmit="return confirm('Delete “{{ $editor->name }}” and ALL of its data (tables, products, orders, staff)? This cannot be undone.');">
+                                      onsubmit="return confirm({{ Js::from(__('Delete ":name" and ALL of its data (tables, products, orders, staff)? This cannot be undone.', ['name' => $editor->name])) }});">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="editor-delete-button" title="Delete Establishment">
+                                    <button class="editor-delete-button" title="{{ __('Delete Establishment') }}">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -43,7 +43,7 @@
                     @empty
                         <tr>
                             <td colspan="4" class="editor-empty-message">
-                                No editors found.
+                                {{ __('No editors found.') }}
                             </td>
                         </tr>
                     @endforelse
